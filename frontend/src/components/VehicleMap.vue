@@ -208,6 +208,9 @@ onBeforeUnmount(() => {
 }
 
 .coordinate-preview {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   background: #e7ece9;
 }
 

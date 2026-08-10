@@ -221,10 +221,17 @@ onBeforeUnmount(() => requestController?.abort())
 .vehicle-list-page {
   display: grid;
   grid-template-rows: 78px 58px auto minmax(0, 1fr) 58px;
+  grid-template-areas:
+    "heading"
+    "toolbar"
+    "error"
+    "table"
+    "pagination";
   background: #ffffff;
 }
 
 .list-heading {
+  grid-area: heading;
   display: flex;
   align-items: center;
   padding: 0 18px;
@@ -241,16 +248,20 @@ onBeforeUnmount(() => requestController?.abort())
 }
 
 .list-toolbar {
+  grid-area: toolbar;
   min-height: 58px;
 }
 
 .list-error {
+  grid-area: error;
   padding: 10px 14px 0;
 }
 
 .table-region {
+  grid-area: table;
   min-height: 0;
   padding: 12px 14px 0;
+  overflow: hidden;
 }
 
 .table-region :deep(.el-table__row) {
@@ -271,6 +282,7 @@ onBeforeUnmount(() => requestController?.abort())
 }
 
 .pagination-band {
+  grid-area: pagination;
   display: flex;
   align-items: center;
   justify-content: flex-end;
