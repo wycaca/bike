@@ -7,6 +7,7 @@ import {
   List,
   Location,
   Operation,
+  Tickets,
   SwitchButton,
   UserFilled,
 } from '@element-plus/icons-vue'
@@ -60,6 +61,10 @@ async function handleAccountCommand(command: string) {
         <el-menu-item v-if="authStore.hasRole('ADMIN', 'OPERATOR')" index="/geo">
           <el-icon><Operation /></el-icon>
           <span>围栏与停车点</span>
+        </el-menu-item>
+        <el-menu-item v-if="authStore.hasRole('ADMIN', 'OPERATOR', 'AUDITOR')" index="/operations">
+          <el-icon><Tickets /></el-icon>
+          <span>运维任务</span>
         </el-menu-item>
         <el-menu-item v-if="authStore.hasRole('ADMIN', 'AUDITOR')" index="/admin">
           <el-icon><Document /></el-icon>

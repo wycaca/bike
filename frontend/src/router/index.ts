@@ -46,6 +46,12 @@ const router = createRouter({
           meta: { roles: ['ADMIN', 'OPERATOR'] },
         },
         {
+          path: 'operations',
+          name: 'operations',
+          component: () => import('@/views/OperationsTaskView.vue'),
+          meta: { roles: ['ADMIN', 'OPERATOR', 'AUDITOR'] },
+        },
+        {
           path: 'admin',
           name: 'admin',
           component: () => import('@/views/AdminView.vue'),

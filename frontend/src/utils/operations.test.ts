@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import type { Organization } from '@/types/operations'
-import { organizationPath } from '@/utils/operations'
+import type { OperationsTask, Organization } from '@/types/operations'
+import { canOperateTask, isTaskOverdue, organizationPath } from '@/utils/operations'
 
 const timestamp = '2026-08-10T00:00:00Z'
 const organizations: Organization[] = [
@@ -17,5 +17,36 @@ describe('organizationPath', () => {
 
   it('未知组织回退显示原编号', () => {
     expect(organizationPath('UNKNOWN', organizations)).toBe('UNKNOWN')
+  })
+})
+
+const openTask: OperationsTask = {
+  taskId: 'TASK-1', taskNo: 'OPS-1', taskType: 'BATTERY_SWAP', status: 'OPEN', priority: 'URGENT',
+  title: '低电量换电', description: null, vehicleId: 'BIKE-1', plateNumber: null,
+  cityCode: '110000', areaCode: '110105', orgId: 'BJ', orgName: '北京中心', targetName: null,
+  sourceLongitude: 116.4, sourceLatitude: 39.9, batteryPercent: 8,
+  assigneeId: null, assigneeName: null, createdBy: 'ADMIN', createdByName: '管理员',
+  dueAt: '2026-08-10T01:00:00Z', claimedAt: null, startedAt: null, completedAt: null,
+  resultNote: null, version: 0, createdAt: timestamp, updatedAt: timestamp,
+}
+
+describe('运维任务操作规则', () => {
+  it('运维人员可抢待领取任务，管理员可指派但不能抢单', () => {
+    expect(canOperateTask(openTask, 'OPERATOR', 'OP-1', 'claim')).toBe(true)
+    expect(canOperateTask(openTask, 'ADMIN', 'ADMIN', 'claim')).toBe(false)
+    expect(canOperateTask(openTask, 'ADMIN', 'ADMIN', 'assign')).toBe(true)
+  })
+
+  it('只有领取人可开始和完成任务', () => {
+    const claimed = { ...openTask, status: 'CLAIMED' as const, assigneeId: 'OP-1' }
+    expect(canOperateTask(claimed, 'OPERATOR', 'OP-1', 'start')).toBe(true)
+    expect(canOperateTask(claimed, 'OPERATOR', 'OP-2', 'start')).toBe(false)
+    expect(canOperateTask({ ...claimed, status: 'IN_PROGRESS' }, 'OPERATOR', 'OP-1', 'complete')).toBe(true)
+  })
+
+  it('已完成任务不计为超时', () => {
+    const now = new Date('2026-08-10T02:00:00Z')
+    expect(isTaskOverdue(openTask, now)).toBe(true)
+    expect(isTaskOverdue({ ...openTask, status: 'COMPLETED' }, now)).toBe(false)
   })
 })

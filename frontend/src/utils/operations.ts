@@ -1,4 +1,12 @@
-import type { Organization, UserRole } from '@/types/operations'
+import type {
+  OperationsTask,
+  OperationsTaskEventType,
+  OperationsTaskPriority,
+  OperationsTaskStatus,
+  OperationsTaskType,
+  Organization,
+  UserRole,
+} from '@/types/operations'
 
 export const roleLabels: Record<UserRole, string> = {
   ADMIN: '系统管理员',
@@ -11,6 +19,62 @@ export const actionLabels: Record<string, string> = {
   UPDATE: '更新',
   DELETE: '停用',
   ACCESS: '访问',
+}
+
+export const taskTypeLabels: Record<OperationsTaskType, string> = {
+  BATTERY_SWAP: '车辆换电',
+  REBALANCE: '车辆调度',
+  REPAIR: '故障维修',
+  INSPECTION: '车辆巡检',
+  RETRIEVAL: '车辆回收',
+  CLEANING: '车辆清洁',
+}
+
+export const taskStatusLabels: Record<OperationsTaskStatus, string> = {
+  OPEN: '待领取',
+  CLAIMED: '已领取',
+  IN_PROGRESS: '执行中',
+  COMPLETED: '已完成',
+  CANCELLED: '已取消',
+}
+
+export const taskPriorityLabels: Record<OperationsTaskPriority, string> = {
+  LOW: '低',
+  NORMAL: '普通',
+  HIGH: '高',
+  URGENT: '紧急',
+}
+
+export const taskEventLabels: Record<OperationsTaskEventType, string> = {
+  CREATED: '创建任务',
+  CLAIMED: '抢单',
+  ASSIGNED: '指派',
+  RELEASED: '释放任务',
+  STARTED: '开始执行',
+  COMPLETED: '完成任务',
+  CANCELLED: '取消任务',
+}
+
+/** 输入: 任务; 输出: 是否仍未结束且已经超过要求完成时间。 */
+export function isTaskOverdue(task: OperationsTask, now = new Date()): boolean {
+  return task.dueAt !== null
+    && !['COMPLETED', 'CANCELLED'].includes(task.status)
+    && new Date(task.dueAt).getTime() < now.getTime()
+}
+
+/** 输入: 任务、角色和当前用户; 输出: 当前用户是否可以执行指定动作。 */
+export function canOperateTask(
+  task: OperationsTask,
+  role: UserRole,
+  userId: string,
+  action: 'claim' | 'assign' | 'release' | 'start' | 'complete' | 'cancel',
+): boolean {
+  if (action === 'claim') return role === 'OPERATOR' && task.status === 'OPEN'
+  if (action === 'assign') return role === 'ADMIN' && ['OPEN', 'CLAIMED'].includes(task.status)
+  if (action === 'cancel') return role === 'ADMIN' && !['COMPLETED', 'CANCELLED'].includes(task.status)
+  if (role !== 'OPERATOR' || task.assigneeId !== userId) return false
+  if (action === 'release' || action === 'start') return task.status === 'CLAIMED'
+  return action === 'complete' && task.status === 'IN_PROGRESS'
 }
 
 /** 输入: 组织编号和组织列表; 输出: 从当前组织到根组织的显示路径。 */

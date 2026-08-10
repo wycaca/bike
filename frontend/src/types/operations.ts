@@ -4,6 +4,11 @@ export type OrganizationType = 'COMPANY' | 'REGION' | 'TEAM'
 export type FenceType = 'OPERATION' | 'NO_RIDE' | 'NO_PARK'
 export type RevenueGranularity = 'DAY' | 'MONTH'
 export type ReportExportStatus = 'PENDING' | 'RUNNING' | 'SUCCEEDED' | 'FAILED' | 'EXPIRED'
+export type OperationsTaskType = 'BATTERY_SWAP' | 'REBALANCE' | 'REPAIR' | 'INSPECTION' | 'RETRIEVAL' | 'CLEANING'
+export type OperationsTaskStatus = 'OPEN' | 'CLAIMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+export type OperationsTaskPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT'
+export type OperationsTaskScope = 'ALL' | 'MINE' | 'UNASSIGNED'
+export type OperationsTaskEventType = 'CREATED' | 'CLAIMED' | 'ASSIGNED' | 'RELEASED' | 'STARTED' | 'COMPLETED' | 'CANCELLED'
 
 export interface CurrentUser {
   userId: string
@@ -217,4 +222,81 @@ export interface ReportExportJob {
   completedAt: string | null
   expiresAt: string | null
   downloadable: boolean
+}
+
+export interface OperationsTask {
+  taskId: string
+  taskNo: string
+  taskType: OperationsTaskType
+  status: OperationsTaskStatus
+  priority: OperationsTaskPriority
+  title: string
+  description: string | null
+  vehicleId: string
+  plateNumber: string | null
+  cityCode: string
+  areaCode: string
+  orgId: string
+  orgName: string
+  targetName: string | null
+  sourceLongitude: number | null
+  sourceLatitude: number | null
+  batteryPercent: number | null
+  assigneeId: string | null
+  assigneeName: string | null
+  createdBy: string
+  createdByName: string
+  dueAt: string | null
+  claimedAt: string | null
+  startedAt: string | null
+  completedAt: string | null
+  resultNote: string | null
+  version: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface OperationsTaskEvent {
+  eventId: number
+  eventType: OperationsTaskEventType
+  fromStatus: OperationsTaskStatus | null
+  toStatus: OperationsTaskStatus
+  actorId: string
+  actorName: string
+  note: string | null
+  createdAt: string
+}
+
+export interface OperationsTaskDetail {
+  task: OperationsTask
+  events: OperationsTaskEvent[]
+}
+
+export interface OperationsTaskSummary {
+  openCount: number
+  claimedCount: number
+  inProgressCount: number
+  overdueCount: number
+  completedTodayCount: number
+  myActiveCount: number
+}
+
+export interface OperationsAssignee {
+  userId: string
+  displayName: string
+  phone: string | null
+  orgId: string
+  orgName: string
+}
+
+export interface OperationsTaskRequest {
+  taskType: OperationsTaskType
+  priority: OperationsTaskPriority
+  title: string
+  description: string | null
+  vehicleId: string
+  orgId: string
+  targetName: string | null
+  dueAt: string | null
+  assigneeId: string | null
 }
