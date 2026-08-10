@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -50,6 +51,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/admin/audit-logs/**").hasAnyRole("ADMIN", "AUDITOR")
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/geo/**").hasAnyRole("ADMIN", "OPERATOR")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/ops/tasks/assignees")
+                        .hasAnyRole("ADMIN", "OPERATOR")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/ops/**")
+                        .hasAnyRole("ADMIN", "OPERATOR", "AUDITOR")
+                        .requestMatchers("/api/v1/ops/**").hasAnyRole("ADMIN", "OPERATOR")
                         .requestMatchers("/api/v1/reports/**").hasAnyRole("ADMIN", "OPERATOR", "AUDITOR")
                         .anyRequest().authenticated())
                 .formLogin(form -> form

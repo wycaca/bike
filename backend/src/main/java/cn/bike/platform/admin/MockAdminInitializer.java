@@ -39,17 +39,37 @@ public class MockAdminInitializer implements ApplicationRunner {
         insertOrganization("ORG-HQ", null, "运营总部", "COMPANY", null);
         insertOrganization("ORG-BJ", "ORG-HQ", "北京运营中心", "REGION", "110000");
         insertOrganization("ORG-SH", "ORG-HQ", "上海运营中心", "REGION", "310000");
+        var passwordHash = passwordEncoder.encode(password);
+        insertUser("USR-ADMIN", username, passwordHash, "系统管理员", null, "ORG-HQ", "ADMIN");
+        insertUser("USR-OP-BJ", "operator.bj", passwordHash, "北京运维一组", "13800001101", "ORG-BJ", "OPERATOR");
+        insertUser("USR-OP-SH", "operator.sh", passwordHash, "上海运维一组", "13800003101", "ORG-SH", "OPERATOR");
+    }
+
+    /** 输入: 用户基础信息; 输出: 无, 用户名存在时保持已有账号。 */
+    private void insertUser(
+            String userId,
+            String userName,
+            String passwordHash,
+            String displayName,
+            String phone,
+            String orgId,
+            String role
+    ) {
         jdbcClient.sql("""
                         INSERT INTO app_user (
-                            user_id, username, password_hash, display_name, org_id, role, status
-                        ) VALUES ('USR-ADMIN', :username, :passwordHash, '系统管理员', 'ORG-HQ', 'ADMIN', 'ACTIVE')
+                            user_id, username, password_hash, display_name, phone, org_id, role, status
+                        ) VALUES (
+                            :userId, :username, :passwordHash, :displayName, :phone, :orgId, :role, 'ACTIVE'
+                        )
                         ON CONFLICT (username) DO NOTHING
                         """)
-                .param("username", username)
-                .param("passwordHash", passwordEncoder.encode(password))
+                .param("userId", userId).param("username", userName).param("passwordHash", passwordHash)
+                .param("displayName", displayName).param("phone", phone).param("orgId", orgId)
+                .param("role", role)
                 .update();
     }
 
+    /** 输入: 组织基础信息; 输出: 无, 组织编号存在时保持已有数据。 */
     private void insertOrganization(String id, String parentId, String name, String type, String cityCode) {
         jdbcClient.sql("""
                         INSERT INTO organization (org_id, parent_org_id, org_name, org_type, city_code, status)

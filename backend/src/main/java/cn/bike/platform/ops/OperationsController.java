@@ -1,0 +1,140 @@
+package cn.bike.platform.ops;
+
+import cn.bike.platform.common.ApiResponse;
+import cn.bike.platform.ops.OperationsModels.AssigneeOption;
+import cn.bike.platform.ops.OperationsModels.AssignmentRequest;
+import cn.bike.platform.ops.OperationsModels.CancellationRequest;
+import cn.bike.platform.ops.OperationsModels.CompletionRequest;
+import cn.bike.platform.ops.OperationsModels.CreateTaskRequest;
+import cn.bike.platform.ops.OperationsModels.TaskDetail;
+import cn.bike.platform.ops.OperationsModels.TaskPage;
+import cn.bike.platform.ops.OperationsModels.TaskStatus;
+import cn.bike.platform.ops.OperationsModels.TaskSummary;
+import cn.bike.platform.ops.OperationsModels.TaskType;
+import cn.bike.platform.security.PlatformPrincipal;
+import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1/ops/tasks")
+public class OperationsController {
+
+    private final OperationsService service;
+
+    public OperationsController(OperationsService service) {
+        this.service = service;
+    }
+
+    /** 输入: 城市、筛选、分页和当前用户; 输出: 运维任务分页。 */
+    @GetMapping
+    public ApiResponse<TaskPage> findTasks(
+            @RequestParam String cityCode,
+            @RequestParam(required = false) TaskStatus status,
+            @RequestParam(required = false) TaskType type,
+            @RequestParam(defaultValue = "ALL") String scope,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.findTasks(page, pageSize, cityCode, status, type,
+                scope, keyword, principal));
+    }
+
+    /** 输入: 城市和当前用户; 输出: 运维队列汇总。 */
+    @GetMapping("/summary")
+    public ApiResponse<TaskSummary> summary(
+            @RequestParam String cityCode,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.summary(cityCode, principal));
+    }
+
+    /** 输入: 城市; 输出: 可指派运维人员。 */
+    @GetMapping("/assignees")
+    public ApiResponse<List<AssigneeOption>> assignees(@RequestParam String cityCode) {
+        return ApiResponse.ok(service.assignees(cityCode));
+    }
+
+    /** 输入: 任务编号; 输出: 任务详情和事件时间线。 */
+    @GetMapping("/{taskId}")
+    public ApiResponse<TaskDetail> detail(@PathVariable String taskId) {
+        return ApiResponse.ok(service.detail(taskId));
+    }
+
+    /** 输入: 新任务和当前用户; 输出: 创建后的任务详情。 */
+    @PostMapping
+    public ApiResponse<TaskDetail> create(
+            @Valid @RequestBody CreateTaskRequest request,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.create(request, principal));
+    }
+
+    /** 输入: 待领取任务和当前运维人员; 输出: 抢单后的任务详情。 */
+    @PostMapping("/{taskId}/claim")
+    public ApiResponse<TaskDetail> claim(
+            @PathVariable String taskId,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.claim(taskId, principal));
+    }
+
+    /** 输入: 任务、目标人员和管理员; 输出: 指派后的任务详情。 */
+    @PutMapping("/{taskId}/assignment")
+    public ApiResponse<TaskDetail> assign(
+            @PathVariable String taskId,
+            @Valid @RequestBody AssignmentRequest request,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.assign(taskId, request, principal));
+    }
+
+    /** 输入: 已领取任务和当前运维人员; 输出: 释放后的任务详情。 */
+    @PostMapping("/{taskId}/release")
+    public ApiResponse<TaskDetail> release(
+            @PathVariable String taskId,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.release(taskId, principal));
+    }
+
+    /** 输入: 已领取任务和当前运维人员; 输出: 开始执行后的任务详情。 */
+    @PostMapping("/{taskId}/start")
+    public ApiResponse<TaskDetail> start(
+            @PathVariable String taskId,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.start(taskId, principal));
+    }
+
+    /** 输入: 执行中任务、结果和当前运维人员; 输出: 完成后的任务详情。 */
+    @PostMapping("/{taskId}/complete")
+    public ApiResponse<TaskDetail> complete(
+            @PathVariable String taskId,
+            @Valid @RequestBody CompletionRequest request,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.complete(taskId, request, principal));
+    }
+
+    /** 输入: 未结束任务、取消原因和管理员; 输出: 取消后的任务详情。 */
+    @PostMapping("/{taskId}/cancel")
+    public ApiResponse<TaskDetail> cancel(
+            @PathVariable String taskId,
+            @Valid @RequestBody CancellationRequest request,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.cancel(taskId, request, principal));
+    }
+}
