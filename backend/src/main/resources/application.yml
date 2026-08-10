@@ -63,6 +63,12 @@ app:
     password: ${APP_ADMIN_PASSWORD:Admin123!}
   report:
     storage-path: ${REPORT_STORAGE_PATH:./build/reports}
+  operations:
+    evidence-storage-path: ${OPS_EVIDENCE_STORAGE_PATH:./build/ops-evidence}
+  amap:
+    web-service-key: ${AMAP_WEB_SERVICE_KEY:}
+    distance-api-url: ${AMAP_DISTANCE_API_URL:https://restapi.amap.com/v3/distance}
+    driving-api-url: ${AMAP_DRIVING_API_URL:https://restapi.amap.com/v3/direction/driving}
 
 logging:
   level:

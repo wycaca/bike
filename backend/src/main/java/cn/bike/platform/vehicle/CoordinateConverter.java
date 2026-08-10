@@ -8,7 +8,7 @@ import java.math.RoundingMode;
 /**
  * 在平台持久化坐标和中国大陆地图展示坐标之间转换. 转换只用于接口输出和视野查询, 不修改原始数据.
  */
-final class CoordinateConverter {
+public final class CoordinateConverter {
 
     private static final double PI = Math.PI;
     private static final double AXIS = 6378245.0;
@@ -18,7 +18,7 @@ final class CoordinateConverter {
     private CoordinateConverter() {
     }
 
-    static Coordinate convert(
+    public static Coordinate convert(
             BigDecimal longitude,
             BigDecimal latitude,
             CoordinateSystem source,
@@ -97,7 +97,7 @@ final class CoordinateConverter {
                 BigDecimal.valueOf(latitude).setScale(OUTPUT_SCALE, RoundingMode.HALF_UP));
     }
 
-    record Coordinate(BigDecimal longitude, BigDecimal latitude) {
+    public record Coordinate(BigDecimal longitude, BigDecimal latitude) {
     }
 }
 

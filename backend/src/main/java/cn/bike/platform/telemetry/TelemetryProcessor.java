@@ -1,5 +1,6 @@
 package cn.bike.platform.telemetry;
 
+import cn.bike.platform.ops.OperationsAutomationService;
 import cn.bike.platform.telemetry.TelemetryModels.YadeaCloudEvent;
 import cn.bike.platform.vehicle.LatestVehicleCache;
 import cn.bike.platform.vehicle.VehicleModels.LatestState;
@@ -15,15 +16,18 @@ public class TelemetryProcessor {
     private final VehicleRepository vehicleRepository;
     private final LatestVehicleCache latestVehicleCache;
     private final JsonMapper jsonMapper;
+    private final OperationsAutomationService operationsAutomationService;
 
     public TelemetryProcessor(
             VehicleRepository vehicleRepository,
             LatestVehicleCache latestVehicleCache,
-            JsonMapper jsonMapper
+            JsonMapper jsonMapper,
+            OperationsAutomationService operationsAutomationService
     ) {
         this.vehicleRepository = vehicleRepository;
         this.latestVehicleCache = latestVehicleCache;
         this.jsonMapper = jsonMapper;
+        this.operationsAutomationService = operationsAutomationService;
     }
 
     /**
@@ -57,5 +61,6 @@ public class TelemetryProcessor {
                 state.signalStrength(),
                 faultCodes,
                 location.coordinateSystem()));
+        operationsAutomationService.processTelemetry(event);
     }
 }

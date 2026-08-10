@@ -3,9 +3,14 @@ package cn.bike.platform.ops;
 import cn.bike.platform.common.ApiResponse;
 import cn.bike.platform.ops.OperationsModels.AssigneeOption;
 import cn.bike.platform.ops.OperationsModels.AssignmentRequest;
+import cn.bike.platform.ops.OperationsModels.BatchCreateResult;
+import cn.bike.platform.ops.OperationsModels.BatchCreateTaskRequest;
 import cn.bike.platform.ops.OperationsModels.CancellationRequest;
 import cn.bike.platform.ops.OperationsModels.CompletionRequest;
 import cn.bike.platform.ops.OperationsModels.CreateTaskRequest;
+import cn.bike.platform.ops.OperationsModels.ExceptionRequest;
+import cn.bike.platform.ops.OperationsModels.ExceptionResolutionRequest;
+import cn.bike.platform.ops.OperationsModels.ReviewRequest;
 import cn.bike.platform.ops.OperationsModels.TaskDetail;
 import cn.bike.platform.ops.OperationsModels.TaskPage;
 import cn.bike.platform.ops.OperationsModels.TaskStatus;
@@ -81,6 +86,15 @@ public class OperationsController {
         return ApiResponse.ok(service.create(request, principal));
     }
 
+    /** 输入: 批量任务模板、车辆列表和当前用户; 输出: 成功任务与逐车跳过原因。 */
+    @PostMapping("/batch")
+    public ApiResponse<BatchCreateResult> createBatch(
+            @Valid @RequestBody BatchCreateTaskRequest request,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.createBatch(request, principal));
+    }
+
     /** 输入: 待领取任务和当前运维人员; 输出: 抢单后的任务详情。 */
     @PostMapping("/{taskId}/claim")
     public ApiResponse<TaskDetail> claim(
@@ -126,6 +140,36 @@ public class OperationsController {
             @AuthenticationPrincipal PlatformPrincipal principal
     ) {
         return ApiResponse.ok(service.complete(taskId, request, principal));
+    }
+
+    /** 输入: 待验收任务和审核结论; 输出: 完成或退回执行的任务详情。 */
+    @PostMapping("/{taskId}/review")
+    public ApiResponse<TaskDetail> review(
+            @PathVariable String taskId,
+            @Valid @RequestBody ReviewRequest request,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.review(taskId, request, principal));
+    }
+
+    /** 输入: 作业现场异常和附件; 输出: 进入异常闭环的任务详情。 */
+    @PostMapping("/{taskId}/exception")
+    public ApiResponse<TaskDetail> reportException(
+            @PathVariable String taskId,
+            @Valid @RequestBody ExceptionRequest request,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.reportException(taskId, request, principal));
+    }
+
+    /** 输入: 异常任务和管理员处理动作; 输出: 重开或关闭后的任务详情。 */
+    @PostMapping("/{taskId}/exception/resolve")
+    public ApiResponse<TaskDetail> resolveException(
+            @PathVariable String taskId,
+            @Valid @RequestBody ExceptionResolutionRequest request,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.resolveException(taskId, request, principal));
     }
 
     /** 输入: 未结束任务、取消原因和管理员; 输出: 取消后的任务详情。 */
