@@ -1,10 +1,33 @@
 <script setup lang="ts">
-import { Bell, Bicycle, List, Location, UserFilled } from '@element-plus/icons-vue'
+import {
+  Bicycle,
+  DataAnalysis,
+  Document,
+  List,
+  Location,
+  Operation,
+  SwitchButton,
+  UserFilled,
+} from '@element-plus/icons-vue'
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+
+import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
-const activeMenu = computed(() => (route.path.startsWith('/vehicles') ? '/vehicles' : '/map'))
+const router = useRouter()
+const authStore = useAuthStore()
+const activeMenu = computed(() => {
+  if (route.path.startsWith('/vehicles')) return '/vehicles'
+  return `/${route.path.split('/')[1] || 'dashboard'}`
+})
+
+/** 输入: 账户菜单命令; 输出: 注销时清理会话并返回登录页。 */
+async function handleAccountCommand(command: string) {
+  if (command !== 'logout') return
+  await authStore.signOut()
+  await router.replace('/login')
+}
 </script>
 
 <template>
@@ -16,6 +39,10 @@ const activeMenu = computed(() => (route.path.startsWith('/vehicles') ? '/vehicl
       </div>
 
       <el-menu class="primary-menu" :default-active="activeMenu" router>
+        <el-menu-item index="/dashboard">
+          <el-icon><DataAnalysis /></el-icon>
+          <span>运营看板</span>
+        </el-menu-item>
         <el-menu-item index="/map">
           <el-icon><Location /></el-icon>
           <span>车辆地图</span>
@@ -23,6 +50,14 @@ const activeMenu = computed(() => (route.path.startsWith('/vehicles') ? '/vehicl
         <el-menu-item index="/vehicles">
           <el-icon><List /></el-icon>
           <span>车辆资产</span>
+        </el-menu-item>
+        <el-menu-item v-if="authStore.hasRole('ADMIN', 'OPERATOR')" index="/geo">
+          <el-icon><Operation /></el-icon>
+          <span>围栏与停车点</span>
+        </el-menu-item>
+        <el-menu-item v-if="authStore.hasRole('ADMIN', 'AUDITOR')" index="/admin">
+          <el-icon><Document /></el-icon>
+          <span>组织与审计</span>
         </el-menu-item>
       </el-menu>
 
@@ -36,13 +71,24 @@ const activeMenu = computed(() => (route.path.startsWith('/vehicles') ? '/vehicl
           <div class="environment-label">北京 / 上海试点</div>
         </div>
         <div class="header-actions">
-          <el-tooltip content="告警中心待后端接口完成" placement="bottom">
-            <el-button class="header-icon-button" :icon="Bell" circle disabled aria-label="告警" />
-          </el-tooltip>
-          <div class="account-block">
-            <el-icon><UserFilled /></el-icon>
-            <span>开发环境</span>
-          </div>
+          <el-icon class="header-status"><Bicycle /></el-icon>
+          <el-dropdown trigger="click" @command="handleAccountCommand">
+            <button type="button" class="account-block">
+              <el-icon><UserFilled /></el-icon>
+              <span>{{ authStore.user?.displayName }}</span>
+              <small>{{ authStore.user?.orgName }}</small>
+            </button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item disabled>
+                  <el-icon><Operation /></el-icon>{{ authStore.user?.role }}
+                </el-dropdown-item>
+                <el-dropdown-item command="logout" divided>
+                  <el-icon><SwitchButton /></el-icon>退出登录
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
       </header>
 

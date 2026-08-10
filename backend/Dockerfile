@@ -2,7 +2,7 @@ FROM m.daocloud.io/docker.io/library/maven:3.9.11-eclipse-temurin-21-alpine AS b
 WORKDIR /workspace
 COPY pom.xml .
 COPY src src
-RUN mvn -B verify
+RUN --mount=type=cache,target=/root/.m2 mvn -B verify
 
 FROM m.daocloud.io/docker.io/library/eclipse-temurin:21-jre-alpine
 RUN addgroup -S app && adduser -S app -G app

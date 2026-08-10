@@ -28,15 +28,15 @@
 - 最新状态.
 - 历史轨迹.
 - 雅迪云事件接入.
+- 登录, 用户, 组织和角色权限.
+- 电子围栏, 停车点和空间违规.
+- 运营看板和车辆状态 CSV 报表.
+- 写操作审计日志.
 
 后续按业务确认增加:
 
-- 电子围栏和停车点.
 - 车辆告警.
 - 维修, 换电和调度工单.
-- 运维人员和权限.
-- 运营报表.
-- 审计日志.
 
 调度算法需要单独设计时, 在本目录新增独立文档, 不写入总体架构.
 
@@ -49,6 +49,16 @@
 | `GET /api/v1/vehicles/{vehicleId}` | 查询车辆档案和最新状态. |
 | `GET /api/v1/vehicles/{vehicleId}/trajectory` | 查询指定时间范围的历史轨迹. |
 | `POST /api/v1/mock/yadea/events` | 在 `mock` 环境模拟雅迪云事件. |
+| `GET /api/v1/auth/csrf` | 获取 SPA 写请求使用的 CSRF 令牌. |
+| `POST /api/v1/auth/login` | 登录并创建 Redis 会话. |
+| `GET /api/v1/auth/me` | 查询当前用户和角色. |
+| `GET /api/v1/dashboard` | 查询城市运营指标, 趋势和区域分布. |
+| `GET /api/v1/reports/vehicle-status.csv` | 导出 UTF-8 车辆状态报表. |
+| `GET /api/v1/geo/overview` | 查询围栏, 停车点和实时空间违规. |
+| `POST/PUT/DELETE /api/v1/geo/...` | 新建, 编辑和停用空间设施. |
+| `GET/POST/PUT /api/v1/admin/organizations` | 维护组织架构. |
+| `GET/POST/PUT /api/v1/admin/users` | 维护平台用户和密码. |
+| `GET /api/v1/admin/audit-logs` | 分页检索审计日志. |
 
 ## 数据职责
 
