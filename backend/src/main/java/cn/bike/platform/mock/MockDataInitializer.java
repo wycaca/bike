@@ -11,6 +11,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -44,9 +45,14 @@ public class MockDataInitializer implements ApplicationRunner {
     }
 
     /**
-     * 启动时载入固定 JSON, 保证地图和轨迹测试结果可重复, 不依赖随机数据.
+     * 输入: Spring Boot 启动参数; 输出: 无, 将固定车辆及轨迹写入数据库和 Redis.
+     *
+     * 步骤:
+     * 1. 在同一事务内幂等写入车辆和全部历史轨迹, 避免大量逐点事务提交.
+     * 2. 轨迹倒序处理, 让每辆车的最新点先更新投影和 Redis; 较旧点只补齐历史表.
      */
     @Override
+    @Transactional
     public void run(ApplicationArguments args) throws Exception {
         var vehiclesResource = resourceLoader.getResource("classpath:mock/vehicles.json");
         var eventsResource = resourceLoader.getResource("classpath:mock/yadea-cloud-events.json");
@@ -55,7 +61,7 @@ public class MockDataInitializer implements ApplicationRunner {
         vehicles.forEach(vehicleRepository::upsertVehicle);
 
         var events = jsonMapper.readValue(eventsResource.getInputStream(), EVENT_LIST_TYPE);
-        events.forEach(telemetryProcessor::process);
+        events.reversed().forEach(telemetryProcessor::process);
         LOG.info("已载入模拟车辆 {} 辆, 雅迪云事件 {} 条", vehicles.size(), events.size());
     }
 }

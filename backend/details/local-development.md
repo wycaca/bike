@@ -4,9 +4,9 @@
 
 本机 Docker Desktop 使用 WSL 2 后端.
 
-- 程序目录: `D:\Docker\Docker`.
-- 安装包目录: `D:\Docker\installer`.
-- Linux 镜像, 容器和数据卷: `D:\Docker\data\wsl\disk\docker_data.vhdx`.
+- 程序目录: `F:\devTools\Docker`.
+- Linux 镜像, 容器和数据卷: `D:\other\docker_data\disk\docker_data.vhdx`.
+- Docker Desktop 管理数据: `D:\other\docker_data\main\ext4.vhdx`.
 - Docker Desktop 的少量配置, 锁文件和日志仍由程序放在 `%LOCALAPPDATA%\Docker`. 该目录不保存镜像数据磁盘.
 
 不要在 C 盘重新创建 Docker WSL 数据目录. 修改 Docker Desktop 安装或恢复出厂设置后, 需要重新确认数据磁盘仍位于 D 盘.
@@ -27,7 +27,7 @@
 在项目根目录执行:
 
 ```powershell
-docker compose up -d --build
+docker compose --env-file .env.local up -d --build
 docker compose ps
 docker compose logs -f backend
 ```
@@ -61,11 +61,11 @@ docker compose exec -T db psql -U bike -d bike -c "SELECT extname, extversion FR
 
 - 后端镜像中的 `mvn verify` 通过.
 - PostgreSQL, TimescaleDB, PostGIS, Redis, Kafka 和后端容器启动成功.
-- 未加载压测数据时, 固定 Mock 基线为 20 辆车辆, 北京和上海地图查询分别返回 10 个车辆点.
-- 当前本机另加载 5,000 辆 `LT-` 压测车辆和 512,110 个相关轨迹点, 数据库总量为 5,020 辆和 512,247 个轨迹点.
+- 未加载压测数据时, 固定 Mock 基线为 200 辆车辆, 北京和上海地图查询分别返回 100 个车辆点.
+- 固定数据包含 10,640 个高德道路轨迹点, 每辆车 25 至 60 点; `LT-` 压测数据按需单独加载.
 - 地图和轨迹接口的 GCJ-02 输出已验证, 默认 WGS84 输出保持兼容.
 - 车辆分页, 详情和历史轨迹接口返回成功.
-- 北京道路级 Mock 轨迹返回 56 点, 约 2.24 km; 上海返回 61 点, 约 2.44 km; 最长采样间隔均为 10 秒.
+- 抽查北京和上海扩容车辆均返回 60 个 GCJ-02 道路轨迹点, 未触发接口截断.
 - 模拟雅迪云事件通过 Kafka 消费后写入轨迹表, 并更新 PostgreSQL 最新状态和 Redis 缓存.
 - 读接口 10, 30 和 60 并发压测均为 0 错误, 吞吐平台约 690 RPS; 详细环境和结果见 `performance-test.md`.
 - 遥测写入 12,110 条最终全部落库, Kafka 单分区, 单消费者的持久化速度低于 1,211 RPS 的 HTTP 接收速度.

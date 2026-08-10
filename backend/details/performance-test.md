@@ -26,7 +26,7 @@ docker compose cp backend/loadtest/seed.sql db:/tmp/bike-loadtest-seed.sql
 docker compose exec -T db psql -U bike -d bike -v vehicle_count=5000 -v points_per_vehicle=100 -f /tmp/bike-loadtest-seed.sql
 ```
 
-脚本会先删除已有 `LT-` 前缀数据, 因此重复执行后数据规模保持一致. 它不会删除 20 辆固定 Mock 车及其道路级轨迹.
+脚本会先删除已有 `LT-` 前缀数据, 因此重复执行后数据规模保持一致. 它不会删除 200 辆固定 Mock 车及其道路级轨迹.
 
 SQL 数据只用于验证查询规模和索引, 不模拟真实道路. 道路形状仍以高德生成的固定 Mock 轨迹为准.
 
@@ -98,6 +98,8 @@ docker compose exec -T db psql -U bike -d bike -c "SELECT count(*) FROM vehicle_
 ## 本机基线
 
 测试日期: 2026-08-10.
+
+以下结果是在固定 Mock 数据扩容前执行的历史基准, 当时包含 20 辆固定 Mock 车辆和 137 个固定轨迹点. 扩容到 200 辆、10,640 个固定轨迹点后需要重新执行压测, 不直接沿用旧结果作为当前容量结论.
 
 环境:
 
