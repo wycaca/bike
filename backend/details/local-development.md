@@ -39,6 +39,7 @@ APP_ADMIN_PASSWORD=请替换为本机开发密码
 docker compose --env-file .env.local up -d --build
 docker compose ps
 docker compose logs -f backend
+docker compose logs -f report-worker
 ```
 
 停止服务但保留数据库数据:
@@ -80,6 +81,8 @@ docker compose exec -T db psql -U bike -d bike -c "SELECT extname, extversion FR
 - Redis 会话登录, 登录后 CSRF 令牌轮换, 角色路由和后端鉴权已完成联调.
 - 北京空间总览返回 2 个有效围栏和 2 个停车点; 围栏创建和停用已通过真实 PostGIS 写入验证.
 - 运营看板返回 100 辆北京车辆及区域指标, CSV 报表包含 UTF-8 BOM.
-- 后端 `mvn verify` 当前通过 11 个测试, 覆盖组织环检测, 自停用保护, 空间归属, 围栏 WKT 和报表转义.
+- 异步收入报表在 Worker 停止时保持等待，恢复后继续生成；下载文件大小与任务元数据一致且不残留临时文件.
+- 报表 Worker 使用独立队列与只读查询连接池，Compose 限制为 1 CPU、512 MiB 和两个数据库连接.
+- 后端 `mvn verify` 当前通过 19 个测试, 覆盖组织环检测, 自停用保护, 空间归属, 围栏 WKT、收入指标和异步导出失败清理.
 - 读接口 10, 30 和 60 并发压测均为 0 错误, 吞吐平台约 690 RPS; 详细环境和结果见 `performance-test.md`.
 - 遥测写入 12,110 条最终全部落库, Kafka 单分区, 单消费者的持久化速度低于 1,211 RPS 的 HTTP 接收速度.

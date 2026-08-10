@@ -31,6 +31,7 @@
 - 登录, 用户, 组织和角色权限.
 - 电子围栏, 停车点和空间违规.
 - 运营看板和车辆状态 CSV 报表.
+- 日/月收入与独立进程异步报表导出.
 - 写操作审计日志.
 
 后续按业务确认增加:
@@ -54,6 +55,10 @@
 | `GET /api/v1/auth/me` | 查询当前用户和角色. |
 | `GET /api/v1/dashboard` | 查询城市运营指标, 趋势和区域分布. |
 | `GET /api/v1/reports/vehicle-status.csv` | 导出 UTF-8 车辆状态报表. |
+| `GET /api/v1/reports/revenue` | 查询有界的日/月收入汇总. |
+| `POST /api/v1/reports/exports` | 创建持久化异步报表任务. |
+| `GET /api/v1/reports/exports/{jobId}` | 查询本人报表任务状态. |
+| `GET /api/v1/reports/exports/{jobId}/file` | 流式下载已完成报表. |
 | `GET /api/v1/geo/overview` | 查询围栏, 停车点和实时空间违规. |
 | `POST/PUT/DELETE /api/v1/geo/...` | 新建, 编辑和停用空间设施. |
 | `GET/POST/PUT /api/v1/admin/organizations` | 维护组织架构. |
@@ -67,7 +72,7 @@
 - PostGIS 提供空间索引和地图范围查询.
 - Redis 保存最新状态, 登录态, 幂等键和短期业务状态.
 - Kafka 缓冲车辆事件并支持异步消费.
-- 对象存储用于文件, 图片, 报表和冷数据归档.
+- 本地使用 Docker 命名卷保存异步报表; 生产环境使用对象存储保存文件, 图片, 报表和冷数据归档.
 
 Redis 不是唯一持久化来源. Redis 数据丢失后必须可以从 PostgreSQL 恢复.
 
@@ -75,7 +80,7 @@ Redis 不是唯一持久化来源. Redis 数据丢失后必须可以从 PostgreS
 
 - 服务实例不保存本地业务状态.
 - 登录和权限状态放 Redis.
-- 文件不写入容器本地磁盘.
+- 报表文件不写入容器可写层; 本地写共享卷, 生产写对象存储.
 - 多个实例可以直接挂在同一个负载均衡后.
 - 后台任务通过 Kafka consumer group 或分布式锁避免重复执行.
 
@@ -83,7 +88,7 @@ Redis 不是唯一持久化来源. Redis 数据丢失后必须可以从 PostgreS
 
 开发和验证阶段:
 
-- 一个 Spring Boot 进程.
+- 一个 HTTP/Kafka Spring Boot 进程和一个无 Web 端口的报表 Worker 进程.
 - PostgreSQL, Redis 和 Kafka 使用 Docker Compose.
 
 试运营阶段:

@@ -32,7 +32,7 @@
 | 退款率 | 退款金额 /（总流水 - 优惠） | 实付口径的退款质量 |
 | 平均时长/距离 | 有效订单时长、距离合计 / 有效订单 | 骑行结构和定价分析 |
 
-报表按 `Asia/Shanghai` 自然日聚合，查询日期为闭区间，单次最多 366 天。CSV 使用 UTF-8 BOM，确保 Excel 直接打开中文不乱码。
+报表按 `Asia/Shanghai` 自然日聚合，查询日期为闭区间，单次最多 366 天。CSV 使用 UTF-8 BOM，确保 Excel 直接打开中文不乱码。CSV 导出由独立 Worker 异步生成，设计与运维边界见 [异步报表 Worker](report-export-worker.md)。
 
 ## 数据与分母
 
@@ -64,7 +64,11 @@ Mock 环境使用固定随机种子生成最近 120 个完整自然日的订单�
 
 ```text
 GET /api/v1/reports/revenue
-GET /api/v1/reports/revenue.csv
+POST /api/v1/reports/exports
+GET /api/v1/reports/exports/{jobId}
+GET /api/v1/reports/exports/{jobId}/file
 ```
 
-查询参数为 `cityCode`、`fromDate`、`toDate` 和 `granularity=DAY|MONTH`。日期省略时默认返回截至昨日的最近 30 个完整自然日。
+交互式汇总接口的查询参数为 `cityCode`、`fromDate`、`toDate` 和 `granularity=DAY|MONTH`。日期省略时默认返回截至昨日的最近 30 个完整自然日。
+
+异步导出请求体包含 `reportType=REVENUE` 以及相同的城市、日期和粒度参数。创建接口返回 `202 Accepted` 和 `PENDING` 任务；前端轮询任务状态，仅在 `SUCCEEDED` 后调用文件接口。单用户最多同时保留 3 个等待或执行中的任务。

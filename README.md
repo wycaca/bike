@@ -10,6 +10,7 @@
 - 电子围栏、停车点、停车半径车辆计数和空间违规识别。
 - 运营看板、趋势与区域统计、UTF-8 CSV 车辆状态报表。
 - 日/月收入报表、单车日均骑行次数、单均收入、单车日均收入及优惠退款分析。
+- 持久化异步报表队列、独立报表 Worker、流式 CSV 落盘与下载。
 
 ## 快速启动
 
@@ -21,4 +22,4 @@ docker compose --env-file .env.local up -d --build
 
 打开 `http://localhost:8081`。Mock 环境默认管理员为 `admin`，密码由 `APP_ADMIN_PASSWORD` 配置；示例文件中的密码仅用于本机开发，部署前必须修改。
 
-详细说明见 [后端本地开发](backend/details/local-development.md)、[桌面端本地开发](frontend/details/local-development.md)、[运营模块设计](backend/details/operations-modules.md) 和 [收入报表口径](backend/details/revenue-reports.md)。
+详细说明见 [后端本地开发](backend/details/local-development.md)、[桌面端本地开发](frontend/details/local-development.md)、[运营模块设计](backend/details/operations-modules.md)、[收入报表口径](backend/details/revenue-reports.md) 和 [异步报表 Worker](backend/details/report-export-worker.md)。

@@ -8,9 +8,9 @@
 - `admin`: 用户、组织、Mock 初始管理员和审计日志。
 - `geo`: 电子围栏、停车点、PostGIS 空间计算和实时违规。
 - `dashboard`: 运营指标、趋势、区域分布和 CSV 报表。
-- `report`: 骑行订单、日/月收入、车辆周转率、单位经济指标和 CSV 导出。
+- `report`: 骑行订单、日/月收入、车辆周转率、单位经济指标、持久化导出队列和 CSV Worker。
 
-四个模块共享现有 PostgreSQL、Redis 和车辆最新状态，不新增独立服务或重复车辆投影。
+业务代码仍保持模块化单体，不拆分仓库和重复车辆投影；部署时增加独立 `report-worker` 进程，隔离报表生成的 JVM、CPU 和内存。
 
 ## 权限矩阵
 
@@ -48,7 +48,7 @@
 
 车辆状态报表使用 UTF-8 BOM、RFC 兼容字段转义和带日期的下载文件名，确保中文在 Excel 中直接打开时不乱码。
 
-收入报表以骑行订单为事实数据，支持闭区间日期和日/月粒度。金额拆分为总流水、优惠、退款和净收入，运营效率使用有效订单、投放车辆日数、RpD、单均收入和单车日均收入。完整公式与行业参考见 [收入报表口径](revenue-reports.md)。
+收入报表以骑行订单为事实数据，支持闭区间日期和日/月粒度。金额拆分为总流水、优惠、退款和净收入，运营效率使用有效订单、投放车辆日数、RpD、单均收入和单车日均收入。导出请求只在 API 进程创建任务，文件由独立 Worker 流式生成。完整公式与行业参考见 [收入报表口径](revenue-reports.md)，进程隔离见 [异步报表 Worker](report-export-worker.md)。
 
 ## 测试口径
 
@@ -56,5 +56,7 @@
 - `GeoServiceTest`: 围栏闭合、退化多边形、WKT 和组织城市归属。
 - `DashboardServiceTest`: CSV 中文、逗号、引号、BOM 和趋势参数。
 - `RevenueReportServiceTest`: 车辆日数、跨月周期、RpD、退款率、单均与单车收入、CSV BOM。
+- `ReportExportServiceTest`: 任务入队不执行查询、单用户并发任务上限。
+- `ReportExportWorkerTest`: 成功原子落盘、失败清理临时文件和任务状态回写。
 - Docker 构建执行全部 Maven/Vitest 测试与 TypeScript 检查。
 - 浏览器冒烟覆盖登录、看板、高德空间地图、组织更新、CSRF 和审计落库。
