@@ -5,10 +5,15 @@ export type FenceType = 'OPERATION' | 'NO_RIDE' | 'NO_PARK'
 export type RevenueGranularity = 'DAY' | 'MONTH'
 export type ReportExportStatus = 'PENDING' | 'RUNNING' | 'SUCCEEDED' | 'FAILED' | 'EXPIRED'
 export type OperationsTaskType = 'BATTERY_SWAP' | 'REBALANCE' | 'REPAIR' | 'INSPECTION' | 'RETRIEVAL' | 'CLEANING'
-export type OperationsTaskStatus = 'OPEN' | 'CLAIMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+export type OperationsTaskStatus = 'OPEN' | 'CLAIMED' | 'IN_PROGRESS' | 'PENDING_REVIEW' | 'EXCEPTION' | 'COMPLETED' | 'CANCELLED'
 export type OperationsTaskPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT'
 export type OperationsTaskScope = 'ALL' | 'MINE' | 'UNASSIGNED'
-export type OperationsTaskEventType = 'CREATED' | 'CLAIMED' | 'ASSIGNED' | 'RELEASED' | 'STARTED' | 'COMPLETED' | 'CANCELLED'
+export type OperationsTaskSource = 'MANUAL' | 'RULE' | 'BATCH'
+export type OperationsTaskEventType = 'CREATED' | 'CLAIMED' | 'ASSIGNED' | 'RELEASED' | 'STARTED' | 'SUBMITTED' | 'COMPLETED' | 'CANCELLED' | 'DEDUPLICATED' | 'RULE_RECOVERED' | 'EXCEPTION_REPORTED' | 'EXCEPTION_RESOLVED' | 'REVIEW_APPROVED' | 'REVIEW_REJECTED'
+export type OperationsTriggerType = 'LOW_BATTERY' | 'VEHICLE_FAULT' | 'VEHICLE_OFFLINE' | 'GEO_VIOLATION'
+export type OperationsExceptionType = 'VEHICLE_NOT_FOUND' | 'ACCESS_BLOCKED' | 'SAFETY_RISK' | 'PARTS_SHORTAGE' | 'OTHER'
+export type OperationsReviewStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
+export type OperationsAttachmentPurpose = 'BEFORE' | 'AFTER' | 'EXCEPTION'
 
 export interface CurrentUser {
   userId: string
@@ -230,6 +235,7 @@ export interface OperationsTask {
   taskType: OperationsTaskType
   status: OperationsTaskStatus
   priority: OperationsTaskPriority
+  sourceType: OperationsTaskSource
   title: string
   description: string | null
   vehicleId: string
@@ -244,13 +250,23 @@ export interface OperationsTask {
   batteryPercent: number | null
   assigneeId: string | null
   assigneeName: string | null
-  createdBy: string
-  createdByName: string
+  createdBy: string | null
+  createdByName: string | null
+  ruleId: string | null
+  ruleName: string | null
+  batchId: string | null
+  batchNo: string | null
+  triggerKey: string | null
+  duplicateCount: number
   dueAt: string | null
   claimedAt: string | null
   startedAt: string | null
+  submittedAt: string | null
   completedAt: string | null
   resultNote: string | null
+  exceptionType: OperationsExceptionType | null
+  exceptionNote: string | null
+  exceptionAt: string | null
   version: number
   createdAt: string
   updatedAt: string
@@ -261,7 +277,7 @@ export interface OperationsTaskEvent {
   eventType: OperationsTaskEventType
   fromStatus: OperationsTaskStatus | null
   toStatus: OperationsTaskStatus
-  actorId: string
+  actorId: string | null
   actorName: string
   note: string | null
   createdAt: string
@@ -270,12 +286,17 @@ export interface OperationsTaskEvent {
 export interface OperationsTaskDetail {
   task: OperationsTask
   events: OperationsTaskEvent[]
+  evidence: OperationsTaskEvidence[]
+  exceptions: OperationsTaskException[]
+  triggers: OperationsTaskTrigger[]
 }
 
 export interface OperationsTaskSummary {
   openCount: number
   claimedCount: number
   inProgressCount: number
+  pendingReviewCount: number
+  exceptionCount: number
   overdueCount: number
   completedTodayCount: number
   myActiveCount: number
@@ -299,4 +320,133 @@ export interface OperationsTaskRequest {
   targetName: string | null
   dueAt: string | null
   assigneeId: string | null
+}
+
+export interface OperationsBatchTaskRequest extends Omit<OperationsTaskRequest, 'vehicleId'> {
+  batchName: string
+  vehicleIds: string[]
+}
+
+export interface OperationsBatchResult {
+  batchId: string
+  batchNo: string
+  requestedCount: number
+  createdTasks: OperationsTask[]
+  skipped: Array<{ vehicleId: string; reason: string }>
+}
+
+export interface OperationsCompletionRequest {
+  resultNote: string
+  arrivalLongitude: number
+  arrivalLatitude: number
+  checklist: string[]
+  removedBatteryId: string | null
+  installedBatteryId: string | null
+  partsUsed: string[]
+  targetLongitude: number | null
+  targetLatitude: number | null
+  beforeAttachmentIds: number[]
+  afterAttachmentIds: number[]
+}
+
+export interface OperationsAttachment {
+  attachmentId: number
+  purpose: OperationsAttachmentPurpose
+  originalName: string
+  contentType: string
+  sizeBytes: number
+  downloadUrl: string
+  uploadedAt: string
+}
+
+export interface OperationsTaskEvidence {
+  evidenceId: number
+  submissionNo: number
+  resultNote: string
+  arrivalLongitude: number
+  arrivalLatitude: number
+  checklist: string[]
+  removedBatteryId: string | null
+  installedBatteryId: string | null
+  partsUsed: string[]
+  targetLongitude: number | null
+  targetLatitude: number | null
+  reviewStatus: OperationsReviewStatus
+  submittedBy: string
+  submittedByName: string
+  submittedAt: string
+  reviewedByName: string | null
+  reviewNote: string | null
+  reviewedAt: string | null
+  attachments: OperationsAttachment[]
+}
+
+export interface OperationsTaskException {
+  exceptionId: number
+  exceptionType: OperationsExceptionType
+  note: string
+  reportedBy: string
+  reportedByName: string
+  reportedAt: string
+  resolutionAction: 'REOPEN' | 'CLOSE' | null
+  resolutionNote: string | null
+  resolvedByName: string | null
+  resolvedAt: string | null
+  attachments: OperationsAttachment[]
+}
+
+export interface OperationsTaskTrigger {
+  triggerId: number
+  ruleId: string
+  ruleName: string
+  triggerKey: string
+  active: boolean
+  occurrenceCount: number
+  firstTriggeredAt: string
+  lastTriggeredAt: string
+  recoveredAt: string | null
+}
+
+export interface OperationsRuleRequest {
+  ruleName: string
+  cityCode: string
+  orgId: string
+  triggerType: OperationsTriggerType
+  thresholdValue: number | null
+  taskType: OperationsTaskType
+  priority: OperationsTaskPriority
+  titleTemplate: string
+  descriptionTemplate: string | null
+  dueMinutes: number
+  cooldownMinutes: number
+  autoClose: boolean
+  enabled: boolean
+}
+
+export interface OperationsRule extends OperationsRuleRequest {
+  ruleId: string
+  orgName: string
+  version: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface OperationsRoutePlan {
+  provider: 'AMAP' | 'LOCAL_ESTIMATE'
+  coordinateSystem: 'GCJ02' | 'WGS84'
+  warning: string | null
+  totalDistanceMeters: number
+  totalDurationSeconds: number
+  stops: Array<{
+    sequence: number
+    taskId: string
+    taskNo: string
+    vehicleId: string
+    title: string
+    longitude: number
+    latitude: number
+    legDistanceMeters: number
+    legDurationSeconds: number
+  }>
+  polyline: Coordinate[]
 }

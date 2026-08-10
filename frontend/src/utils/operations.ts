@@ -4,6 +4,8 @@ import type {
   OperationsTaskPriority,
   OperationsTaskStatus,
   OperationsTaskType,
+  OperationsExceptionType,
+  OperationsTriggerType,
   Organization,
   UserRole,
 } from '@/types/operations'
@@ -34,6 +36,8 @@ export const taskStatusLabels: Record<OperationsTaskStatus, string> = {
   OPEN: '待领取',
   CLAIMED: '已领取',
   IN_PROGRESS: '执行中',
+  PENDING_REVIEW: '待验收',
+  EXCEPTION: '异常待处理',
   COMPLETED: '已完成',
   CANCELLED: '已取消',
 }
@@ -51,8 +55,30 @@ export const taskEventLabels: Record<OperationsTaskEventType, string> = {
   ASSIGNED: '指派',
   RELEASED: '释放任务',
   STARTED: '开始执行',
+  SUBMITTED: '提交完工',
   COMPLETED: '完成任务',
   CANCELLED: '取消任务',
+  DEDUPLICATED: '重复信号合并',
+  RULE_RECOVERED: '触发状态恢复',
+  EXCEPTION_REPORTED: '上报异常',
+  EXCEPTION_RESOLVED: '处理异常',
+  REVIEW_APPROVED: '验收通过',
+  REVIEW_REJECTED: '验收退回',
+}
+
+export const triggerTypeLabels: Record<OperationsTriggerType, string> = {
+  LOW_BATTERY: '低电量',
+  VEHICLE_FAULT: '车辆故障',
+  VEHICLE_OFFLINE: '车辆离线',
+  GEO_VIOLATION: '围栏异常',
+}
+
+export const exceptionTypeLabels: Record<OperationsExceptionType, string> = {
+  VEHICLE_NOT_FOUND: '未找到车辆',
+  ACCESS_BLOCKED: '现场无法进入',
+  SAFETY_RISK: '存在安全风险',
+  PARTS_SHORTAGE: '缺少物料或电池',
+  OTHER: '其他异常',
 }
 
 /** 输入: 任务; 输出: 是否仍未结束且已经超过要求完成时间。 */
@@ -67,13 +93,16 @@ export function canOperateTask(
   task: OperationsTask,
   role: UserRole,
   userId: string,
-  action: 'claim' | 'assign' | 'release' | 'start' | 'complete' | 'cancel',
+  action: 'claim' | 'assign' | 'release' | 'start' | 'complete' | 'exception' | 'review' | 'resolve' | 'cancel',
 ): boolean {
   if (action === 'claim') return role === 'OPERATOR' && task.status === 'OPEN'
   if (action === 'assign') return role === 'ADMIN' && ['OPEN', 'CLAIMED'].includes(task.status)
   if (action === 'cancel') return role === 'ADMIN' && !['COMPLETED', 'CANCELLED'].includes(task.status)
+  if (action === 'review') return role === 'ADMIN' && task.status === 'PENDING_REVIEW'
+  if (action === 'resolve') return role === 'ADMIN' && task.status === 'EXCEPTION'
   if (role !== 'OPERATOR' || task.assigneeId !== userId) return false
   if (action === 'release' || action === 'start') return task.status === 'CLAIMED'
+  if (action === 'exception') return ['CLAIMED', 'IN_PROGRESS'].includes(task.status)
   return action === 'complete' && task.status === 'IN_PROGRESS'
 }
 
