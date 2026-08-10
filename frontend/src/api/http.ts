@@ -6,15 +6,20 @@ export const http = axios.create({
   baseURL: '/api',
   timeout: 10_000,
   withCredentials: true,
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
 })
 
-http.interceptors.response.use((response) => {
-  const body = response.data as ApiResponse<unknown>
-  if (typeof body?.code === 'number' && body.code !== 0) {
-    return Promise.reject(new Error(body.message || '请求失败'))
-  }
-  return response
-})
+http.interceptors.response.use(
+  (response) => {
+    const body = response.data as ApiResponse<unknown>
+    if (typeof body?.code === 'number' && body.code !== 0) {
+      return Promise.reject(new Error(body.message || '请求失败'))
+    }
+    return response
+  },
+  (error) => Promise.reject(error),
+)
 
 export function errorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {

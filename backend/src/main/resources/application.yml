@@ -31,10 +31,19 @@ spring:
       ack-mode: record
   flyway:
     connect-retries: 10
+  session:
+    timeout: 8h
+    redis:
+      namespace: bike:session
 
 server:
   port: ${SERVER_PORT:8080}
   shutdown: graceful
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 management:
   endpoints:
@@ -49,6 +58,9 @@ management:
 app:
   kafka:
     telemetry-topic: vehicle-telemetry
+  bootstrap-admin:
+    username: ${APP_ADMIN_USERNAME:admin}
+    password: ${APP_ADMIN_PASSWORD:Admin123!}
 
 logging:
   level:
