@@ -2,6 +2,7 @@
 import {
   Bicycle,
   DataAnalysis,
+  DataLine,
   Document,
   List,
   Location,
@@ -19,6 +20,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 const activeMenu = computed(() => {
   if (route.path.startsWith('/vehicles')) return '/vehicles'
+  if (route.path.startsWith('/reports')) return '/reports/revenue'
   return `/${route.path.split('/')[1] || 'dashboard'}`
 })
 
@@ -42,6 +44,10 @@ async function handleAccountCommand(command: string) {
         <el-menu-item index="/dashboard">
           <el-icon><DataAnalysis /></el-icon>
           <span>运营看板</span>
+        </el-menu-item>
+        <el-menu-item index="/reports/revenue">
+          <el-icon><DataLine /></el-icon>
+          <span>收入报表</span>
         </el-menu-item>
         <el-menu-item index="/map">
           <el-icon><Location /></el-icon>

@@ -2,6 +2,7 @@ export type UserRole = 'ADMIN' | 'OPERATOR' | 'AUDITOR'
 export type RecordStatus = 'ACTIVE' | 'DISABLED'
 export type OrganizationType = 'COMPANY' | 'REGION' | 'TEAM'
 export type FenceType = 'OPERATION' | 'NO_RIDE' | 'NO_PARK'
+export type RevenueGranularity = 'DAY' | 'MONTH'
 
 export interface CurrentUser {
   userId: string
@@ -163,5 +164,41 @@ export interface DashboardData {
   summary: DashboardSummary
   trends: DailyTrend[]
   areas: AreaDistribution[]
+  generatedAt: string
+}
+
+export interface RevenueValues {
+  grossBookings: number
+  discountAmount: number
+  refundAmount: number
+  netRevenue: number
+  completedRides: number
+  activeVehicles: number
+  vehicleDays: number
+  averageDeployedVehicles: number
+  ridesPerVehicleDay: number
+  averageRevenuePerRide: number
+  revenuePerVehicleDay: number
+  discountRate: number
+  refundRate: number
+  averageRideDurationMinutes: number
+  averageRideDistanceKm: number
+}
+
+export interface RevenuePeriod {
+  periodStart: string
+  periodEnd: string
+  values: RevenueValues
+}
+
+export interface RevenueReport {
+  cityCode: string
+  granularity: RevenueGranularity
+  summary: {
+    fromDate: string
+    toDate: string
+    values: RevenueValues
+  }
+  periods: RevenuePeriod[]
   generatedAt: string
 }

@@ -23,6 +23,11 @@ const router = createRouter({
           name: 'dashboard',
           component: () => import('@/views/DashboardView.vue'),
         },
+        {
+          path: 'reports/revenue',
+          name: 'revenue-report',
+          component: () => import('@/views/RevenueReportView.vue'),
+        },
         { path: 'map', name: 'map', component: () => import('@/views/MapView.vue') },
         {
           path: 'vehicles',
