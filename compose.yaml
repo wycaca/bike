@@ -121,6 +121,16 @@ services:
       backend:
         condition: service_healthy
 
+  mobile-web:
+    image: bike-mobile-web:local
+    build:
+      context: ./app
+    ports:
+      - "8082:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
 volumes:
   bike-db-data:
   bike-redis-data:

@@ -1,6 +1,12 @@
 backend/target/
 frontend/node_modules/
 frontend/dist/
+app/node_modules/
+app/dist/
+app/android/.gradle/
+app/android/build/
+app/android/app/build/
+app/android/local.properties
 .idea/
 *.iml
 .vscode/
