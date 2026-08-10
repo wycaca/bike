@@ -57,6 +57,8 @@ services:
       APP_ADMIN_USERNAME: ${APP_ADMIN_USERNAME:-admin}
       APP_ADMIN_PASSWORD: ${APP_ADMIN_PASSWORD:-Admin123!}
       REPORT_STORAGE_PATH: /data/reports
+      OPS_EVIDENCE_STORAGE_PATH: /data/ops-evidence
+      AMAP_WEB_SERVICE_KEY: ${AMAP_WEB_SERVICE_KEY:-}
     ports:
       - "8080:8080"
     depends_on:
@@ -68,6 +70,7 @@ services:
         condition: service_started
     volumes:
       - bike-report-data:/data/reports:ro
+      - bike-ops-evidence-data:/data/ops-evidence
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
       interval: 5s
@@ -122,4 +125,5 @@ volumes:
   bike-db-data:
   bike-redis-data:
   bike-report-data:
+  bike-ops-evidence-data:
 
