@@ -11,7 +11,7 @@
 
 地图和轨迹接口当前统一请求 GCJ-02, 后端从 WGS84 转换后返回. 配置本地高德 Web Key 时, 车辆分布和历史轨迹使用高德 JS API 2.0 展示; 未配置或 SDK 加载失败时保留坐标预览, 避免页面空白.
 
-当前 Mock 数据量很小, 高德模式使用普通 Marker. 真实视野内点位达到性能瓶颈时, 根据浏览器性能测试改用高德海量点能力.
+当前固定 Mock 数据为 200 辆, 高德模式使用普通 Marker. 真实视野内点位达到性能瓶颈时, 根据浏览器性能测试改用高德海量点能力.
 
 ## 地图数据
 
@@ -56,7 +56,9 @@
 
 ## 高德密钥
 
-- 本地 Web Key 只放在被 Git 忽略的 `frontend/.env.local`, 文档和代码不得记录实际值.
+- 直接运行 Vite 时, 本地 Web Key 只放在被 Git 忽略的 `frontend/.env.local`.
+- Docker Compose 构建时, Web Key 和安全密钥放在项目根目录被 Git 忽略的 `.env.local`,
+  并通过 `docker compose --env-file .env.local ...` 显式加载; 文档和代码不得记录实际值.
 - 根目录 `.env.local` 中的 `AMAP_WEB_SERVICE_KEY` 只用于本地生成道路级 Mock 轨迹, 不得提供给浏览器或与 Web JS Key 混用.
 - 生成的 Mock JSON 只保存路线结果和来源标识, 不保存任何 Key.
 - Web Key 会出现在浏览器加载地址和本地构建产物中, 不得把本地镜像发布到公共仓库.
