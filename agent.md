@@ -80,9 +80,9 @@
 - `backend/src/main/resources/mock/vehicles.json`.
 - `backend/src/main/resources/mock/yadea-cloud-events.json`.
 
-当前有 20 辆模拟车辆, 北京和上海各 10 辆, 共 137 条固定上报事件. 数据覆盖正常, 骑行, 低电量, 故障, 离线, 维护和调度等状态. 北京样车有 56 个道路级轨迹点, 上海样车有 61 个道路级轨迹点, 采样间隔为 9 至 10 秒.
+当前有 200 辆模拟车辆, 北京和上海各 100 辆, 共 10,640 条固定上报事件. 数据覆盖正常, 骑行, 低电量, 故障, 离线, 维护和调度等状态. 每辆车都有 25 至 60 个由高德 v4 骑行路径规划生成的道路级轨迹点.
 
-本机数据库另加载 5,000 辆 `LT-` 前缀压测车辆和每车 100 个基础轨迹点. 2026-08-10 遥测压测又写入 12,110 个实际 Kafka 事件, 当前共 5,020 辆车辆, 512,247 个轨迹点, 数据库约 205 MB. 这些数据不进入固定 JSON, 可以通过 `backend/loadtest/cleanup.sql` 清理.
+性能测试可另加载 5,000 辆 `LT-` 前缀车辆和每车 100 个基础轨迹点. 这些数据不进入固定 JSON, 可以通过 `backend/loadtest/cleanup.sql` 清理.
 
 ### 桌面前端
 
@@ -97,7 +97,7 @@
 - 加载, 空数据, 接口错误和请求取消状态.
 - Vitest 最小测试, Nginx 镜像和根目录 Compose 前端服务.
 
-地图和轨迹接口当前请求 GCJ-02, 后端从 WGS84 统一转换. 本地高德 Web JS Key 保存在 Git 忽略的 `frontend/.env.local`, 本地 Web Service Key 保存在 Git 忽略的根目录 `.env.local`, 两类 Key 不得混用或写入生成数据. 车辆分布和历史轨迹均已接入高德 JS API 2.0. 未配置 Key 或 SDK 加载失败时保留坐标预览. 地图只在城市切换时重置中心, 用户拖动和缩放不会触发回到城市中心. 当前浏览器连接受 Windows 沙箱错误 `1385` 阻断, 真实底图渲染仍待浏览器级确认.
+地图和轨迹接口当前请求 GCJ-02, 后端从 WGS84 统一转换. 直接运行 Vite 时, 本地高德 Web JS Key 保存在 Git 忽略的 `frontend/.env.local`; Docker Compose 构建使用根目录 `.env.local` 中的 Web JS Key 和安全密钥. 本地 Web Service Key 同样可以保存在根目录 `.env.local`, 两类 Key 不得混用或写入生成数据. 车辆分布和历史轨迹均已接入高德 JS API 2.0. 未配置 Key 或 SDK 加载失败时保留坐标预览. 地图只在城市切换时重置中心, 用户拖动和缩放不会触发回到城市中心. 已使用本机 Edge 验证真实高德组件、中文车辆信息和道路轨迹折线渲染.
 
 登录和 RBAC 尚未实现. 后端提供会话和权限接口前, 前端只显示开发环境状态, 不实现伪登录.
 
@@ -186,8 +186,9 @@
 
 已在 Windows + WSL 2 本机完成验证.
 
-- Docker Desktop 程序: `D:\Docker\Docker`.
-- Docker 镜像, 容器和卷: `D:\Docker\data\wsl\disk\docker_data.vhdx`.
+- Docker Desktop 程序: `F:\devTools\Docker`.
+- Docker 镜像, 容器和卷: `D:\other\docker_data\disk\docker_data.vhdx`.
+- Docker Desktop 管理数据: `D:\other\docker_data\main\ext4.vhdx`.
 - Docker CLI 已加入系统 PATH.
 - `%LOCALAPPDATA%\Docker` 只保留少量配置, 锁文件和日志.
 
@@ -198,7 +199,7 @@
 在项目根目录执行:
 
 ```powershell
-docker compose up -d --build
+docker compose --env-file .env.local up -d --build
 docker compose ps
 ```
 
@@ -281,12 +282,12 @@ curl.exe -fsS "http://localhost:8080/api/v1/vehicles/YD-BJ-000001/trajectory?sta
 - Docker 镜像内 `mvn verify` 通过.
 - 5 个 Compose 服务正常运行, 前端地址为 `http://localhost:8081`.
 - PostgreSQL 17.10, TimescaleDB 2.29.1, PostGIS 3.6.4, Redis 7.4.2 和 Java 21.0.11 运行正常.
-- 未加载压测数据时, 车辆分页返回北京和上海共 20 辆固定 Mock 车辆, 两个城市地图查询分别返回 10 个 GCJ-02 车辆点.
-- 当前本机加载压测数据后共 5,020 辆车辆和 512,247 个轨迹点.
+- 未加载压测数据时, 车辆分页返回北京和上海共 200 辆固定 Mock 车辆, 两个城市地图查询分别返回 100 个 GCJ-02 车辆点.
+- 固定 Mock 数据已完整载入 10,640 个轨迹点, 每辆车 25 至 60 点.
 - 车辆详情和历史轨迹返回成功, 坐标转换结果与 WGS84 原始值存在预期偏移.
 - 前端 `npm test` 和 `npm run build` 通过.
 - 前端镜像构建成功, 健康检查, 车辆分页, 北京地图点位, 车辆详情和历史轨迹均通过 Nginx 同源代理验证.
-- 页面截图和浏览器点击流程尚未完成, 原因见前端测试说明.
+- 页面截图已验证中文车辆信息、高德组件和道路轨迹折线; 完整交互回归仍可继续补充.
 - Mock 事件进入 Kafka 后成功写入轨迹表, PostgreSQL 最新状态和 Redis 缓存.
 - 读接口压测在 10, 30 和 60 并发下均为 0 错误, 吞吐平台约 690 RPS, 60 并发 P95 为 100.80 ms.
 - 遥测接口 10 并发接收 1,211 RPS, 12,110 条最终全部落库; 当前单分区, 单消费者的持久化速度低于 HTTP 接收速度.
@@ -296,7 +297,7 @@ curl.exe -fsS "http://localhost:8080/api/v1/vehicles/YD-BJ-000001/trajectory?sta
 按当前优先级推进, 不提前拆分微服务:
 
 1. 后端补充登录, 退出, 当前用户, RBAC 和 Redis 会话, 前端随后接入登录和权限.
-2. 浏览器连接恢复后补做真实高德地图, 点选, 城市切换, 详情抽屉和轨迹播放的视觉及点击验证.
+2. 补充地图点选, 城市切换, 详情抽屉和轨迹播放的自动化交互回归.
 3. 申请生产高德 Key 和安全密钥, 配置域名白名单及同源安全代理.
 4. 根据业务确认实现电子围栏, 停车点和车辆告警.
 5. 实现换电, 维修和调度工单, 再设计调度算法.
