@@ -1,0 +1,4583 @@
+[
+  {
+    "eventId": "MOCK-BJ-000002-01",
+    "vehicleId": "YD-BJ-000002",
+    "deviceId": "YDCTRL-BJ-000002",
+    "occurredAt": "2026-08-10T00:01:00Z",
+    "location": {
+      "longitude": 116.3971,
+      "latitude": 39.9087,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 7.1,
+      "speedKmh": 9.2,
+      "directionDegrees": 15,
+      "satelliteCount": 12
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 20,
+      "remainingRangeKm": 9.6,
+      "online": true,
+      "signalStrength": 24,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "batteryVoltage": 45.8
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000002-02",
+    "vehicleId": "YD-BJ-000002",
+    "deviceId": "YDCTRL-BJ-000002",
+    "occurredAt": "2026-08-10T00:05:00Z",
+    "location": {
+      "longitude": 116.398,
+      "latitude": 39.9112,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.8,
+      "speedKmh": 7.8,
+      "directionDegrees": 8,
+      "satelliteCount": 13
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 19,
+      "remainingRangeKm": 8.9,
+      "online": true,
+      "signalStrength": 25,
+      "faultCodes": [
+        "MOCK_LOW_BATTERY"
+      ]
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "batteryVoltage": 45.4
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000002-03",
+    "vehicleId": "YD-BJ-000002",
+    "deviceId": "YDCTRL-BJ-000002",
+    "occurredAt": "2026-08-10T00:08:00Z",
+    "location": {
+      "longitude": 116.3988,
+      "latitude": 39.9131,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.5,
+      "speedKmh": 0,
+      "directionDegrees": 5,
+      "satelliteCount": 13
+    },
+    "state": {
+      "lockStatus": "LOCKED",
+      "rideStatus": "IDLE",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 18,
+      "remainingRangeKm": 8.3,
+      "online": true,
+      "signalStrength": 25,
+      "faultCodes": [
+        "MOCK_LOW_BATTERY"
+      ]
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "batteryVoltage": 45.1
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000003-01",
+    "vehicleId": "YD-BJ-000003",
+    "deviceId": "YDCTRL-BJ-000003",
+    "occurredAt": "2026-08-10T00:10:00Z",
+    "location": {
+      "longitude": 116.3167,
+      "latitude": 39.983,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 8.2,
+      "speedKmh": 0,
+      "directionDegrees": 0,
+      "satelliteCount": 10
+    },
+    "state": {
+      "lockStatus": "LOCKED",
+      "rideStatus": "MAINTENANCE",
+      "controllerStatus": "FAULT",
+      "batteryPercent": 43,
+      "remainingRangeKm": 21,
+      "online": true,
+      "signalStrength": 19,
+      "faultCodes": [
+        "MOCK_CONTROLLER_OVERTEMP"
+      ]
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "controllerTemperature": 91
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000004-01",
+    "vehicleId": "YD-BJ-000004",
+    "deviceId": "YDCTRL-BJ-000004",
+    "occurredAt": "2026-08-10T00:10:00Z",
+    "location": {
+      "longitude": 116.329,
+      "latitude": 39.9723,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 12.4,
+      "speedKmh": 0,
+      "directionDegrees": 0,
+      "satelliteCount": 5
+    },
+    "state": {
+      "lockStatus": "UNKNOWN",
+      "rideStatus": "IDLE",
+      "controllerStatus": "OFFLINE",
+      "batteryPercent": 67,
+      "remainingRangeKm": 35,
+      "online": false,
+      "signalStrength": 0,
+      "faultCodes": [
+        "MOCK_DEVICE_OFFLINE"
+      ]
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000005-01",
+    "vehicleId": "YD-BJ-000005",
+    "deviceId": "YDCTRL-BJ-000005",
+    "occurredAt": "2026-08-10T00:10:00Z",
+    "location": {
+      "longitude": 116.3005,
+      "latitude": 39.8565,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.7,
+      "speedKmh": 0,
+      "directionDegrees": 190,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "LOCKED",
+      "rideStatus": "DISPATCHING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 55,
+      "remainingRangeKm": 29,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000006-01",
+    "vehicleId": "YD-BJ-000006",
+    "deviceId": "YDCTRL-BJ-000006",
+    "occurredAt": "2026-08-10T00:10:00Z",
+    "location": {
+      "longitude": 116.4074,
+      "latitude": 39.9042,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.1,
+      "speedKmh": 0,
+      "directionDegrees": 320,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "LOCKED",
+      "rideStatus": "IDLE",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 91,
+      "remainingRangeKm": 50,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000002-01",
+    "vehicleId": "YD-SH-000002",
+    "deviceId": "YDCTRL-SH-000002",
+    "occurredAt": "2026-08-10T00:10:00Z",
+    "location": {
+      "longitude": 121.506,
+      "latitude": 31.239,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.1,
+      "speedKmh": 0,
+      "directionDegrees": 20,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "LOCKED",
+      "rideStatus": "IDLE",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 16,
+      "remainingRangeKm": 7.2,
+      "online": true,
+      "signalStrength": 25,
+      "faultCodes": [
+        "MOCK_LOW_BATTERY"
+      ]
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "batteryVoltage": 44.8
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000003-01",
+    "vehicleId": "YD-SH-000003",
+    "deviceId": "YDCTRL-SH-000003",
+    "occurredAt": "2026-08-10T00:10:00Z",
+    "location": {
+      "longitude": 121.445,
+      "latitude": 31.228,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 7,
+      "speedKmh": 0,
+      "directionDegrees": 0,
+      "satelliteCount": 12
+    },
+    "state": {
+      "lockStatus": "LOCKED",
+      "rideStatus": "MAINTENANCE",
+      "controllerStatus": "FAULT",
+      "batteryPercent": 48,
+      "remainingRangeKm": 24,
+      "online": true,
+      "signalStrength": 22,
+      "faultCodes": [
+        "MOCK_BMS_TEMPERATURE_HIGH"
+      ]
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "batteryTemperature": 67
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000004-01",
+    "vehicleId": "YD-SH-000004",
+    "deviceId": "YDCTRL-SH-000004",
+    "occurredAt": "2026-08-10T00:10:00Z",
+    "location": {
+      "longitude": 121.438,
+      "latitude": 31.224,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 14,
+      "speedKmh": 0,
+      "directionDegrees": 0,
+      "satelliteCount": 4
+    },
+    "state": {
+      "lockStatus": "UNKNOWN",
+      "rideStatus": "IDLE",
+      "controllerStatus": "OFFLINE",
+      "batteryPercent": 62,
+      "remainingRangeKm": 32,
+      "online": false,
+      "signalStrength": 0,
+      "faultCodes": [
+        "MOCK_DEVICE_OFFLINE"
+      ]
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000005-01",
+    "vehicleId": "YD-SH-000005",
+    "deviceId": "YDCTRL-SH-000005",
+    "occurredAt": "2026-08-10T00:10:00Z",
+    "location": {
+      "longitude": 121.4373,
+      "latitude": 31.1883,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.4,
+      "speedKmh": 0,
+      "directionDegrees": 240,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "LOCKED",
+      "rideStatus": "DISPATCHING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 58,
+      "remainingRangeKm": 30,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000006-01",
+    "vehicleId": "YD-SH-000006",
+    "deviceId": "YDCTRL-SH-000006",
+    "occurredAt": "2026-08-10T00:10:00Z",
+    "location": {
+      "longitude": 121.49,
+      "latitude": 31.236,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 0,
+      "directionDegrees": 300,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "LOCKED",
+      "rideStatus": "IDLE",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 89,
+      "remainingRangeKm": 49,
+      "online": true,
+      "signalStrength": 31,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000007-01",
+    "vehicleId": "YD-BJ-000007",
+    "deviceId": "YDCTRL-BJ-000007",
+    "occurredAt": "2026-08-10T00:12:00Z",
+    "location": {
+      "coordinateSystem": "WGS84",
+      "longitude": 116.4809,
+      "latitude": 39.9897,
+      "accuracyMeters": 5.8,
+      "speedKmh": 0,
+      "directionDegrees": 130,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "LOCKED",
+      "rideStatus": "IDLE",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 74,
+      "remainingRangeKm": 39.1,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000008-01",
+    "vehicleId": "YD-BJ-000008",
+    "deviceId": "YDCTRL-BJ-000008",
+    "occurredAt": "2026-08-10T00:12:30Z",
+    "location": {
+      "coordinateSystem": "WGS84",
+      "longitude": 116.3107,
+      "latitude": 39.9823,
+      "accuracyMeters": 6.1,
+      "speedKmh": 11.7,
+      "directionDegrees": 270,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 64,
+      "remainingRangeKm": 33.5,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000009-01",
+    "vehicleId": "YD-BJ-000009",
+    "deviceId": "YDCTRL-BJ-000009",
+    "occurredAt": "2026-08-10T00:12:45Z",
+    "location": {
+      "coordinateSystem": "WGS84",
+      "longitude": 116.4358,
+      "latitude": 39.9412,
+      "accuracyMeters": 6.4,
+      "speedKmh": 0,
+      "directionDegrees": 20,
+      "satelliteCount": 13
+    },
+    "state": {
+      "lockStatus": "LOCKED",
+      "rideStatus": "IDLE",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 14,
+      "remainingRangeKm": 6.2,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": [
+        "MOCK_LOW_BATTERY"
+      ]
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000010-01",
+    "vehicleId": "YD-BJ-000010",
+    "deviceId": "YDCTRL-BJ-000010",
+    "occurredAt": "2026-08-10T00:13:15Z",
+    "location": {
+      "coordinateSystem": "WGS84",
+      "longitude": 116.4271,
+      "latitude": 39.8458,
+      "accuracyMeters": 5.9,
+      "speedKmh": 0,
+      "directionDegrees": 180,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "LOCKED",
+      "rideStatus": "IDLE",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 88,
+      "remainingRangeKm": 47,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000007-01",
+    "vehicleId": "YD-SH-000007",
+    "deviceId": "YDCTRL-SH-000007",
+    "occurredAt": "2026-08-10T00:12:00Z",
+    "location": {
+      "coordinateSystem": "WGS84",
+      "longitude": 121.501,
+      "latitude": 31.2397,
+      "accuracyMeters": 5.5,
+      "speedKmh": 0,
+      "directionDegrees": 90,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "LOCKED",
+      "rideStatus": "IDLE",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 81,
+      "remainingRangeKm": 43.3,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000008-01",
+    "vehicleId": "YD-SH-000008",
+    "deviceId": "YDCTRL-SH-000008",
+    "occurredAt": "2026-08-10T00:12:30Z",
+    "location": {
+      "coordinateSystem": "WGS84",
+      "longitude": 121.455,
+      "latitude": 31.229,
+      "accuracyMeters": 5.8,
+      "speedKmh": 10.8,
+      "directionDegrees": 205,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 68,
+      "remainingRangeKm": 35.6,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000009-01",
+    "vehicleId": "YD-SH-000009",
+    "deviceId": "YDCTRL-SH-000009",
+    "occurredAt": "2026-08-10T00:12:45Z",
+    "location": {
+      "coordinateSystem": "WGS84",
+      "longitude": 121.4365,
+      "latitude": 31.1908,
+      "accuracyMeters": 6.2,
+      "speedKmh": 0,
+      "directionDegrees": 315,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "LOCKED",
+      "rideStatus": "IDLE",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 13,
+      "remainingRangeKm": 5.7,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": [
+        "MOCK_LOW_BATTERY"
+      ]
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000010-01",
+    "vehicleId": "YD-SH-000010",
+    "deviceId": "YDCTRL-SH-000010",
+    "occurredAt": "2026-08-10T00:13:15Z",
+    "location": {
+      "coordinateSystem": "WGS84",
+      "longitude": 121.5143,
+      "latitude": 31.3021,
+      "accuracyMeters": 7.3,
+      "speedKmh": 0,
+      "directionDegrees": 0,
+      "satelliteCount": 12
+    },
+    "state": {
+      "lockStatus": "LOCKED",
+      "rideStatus": "MAINTENANCE",
+      "controllerStatus": "FAULT",
+      "batteryPercent": 47,
+      "remainingRangeKm": 23.8,
+      "online": true,
+      "signalStrength": 20,
+      "faultCodes": [
+        "MOCK_BMS_TEMPERATURE_HIGH"
+      ]
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G",
+      "batteryTemperature": 66.8
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R001",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:00:00.000Z",
+    "location": {
+      "longitude": 116.4591647,
+      "latitude": 39.9140643,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 15,
+      "directionDegrees": 0,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 86,
+      "remainingRangeKm": 46.2,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R002",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:00:10.000Z",
+    "location": {
+      "longitude": 116.4591646,
+      "latitude": 39.9144371,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 16.4,
+      "directionDegrees": 0,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 86,
+      "remainingRangeKm": 46.2,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R003",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:00:20.000Z",
+    "location": {
+      "longitude": 116.4591646,
+      "latitude": 39.91481,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 17.1,
+      "directionDegrees": 0,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 86,
+      "remainingRangeKm": 46.1,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R004",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:00:30.000Z",
+    "location": {
+      "longitude": 116.4591804,
+      "latitude": 39.9151824,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 16.7,
+      "directionDegrees": 5,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 86,
+      "remainingRangeKm": 46.1,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R005",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:00:39.000Z",
+    "location": {
+      "longitude": 116.4592916,
+      "latitude": 39.9155446,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 15.5,
+      "directionDegrees": 16,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 86,
+      "remainingRangeKm": 46,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R006",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:00:49.000Z",
+    "location": {
+      "longitude": 116.4594249,
+      "latitude": 39.9159036,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 14,
+      "directionDegrees": 16,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 86,
+      "remainingRangeKm": 46,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R007",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:00:59.000Z",
+    "location": {
+      "longitude": 116.4595527,
+      "latitude": 39.9162636,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 13,
+      "directionDegrees": 14,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 86,
+      "remainingRangeKm": 45.9,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R008",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:01:09.000Z",
+    "location": {
+      "longitude": 116.4599464,
+      "latitude": 39.9161751,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 13.1,
+      "directionDegrees": 116,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 86,
+      "remainingRangeKm": 45.9,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R009",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:01:19.000Z",
+    "location": {
+      "longitude": 116.4603849,
+      "latitude": 39.916013,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 14.1,
+      "directionDegrees": 116,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 86,
+      "remainingRangeKm": 45.9,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R010",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:01:29.000Z",
+    "location": {
+      "longitude": 116.4608235,
+      "latitude": 39.9158509,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 15.6,
+      "directionDegrees": 116,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 86,
+      "remainingRangeKm": 45.8,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R011",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:01:38.000Z",
+    "location": {
+      "longitude": 116.4612629,
+      "latitude": 39.9156902,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 16.8,
+      "directionDegrees": 115,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.8,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R012",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:01:48.000Z",
+    "location": {
+      "longitude": 116.4617047,
+      "latitude": 39.9155333,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 17.1,
+      "directionDegrees": 115,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.7,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R013",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:01:58.000Z",
+    "location": {
+      "longitude": 116.4621548,
+      "latitude": 39.9153913,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 16.3,
+      "directionDegrees": 110,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.7,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R014",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:02:08.000Z",
+    "location": {
+      "longitude": 116.4626146,
+      "latitude": 39.9152682,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 14.9,
+      "directionDegrees": 106,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.6,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R015",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:02:18.000Z",
+    "location": {
+      "longitude": 116.4630839,
+      "latitude": 39.9151676,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 13.5,
+      "directionDegrees": 106,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.6,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R016",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:02:28.000Z",
+    "location": {
+      "longitude": 116.4635541,
+      "latitude": 39.9150697,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 12.9,
+      "directionDegrees": 104,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.5,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R017",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:02:37.000Z",
+    "location": {
+      "longitude": 116.4640262,
+      "latitude": 39.9149773,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 13.4,
+      "directionDegrees": 105,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.5,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R018",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:02:47.000Z",
+    "location": {
+      "longitude": 116.4644971,
+      "latitude": 39.9148811,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 14.7,
+      "directionDegrees": 105,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.5,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R019",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:02:57.000Z",
+    "location": {
+      "longitude": 116.4649654,
+      "latitude": 39.9147783,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 16.1,
+      "directionDegrees": 107,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.4,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R020",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:03:07.000Z",
+    "location": {
+      "longitude": 116.4654331,
+      "latitude": 39.9146734,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 17,
+      "directionDegrees": 106,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.4,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R021",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:03:17.000Z",
+    "location": {
+      "longitude": 116.4659016,
+      "latitude": 39.9145709,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 16.9,
+      "directionDegrees": 106,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.3,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R022",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:03:27.000Z",
+    "location": {
+      "longitude": 116.4663789,
+      "latitude": 39.9144963,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 15.8,
+      "directionDegrees": 99,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.3,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R023",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:03:36.000Z",
+    "location": {
+      "longitude": 116.466863,
+      "latitude": 39.9144532,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 14.3,
+      "directionDegrees": 95,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.2,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R024",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:03:46.000Z",
+    "location": {
+      "longitude": 116.4673488,
+      "latitude": 39.9144209,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 13.2,
+      "directionDegrees": 95,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.2,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R025",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:03:56.000Z",
+    "location": {
+      "longitude": 116.4678357,
+      "latitude": 39.9143993,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 13,
+      "directionDegrees": 93,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.2,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R026",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:04:06.000Z",
+    "location": {
+      "longitude": 116.4683224,
+      "latitude": 39.9143759,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 13.8,
+      "directionDegrees": 94,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.1,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R027",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:04:16.000Z",
+    "location": {
+      "longitude": 116.4688091,
+      "latitude": 39.9143537,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 15.3,
+      "directionDegrees": 94,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45.1,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R028",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:04:26.000Z",
+    "location": {
+      "longitude": 116.4692955,
+      "latitude": 39.9143268,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 16.6,
+      "directionDegrees": 94,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 85,
+      "remainingRangeKm": 45,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R029",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:04:35.000Z",
+    "location": {
+      "longitude": 116.4697826,
+      "latitude": 39.914315,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 17.1,
+      "directionDegrees": 89,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 45,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R030",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:04:45.000Z",
+    "location": {
+      "longitude": 116.4702699,
+      "latitude": 39.9143216,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 16.5,
+      "directionDegrees": 93,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.9,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R031",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:04:55.000Z",
+    "location": {
+      "longitude": 116.4707572,
+      "latitude": 39.9143066,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 15.2,
+      "directionDegrees": 93,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.9,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R032",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:05:05.000Z",
+    "location": {
+      "longitude": 116.471244,
+      "latitude": 39.9142832,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 13.8,
+      "directionDegrees": 94,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.8,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R033",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:05:15.000Z",
+    "location": {
+      "longitude": 116.4717309,
+      "latitude": 39.9142605,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 12.9,
+      "directionDegrees": 94,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.8,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R034",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:05:25.000Z",
+    "location": {
+      "longitude": 116.471945,
+      "latitude": 39.9143812,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 13.2,
+      "directionDegrees": 0,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.8,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R035",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:05:34.000Z",
+    "location": {
+      "longitude": 116.471955,
+      "latitude": 39.914754,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 14.4,
+      "directionDegrees": 1,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.7,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R036",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:05:44.000Z",
+    "location": {
+      "longitude": 116.4719607,
+      "latitude": 39.9151269,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 15.9,
+      "directionDegrees": 1,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.7,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R037",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:05:54.000Z",
+    "location": {
+      "longitude": 116.4720576,
+      "latitude": 39.9154885,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 16.9,
+      "directionDegrees": 4,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.6,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R038",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:06:04.000Z",
+    "location": {
+      "longitude": 116.4720806,
+      "latitude": 39.915861,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 17,
+      "directionDegrees": 2,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.6,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R039",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:06:14.000Z",
+    "location": {
+      "longitude": 116.4720933,
+      "latitude": 39.9162337,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 16.1,
+      "directionDegrees": 0,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.5,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R040",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:06:24.000Z",
+    "location": {
+      "longitude": 116.4720963,
+      "latitude": 39.9166066,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 14.6,
+      "directionDegrees": 0,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.5,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R041",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:06:33.000Z",
+    "location": {
+      "longitude": 116.4721018,
+      "latitude": 39.9169795,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 13.3,
+      "directionDegrees": 0,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.5,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R042",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:06:43.000Z",
+    "location": {
+      "longitude": 116.4721035,
+      "latitude": 39.9173524,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 12.9,
+      "directionDegrees": 0,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.4,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R043",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:06:53.000Z",
+    "location": {
+      "longitude": 116.4721103,
+      "latitude": 39.917725,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 13.6,
+      "directionDegrees": 7,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.4,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R044",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:07:03.000Z",
+    "location": {
+      "longitude": 116.4721414,
+      "latitude": 39.9180967,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 15,
+      "directionDegrees": 1,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.3,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R045",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:07:13.000Z",
+    "location": {
+      "longitude": 116.4721485,
+      "latitude": 39.9184695,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 16.4,
+      "directionDegrees": 359,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.3,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R046",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:07:23.000Z",
+    "location": {
+      "longitude": 116.4721451,
+      "latitude": 39.9188424,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 17.1,
+      "directionDegrees": 0,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 84,
+      "remainingRangeKm": 44.2,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R047",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:07:32.000Z",
+    "location": {
+      "longitude": 116.4721486,
+      "latitude": 39.9192152,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 16.7,
+      "directionDegrees": 0,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 83,
+      "remainingRangeKm": 44.2,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R048",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:07:42.000Z",
+    "location": {
+      "longitude": 116.47215,
+      "latitude": 39.9195881,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 15.5,
+      "directionDegrees": 1,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 83,
+      "remainingRangeKm": 44.1,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R049",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:07:52.000Z",
+    "location": {
+      "longitude": 116.4721587,
+      "latitude": 39.919961,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 14,
+      "directionDegrees": 1,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 83,
+      "remainingRangeKm": 44.1,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R050",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:08:02.000Z",
+    "location": {
+      "longitude": 116.4721687,
+      "latitude": 39.9203338,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 13,
+      "directionDegrees": 1,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 83,
+      "remainingRangeKm": 44.1,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R051",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:08:12.000Z",
+    "location": {
+      "longitude": 116.4722237,
+      "latitude": 39.9205988,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 13,
+      "directionDegrees": 90,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 83,
+      "remainingRangeKm": 44,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R052",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:08:22.000Z",
+    "location": {
+      "longitude": 116.4727107,
+      "latitude": 39.9205801,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 14.1,
+      "directionDegrees": 93,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 83,
+      "remainingRangeKm": 44,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R053",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:08:31.000Z",
+    "location": {
+      "longitude": 116.4731979,
+      "latitude": 39.9205625,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 15.5,
+      "directionDegrees": 90,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 83,
+      "remainingRangeKm": 43.9,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R054",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:08:41.000Z",
+    "location": {
+      "longitude": 116.4736858,
+      "latitude": 39.9205638,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 16.8,
+      "directionDegrees": 90,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 83,
+      "remainingRangeKm": 43.9,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R055",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:08:51.000Z",
+    "location": {
+      "longitude": 116.4741737,
+      "latitude": 39.9205651,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 17.1,
+      "directionDegrees": 90,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 83,
+      "remainingRangeKm": 43.8,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-BJ-000001-R056",
+    "vehicleId": "YD-BJ-000001",
+    "deviceId": "YDCTRL-BJ-000001",
+    "occurredAt": "2026-08-10T00:09:01.000Z",
+    "location": {
+      "longitude": 116.4746617,
+      "latitude": 39.9205664,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 0,
+      "directionDegrees": 90,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "LOCKED",
+      "rideStatus": "IDLE",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 83,
+      "remainingRangeKm": 43.8,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2255,
+      "routeDurationSeconds": 541,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R001",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:00:00.000Z",
+    "location": {
+      "longitude": 121.4738585,
+      "latitude": 31.2304237,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 15,
+      "directionDegrees": 148,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 78,
+      "remainingRangeKm": 41,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R002",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:00:10.000Z",
+    "location": {
+      "longitude": 121.4741009,
+      "latitude": 31.2301853,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 16.4,
+      "directionDegrees": 151,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 78,
+      "remainingRangeKm": 41,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R003",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:00:20.000Z",
+    "location": {
+      "longitude": 121.4743196,
+      "latitude": 31.2298595,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 17.1,
+      "directionDegrees": 148,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 78,
+      "remainingRangeKm": 40.9,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R004",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:00:30.000Z",
+    "location": {
+      "longitude": 121.4745551,
+      "latitude": 31.2295422,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 16.7,
+      "directionDegrees": 148,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 78,
+      "remainingRangeKm": 40.9,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R005",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:00:40.000Z",
+    "location": {
+      "longitude": 121.4749114,
+      "latitude": 31.2296719,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 15.5,
+      "directionDegrees": 61,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 78,
+      "remainingRangeKm": 40.8,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R006",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:00:50.000Z",
+    "location": {
+      "longitude": 121.4752977,
+      "latitude": 31.2298547,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 14,
+      "directionDegrees": 61,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 78,
+      "remainingRangeKm": 40.8,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R007",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:01:00.000Z",
+    "location": {
+      "longitude": 121.4756799,
+      "latitude": 31.2300436,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 13,
+      "directionDegrees": 60,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 78,
+      "remainingRangeKm": 40.8,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R008",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:01:09.000Z",
+    "location": {
+      "longitude": 121.4760604,
+      "latitude": 31.230235,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 13.1,
+      "directionDegrees": 61,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 78,
+      "remainingRangeKm": 40.7,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R009",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:01:19.000Z",
+    "location": {
+      "longitude": 121.4764386,
+      "latitude": 31.2304296,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 14.1,
+      "directionDegrees": 58,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 78,
+      "remainingRangeKm": 40.7,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R010",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:01:29.000Z",
+    "location": {
+      "longitude": 121.47682,
+      "latitude": 31.2306197,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 15.6,
+      "directionDegrees": 60,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 78,
+      "remainingRangeKm": 40.6,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R011",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:01:39.000Z",
+    "location": {
+      "longitude": 121.477197,
+      "latitude": 31.2308159,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 16.8,
+      "directionDegrees": 57,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 78,
+      "remainingRangeKm": 40.6,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R012",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:01:49.000Z",
+    "location": {
+      "longitude": 121.4775837,
+      "latitude": 31.2309978,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 17.1,
+      "directionDegrees": 60,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 40.6,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R013",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:01:59.000Z",
+    "location": {
+      "longitude": 121.4778957,
+      "latitude": 31.2309487,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 16.3,
+      "directionDegrees": 148,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 40.5,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R014",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:02:09.000Z",
+    "location": {
+      "longitude": 121.4781203,
+      "latitude": 31.2306257,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 14.9,
+      "directionDegrees": 150,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 40.5,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R015",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:02:19.000Z",
+    "location": {
+      "longitude": 121.478365,
+      "latitude": 31.2303141,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 13.5,
+      "directionDegrees": 148,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 40.4,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R016",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:02:29.000Z",
+    "location": {
+      "longitude": 121.4786003,
+      "latitude": 31.2299967,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 12.9,
+      "directionDegrees": 148,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 40.4,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R017",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:02:39.000Z",
+    "location": {
+      "longitude": 121.4788276,
+      "latitude": 31.2296751,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 13.4,
+      "directionDegrees": 149,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 40.4,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R018",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:02:49.000Z",
+    "location": {
+      "longitude": 121.4790505,
+      "latitude": 31.2293513,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 14.7,
+      "directionDegrees": 151,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 40.3,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R019",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:02:59.000Z",
+    "location": {
+      "longitude": 121.4792717,
+      "latitude": 31.2290276,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 16.1,
+      "directionDegrees": 131,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 40.3,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R020",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:03:08.000Z",
+    "location": {
+      "longitude": 121.4795673,
+      "latitude": 31.229195,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 17,
+      "directionDegrees": 41,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 40.2,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R021",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:03:18.000Z",
+    "location": {
+      "longitude": 121.4798308,
+      "latitude": 31.2294969,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 16.9,
+      "directionDegrees": 39,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 40.2,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R022",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:03:28.000Z",
+    "location": {
+      "longitude": 121.4801493,
+      "latitude": 31.2297469,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 15.8,
+      "directionDegrees": 62,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 40.2,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R023",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:03:38.000Z",
+    "location": {
+      "longitude": 121.480542,
+      "latitude": 31.2299196,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 14.3,
+      "directionDegrees": 63,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 40.1,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R024",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:03:48.000Z",
+    "location": {
+      "longitude": 121.4809364,
+      "latitude": 31.2300895,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 13.2,
+      "directionDegrees": 63,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 40.1,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R025",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:03:58.000Z",
+    "location": {
+      "longitude": 121.4813393,
+      "latitude": 31.230244,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 13,
+      "directionDegrees": 66,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 40,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R026",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:04:08.000Z",
+    "location": {
+      "longitude": 121.4817396,
+      "latitude": 31.2304032,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 13.8,
+      "directionDegrees": 65,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 40,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R027",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:04:18.000Z",
+    "location": {
+      "longitude": 121.4821456,
+      "latitude": 31.2305516,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 15.3,
+      "directionDegrees": 68,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 40,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R028",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:04:28.000Z",
+    "location": {
+      "longitude": 121.482552,
+      "latitude": 31.2306991,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 16.6,
+      "directionDegrees": 66,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 39.9,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R029",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:04:38.000Z",
+    "location": {
+      "longitude": 121.4826951,
+      "latitude": 31.2304353,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 17.1,
+      "directionDegrees": 169,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 39.9,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R030",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:04:48.000Z",
+    "location": {
+      "longitude": 121.4827773,
+      "latitude": 31.2300662,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 16.5,
+      "directionDegrees": 169,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 39.8,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R031",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:04:58.000Z",
+    "location": {
+      "longitude": 121.4828612,
+      "latitude": 31.2296973,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 15.2,
+      "directionDegrees": 169,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 77,
+      "remainingRangeKm": 39.8,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R032",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:05:07.000Z",
+    "location": {
+      "longitude": 121.4829403,
+      "latitude": 31.2293277,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 13.8,
+      "directionDegrees": 171,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.8,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R033",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:05:17.000Z",
+    "location": {
+      "longitude": 121.4830184,
+      "latitude": 31.228958,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 12.9,
+      "directionDegrees": 170,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.7,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R034",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:05:27.000Z",
+    "location": {
+      "longitude": 121.4830986,
+      "latitude": 31.2285885,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 13.2,
+      "directionDegrees": 170,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.7,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R035",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:05:37.000Z",
+    "location": {
+      "longitude": 121.4831807,
+      "latitude": 31.2282194,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 14.4,
+      "directionDegrees": 169,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.6,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R036",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:05:47.000Z",
+    "location": {
+      "longitude": 121.4832769,
+      "latitude": 31.2278532,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 15.9,
+      "directionDegrees": 162,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.6,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R037",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:05:57.000Z",
+    "location": {
+      "longitude": 121.4834225,
+      "latitude": 31.2274988,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 16.9,
+      "directionDegrees": 159,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.6,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R038",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:06:07.000Z",
+    "location": {
+      "longitude": 121.4835964,
+      "latitude": 31.2271539,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 17,
+      "directionDegrees": 159,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.5,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R039",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:06:17.000Z",
+    "location": {
+      "longitude": 121.4837657,
+      "latitude": 31.2268073,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 16.1,
+      "directionDegrees": 157,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.5,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R040",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:06:27.000Z",
+    "location": {
+      "longitude": 121.4839369,
+      "latitude": 31.2264613,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 14.6,
+      "directionDegrees": 157,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.4,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R041",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:06:37.000Z",
+    "location": {
+      "longitude": 121.4842997,
+      "latitude": 31.2264097,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 13.3,
+      "directionDegrees": 76,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.4,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R042",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:06:47.000Z",
+    "location": {
+      "longitude": 121.4847087,
+      "latitude": 31.2265491,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 12.9,
+      "directionDegrees": 66,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.4,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R043",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:06:57.000Z",
+    "location": {
+      "longitude": 121.4851126,
+      "latitude": 31.2267018,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 13.6,
+      "directionDegrees": 66,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.3,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R044",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:07:06.000Z",
+    "location": {
+      "longitude": 121.4855207,
+      "latitude": 31.2268459,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 15,
+      "directionDegrees": 69,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.3,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R045",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:07:16.000Z",
+    "location": {
+      "longitude": 121.485933,
+      "latitude": 31.2269813,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 16.4,
+      "directionDegrees": 69,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.2,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R046",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:07:26.000Z",
+    "location": {
+      "longitude": 121.4863494,
+      "latitude": 31.2271057,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 17.1,
+      "directionDegrees": 75,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.2,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R047",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:07:36.000Z",
+    "location": {
+      "longitude": 121.4867814,
+      "latitude": 31.2271783,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 16.7,
+      "directionDegrees": 85,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.2,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R048",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:07:46.000Z",
+    "location": {
+      "longitude": 121.4872212,
+      "latitude": 31.2272113,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 15.5,
+      "directionDegrees": 85,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.1,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R049",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:07:56.000Z",
+    "location": {
+      "longitude": 121.4876597,
+      "latitude": 31.2272559,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 14,
+      "directionDegrees": 83,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39.1,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R050",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:08:06.000Z",
+    "location": {
+      "longitude": 121.4880961,
+      "latitude": 31.2273118,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 13,
+      "directionDegrees": 82,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R051",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:08:16.000Z",
+    "location": {
+      "longitude": 121.4885288,
+      "latitude": 31.2273872,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 13,
+      "directionDegrees": 78,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 76,
+      "remainingRangeKm": 39,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R052",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:08:26.000Z",
+    "location": {
+      "longitude": 121.4889555,
+      "latitude": 31.2274838,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 14.1,
+      "directionDegrees": 76,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 75,
+      "remainingRangeKm": 39,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R053",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:08:36.000Z",
+    "location": {
+      "longitude": 121.4893726,
+      "latitude": 31.2276077,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 15.5,
+      "directionDegrees": 71,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 75,
+      "remainingRangeKm": 38.9,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R054",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:08:46.000Z",
+    "location": {
+      "longitude": 121.4897955,
+      "latitude": 31.2277151,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 16.8,
+      "directionDegrees": 76,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 75,
+      "remainingRangeKm": 38.9,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R055",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:08:56.000Z",
+    "location": {
+      "longitude": 121.4902154,
+      "latitude": 31.2276321,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 17.1,
+      "directionDegrees": 120,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 75,
+      "remainingRangeKm": 38.8,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R056",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:09:05.000Z",
+    "location": {
+      "longitude": 121.4906037,
+      "latitude": 31.2274556,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 16.3,
+      "directionDegrees": 111,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 75,
+      "remainingRangeKm": 38.8,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R057",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:09:15.000Z",
+    "location": {
+      "longitude": 121.4909444,
+      "latitude": 31.227298,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.3,
+      "speedKmh": 14.9,
+      "directionDegrees": 180,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 75,
+      "remainingRangeKm": 38.8,
+      "online": true,
+      "signalStrength": 27,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R058",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:09:25.000Z",
+    "location": {
+      "longitude": 121.490876,
+      "latitude": 31.2269277,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 5.7,
+      "speedKmh": 13.5,
+      "directionDegrees": 188,
+      "satelliteCount": 15
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 75,
+      "remainingRangeKm": 38.7,
+      "online": true,
+      "signalStrength": 28,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R059",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:09:35.000Z",
+    "location": {
+      "longitude": 121.4908464,
+      "latitude": 31.2265528,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.2,
+      "speedKmh": 12.9,
+      "directionDegrees": 183,
+      "satelliteCount": 16
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 75,
+      "remainingRangeKm": 38.7,
+      "online": true,
+      "signalStrength": 29,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R060",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:09:45.000Z",
+    "location": {
+      "longitude": 121.4910923,
+      "latitude": 31.2263967,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 6.6,
+      "speedKmh": 13.3,
+      "directionDegrees": 86,
+      "satelliteCount": 17
+    },
+    "state": {
+      "lockStatus": "UNLOCKED",
+      "rideStatus": "RIDING",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 75,
+      "remainingRangeKm": 38.6,
+      "online": true,
+      "signalStrength": 30,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  },
+  {
+    "eventId": "MOCK-SH-000001-R061",
+    "vehicleId": "YD-SH-000001",
+    "deviceId": "YDCTRL-SH-000001",
+    "occurredAt": "2026-08-10T00:09:55.000Z",
+    "location": {
+      "longitude": 121.4915326,
+      "latitude": 31.2264223,
+      "coordinateSystem": "WGS84",
+      "accuracyMeters": 4.8,
+      "speedKmh": 0,
+      "directionDegrees": 88,
+      "satelliteCount": 14
+    },
+    "state": {
+      "lockStatus": "LOCKED",
+      "rideStatus": "IDLE",
+      "controllerStatus": "NORMAL",
+      "batteryPercent": 75,
+      "remainingRangeKm": 38.6,
+      "online": true,
+      "signalStrength": 26,
+      "faultCodes": []
+    },
+    "rawData": {
+      "schema": "mock-yadea-cloud-v1",
+      "source": "amap-bicycling-v4",
+      "mockRoute": true,
+      "routeDistanceMeters": 2480,
+      "routeDurationSeconds": 595,
+      "firmwareVersion": "MOCK-1.4.2",
+      "networkType": "4G"
+    }
+  }
+]
