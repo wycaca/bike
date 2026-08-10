@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { Download, InfoFilled, Refresh, Search } from '@element-plus/icons-vue'
+import { Download, InfoFilled, Loading, Refresh, Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-import { downloadRevenueReport, getRevenueReport } from '@/api/report'
+import { createRevenueExport, downloadReportExport, getReportExport, getRevenueReport } from '@/api/report'
 import { errorMessage } from '@/api/http'
 import { useAppStore } from '@/stores/app'
-import type { RevenueGranularity, RevenueReport, RevenueValues } from '@/types/operations'
-import { formatMoney, formatNumber, periodLabel, trendHeight } from '@/utils/report'
+import type { ReportExportJob, RevenueGranularity, RevenueReport, RevenueValues } from '@/types/operations'
+import { formatMoney, formatNumber, isExportTerminal, periodLabel, trendHeight } from '@/utils/report'
 import { CITIES, cityName, formatTime } from '@/utils/vehicle'
 
 const appStore = useAppStore()
@@ -16,10 +16,19 @@ const dateRange = ref<[string, string]>(defaultDateRange())
 const data = ref<RevenueReport | null>(null)
 const loading = ref(false)
 const exporting = ref(false)
+const exportJob = ref<ReportExportJob | null>(null)
 const error = ref('')
 const summary = computed<RevenueValues | null>(() => data.value?.summary.values ?? null)
 const maxGross = computed(() => Math.max(...(data.value?.periods.map((item) => item.values.grossBookings) ?? [1]), 1))
 const chartWidth = computed(() => `${Math.max((data.value?.periods.length ?? 0) * 48, 720)}px`)
+const exportStatusText = computed(() => {
+  if (!exportJob.value) return ''
+  return {
+    PENDING: '等待生成', RUNNING: '正在生成', SUCCEEDED: '生成完成',
+    FAILED: '生成失败', EXPIRED: '文件已过期',
+  }[exportJob.value.status]
+})
+let exportPollTimer: number | undefined
 
 /** 输入: 本机日期; 输出: 截至昨日的最近 30 个完整自然日。 */
 function defaultDateRange(): [string, string] {
@@ -57,36 +66,69 @@ async function loadReport() {
   }
 }
 
-/** 输入: 当前报表筛选; 输出: 下载收入明细 CSV。 */
+/** 输入: 当前报表筛选; 输出: 创建由独立 Worker 处理的异步任务。 */
 async function exportReport() {
   if (!dateRange.value?.[0] || !dateRange.value?.[1]) return
   exporting.value = true
   try {
-    const blob = await downloadRevenueReport({
+    exportJob.value = await createRevenueExport({
       cityCode: appStore.cityCode,
       fromDate: dateRange.value[0],
       toDate: dateRange.value[1],
       granularity: granularity.value,
     })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `收入报表-${appStore.cityCode}-${dateRange.value[0]}-${dateRange.value[1]}.csv`
-    link.style.display = 'none'
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    window.setTimeout(() => URL.revokeObjectURL(url), 1_000)
-    ElMessage.success('收入报表已生成')
+    ElMessage.info('报表任务已提交，后台正在生成')
+    scheduleExportPoll()
   } catch (cause) {
     error.value = errorMessage(cause)
-  } finally {
     exporting.value = false
   }
 }
 
+/** 输入: 当前任务; 输出: 定时查询 Worker 状态，成功后触发文件下载。 */
+function scheduleExportPoll() {
+  window.clearTimeout(exportPollTimer)
+  exportPollTimer = window.setTimeout(pollExport, 1_000)
+}
+
+async function pollExport() {
+  if (!exportJob.value) return
+  try {
+    exportJob.value = await getReportExport(exportJob.value.jobId)
+    if (!isExportTerminal(exportJob.value.status)) {
+      scheduleExportPoll()
+      return
+    }
+    exporting.value = false
+    if (exportJob.value.status === 'SUCCEEDED') {
+      const blob = await downloadReportExport(exportJob.value.jobId)
+      saveBlob(blob, exportJob.value.outputFileName)
+      ElMessage.success('收入报表已生成并下载')
+    } else {
+      error.value = exportJob.value.errorMessage || '报表生成失败，请重新提交'
+    }
+  } catch (cause) {
+    exporting.value = false
+    error.value = errorMessage(cause)
+  }
+}
+
+/** 输入: 文件二进制和服务端文件名; 输出: 浏览器下载。 */
+function saveBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  link.style.display = 'none'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  window.setTimeout(() => URL.revokeObjectURL(url), 1_000)
+}
+
 watch([() => appStore.cityCode, granularity], loadReport)
 onMounted(loadReport)
+onBeforeUnmount(() => window.clearTimeout(exportPollTimer))
 </script>
 
 <template>
@@ -123,6 +165,10 @@ onMounted(loadReport)
       </el-radio-group>
       <el-button type="primary" :icon="Search" @click="loadReport">查询</el-button>
       <span class="toolbar-spacer" />
+      <span v-if="exportJob" class="export-status">
+        <el-icon v-if="!isExportTerminal(exportJob.status)" class="is-loading"><Loading /></el-icon>
+        {{ exportStatusText }}
+      </span>
       <el-button :icon="Download" :loading="exporting" @click="exportReport">导出 CSV</el-button>
     </div>
 
@@ -231,6 +277,7 @@ onMounted(loadReport)
 .revenue-heading .page-heading { width: 100%; }
 .report-toolbar { display: flex; align-items: center; gap: 9px; padding: 8px 16px; background: #fff; border-bottom: 1px solid var(--line); }
 .toolbar-spacer { flex: 1; }
+.export-status { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 12px; white-space: nowrap; }
 .report-body { min-height: 0; padding: 14px 16px 20px; overflow: auto; }
 .report-body > .el-alert { margin-bottom: 12px; }
 .revenue-metrics { display: grid; grid-template-columns: repeat(6, minmax(142px, 1fr)); gap: 10px; }

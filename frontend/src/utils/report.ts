@@ -1,4 +1,4 @@
-import type { RevenueGranularity } from '@/types/operations'
+import type { ReportExportStatus, RevenueGranularity } from '@/types/operations'
 
 /** 输入: 数值和小数位; 输出: 千分位格式的中文数字。 */
 export function formatNumber(value: number, digits = 0): string {
@@ -23,4 +23,9 @@ export function periodLabel(start: string, end: string, granularity: RevenueGran
 export function trendHeight(value: number, maximum: number): number {
   if (maximum <= 0 || value <= 0) return 4
   return Math.min(100, Math.max(4, Math.round((value / maximum) * 100)))
+}
+
+/** 输入: 异步导出状态; 输出: 是否不再需要继续轮询。 */
+export function isExportTerminal(status: ReportExportStatus): boolean {
+  return status === 'SUCCEEDED' || status === 'FAILED' || status === 'EXPIRED'
 }

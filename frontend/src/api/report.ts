@@ -1,5 +1,5 @@
 import { http } from '@/api/http'
-import type { RevenueGranularity, RevenueReport } from '@/types/operations'
+import type { ReportExportJob, RevenueGranularity, RevenueReport } from '@/types/operations'
 import type { ApiResponse } from '@/types/vehicle'
 
 export interface RevenueReportQuery {
@@ -15,11 +15,23 @@ export async function getRevenueReport(query: RevenueReportQuery): Promise<Reven
   return response.data.data
 }
 
-/** 输入: 收入报表筛选条件; 输出: UTF-8 CSV 二进制。 */
-export async function downloadRevenueReport(query: RevenueReportQuery): Promise<Blob> {
-  const response = await http.get('/v1/reports/revenue.csv', {
-    params: query,
-    responseType: 'blob',
+/** 输入: 收入报表筛选条件; 输出: 独立 Worker 等待处理的导出任务。 */
+export async function createRevenueExport(query: RevenueReportQuery): Promise<ReportExportJob> {
+  const response = await http.post<ApiResponse<ReportExportJob>>('/v1/reports/exports', {
+    reportType: 'REVENUE',
+    ...query,
   })
+  return response.data.data
+}
+
+/** 输入: 导出任务编号; 输出: 最新任务状态。 */
+export async function getReportExport(jobId: string): Promise<ReportExportJob> {
+  const response = await http.get<ApiResponse<ReportExportJob>>(`/v1/reports/exports/${jobId}`)
+  return response.data.data
+}
+
+/** 输入: 已完成任务编号; 输出: Worker 生成的 CSV 二进制。 */
+export async function downloadReportExport(jobId: string): Promise<Blob> {
+  const response = await http.get(`/v1/reports/exports/${jobId}/file`, { responseType: 'blob' })
   return response.data
 }

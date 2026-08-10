@@ -1,0 +1,16 @@
+spring:
+  main:
+    web-application-type: none
+  flyway:
+    enabled: false
+  kafka:
+    listener:
+      auto-startup: false
+  task:
+    scheduling:
+      pool:
+        size: 1
+
+logging:
+  level:
+    cn.bike.platform.report: INFO

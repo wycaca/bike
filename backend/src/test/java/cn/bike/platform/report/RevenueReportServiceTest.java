@@ -6,7 +6,7 @@ import cn.bike.platform.report.RevenueReportModels.RevenueGranularity;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
+import java.io.StringWriter;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -62,7 +62,7 @@ class RevenueReportServiceTest {
     }
 
     @Test
-    void 收入Csv应包含中文表头和Utf8Bom() {
+    void 收入Csv应流式写入中文表头和Utf8Bom() throws Exception {
         var repository = mock(RevenueReportRepository.class);
         var service = new RevenueReportService(repository);
         var date = LocalDate.of(2026, 8, 9);
@@ -70,9 +70,11 @@ class RevenueReportServiceTest {
         when(repository.periods("110000", date, date, RevenueGranularity.DAY))
                 .thenReturn(List.of(new RawPeriodMetrics(date, METRICS)));
 
-        var csv = new String(service.csv("110000", date, date, RevenueGranularity.DAY),
-                StandardCharsets.UTF_8);
+        var writer = new StringWriter();
+        var rowCount = service.writeCsv(writer, "110000", date, date, RevenueGranularity.DAY);
+        var csv = writer.toString();
 
+        assertThat(rowCount).isEqualTo(1);
         assertThat(csv).startsWith("\uFEFF周期,总流水(元)");
         assertThat(csv).contains("单车日均骑行次数(RpD)");
         assertThat(csv).contains("2026-08-09,100.00,10.00,5.00,85.00,20");

@@ -16,6 +16,13 @@ public class ApiExceptionHandler {
                 .body(ApiResponse.error(40400, exception.getMessage()));
     }
 
+    /** 输入: 资源状态冲突异常; 输出: 统一的 HTTP 409 响应。 */
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiResponse<Void>> handleConflict(ConflictException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(40900, exception.getMessage()));
+    }
+
     @ExceptionHandler({IllegalArgumentException.class, ConstraintViolationException.class})
     public ResponseEntity<ApiResponse<Void>> handleBadRequest(Exception exception) {
         return ResponseEntity.badRequest()

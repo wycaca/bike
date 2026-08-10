@@ -3,6 +3,7 @@ export type RecordStatus = 'ACTIVE' | 'DISABLED'
 export type OrganizationType = 'COMPANY' | 'REGION' | 'TEAM'
 export type FenceType = 'OPERATION' | 'NO_RIDE' | 'NO_PARK'
 export type RevenueGranularity = 'DAY' | 'MONTH'
+export type ReportExportStatus = 'PENDING' | 'RUNNING' | 'SUCCEEDED' | 'FAILED' | 'EXPIRED'
 
 export interface CurrentUser {
   userId: string
@@ -201,4 +202,19 @@ export interface RevenueReport {
   }
   periods: RevenuePeriod[]
   generatedAt: string
+}
+
+export interface ReportExportJob {
+  jobId: string
+  reportType: 'REVENUE'
+  status: ReportExportStatus
+  outputFileName: string
+  fileSizeBytes: number | null
+  rowCount: number | null
+  errorMessage: string | null
+  createdAt: string
+  startedAt: string | null
+  completedAt: string | null
+  expiresAt: string | null
+  downloadable: boolean
 }

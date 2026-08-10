@@ -2,10 +2,12 @@ package cn.bike.platform.telemetry;
 
 import cn.bike.platform.telemetry.TelemetryModels.YadeaCloudEvent;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.json.JsonMapper;
 
 @Component
+@Profile("!report-worker")
 public class TelemetryConsumer {
 
     private final JsonMapper jsonMapper;

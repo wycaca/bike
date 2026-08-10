@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatMoney, periodLabel, trendHeight } from '@/utils/report'
+import { formatMoney, isExportTerminal, periodLabel, trendHeight } from '@/utils/report'
 
 describe('收入报表格式化', () => {
   it('金额使用人民币符号和千分位', () => {
@@ -16,5 +16,12 @@ describe('收入报表格式化', () => {
     expect(trendHeight(0, 100)).toBe(4)
     expect(trendHeight(50, 100)).toBe(50)
     expect(trendHeight(200, 100)).toBe(100)
+  })
+
+  it('只在异步任务结束后停止轮询', () => {
+    expect(isExportTerminal('PENDING')).toBe(false)
+    expect(isExportTerminal('RUNNING')).toBe(false)
+    expect(isExportTerminal('SUCCEEDED')).toBe(true)
+    expect(isExportTerminal('FAILED')).toBe(true)
   })
 })

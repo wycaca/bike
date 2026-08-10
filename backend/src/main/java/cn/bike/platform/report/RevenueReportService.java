@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
+import java.io.Writer;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -28,7 +29,7 @@ public class RevenueReportService {
     public RevenueReport report(
             String cityCode, LocalDate fromDate, LocalDate toDate, RevenueGranularity granularity
     ) {
-        validate(cityCode, fromDate, toDate, granularity);
+        validateRequest(cityCode, fromDate, toDate, granularity);
         var totals = repository.totals(cityCode, fromDate, toDate);
         var periods = repository.periods(cityCode, fromDate, toDate, granularity).stream()
                 .map(raw -> {
@@ -44,13 +45,19 @@ public class RevenueReportService {
                 periods, Instant.now());
     }
 
-    /** 输入: 与查询接口相同的报表条件; 输出: 带 UTF-8 BOM 的收入 CSV 字节。 */
-    public byte[] csv(String cityCode, LocalDate fromDate, LocalDate toDate, RevenueGranularity granularity) {
+    /** 输入: 字符流和报表条件; 输出: 流式写入的 CSV 数据行数。 */
+    public long writeCsv(
+            Writer writer,
+            String cityCode,
+            LocalDate fromDate,
+            LocalDate toDate,
+            RevenueGranularity granularity
+    ) throws IOException {
         var report = report(cityCode, fromDate, toDate, granularity);
-        var csv = new StringBuilder("\uFEFF周期,总流水(元),优惠(元),退款(元),净收入(元),有效订单,活跃车辆,平均投放车辆,"
+        writer.write("\uFEFF周期,总流水(元),优惠(元),退款(元),净收入(元),有效订单,活跃车辆,平均投放车辆,"
                 + "单车日均骑行次数(RpD),单均收入(元),单车日均收入(元),优惠率(%),退款率(%),平均时长(分钟),平均距离(公里)\r\n");
-        report.periods().forEach(period -> appendRow(csv, period));
-        return csv.toString().getBytes(StandardCharsets.UTF_8);
+        for (var period : report.periods()) appendRow(writer, period);
+        return report.periods().size();
     }
 
     /**
@@ -78,12 +85,12 @@ public class RevenueReportService {
                 divide(raw.distanceMeters(), raw.completedRides() * 1000L, 2));
     }
 
-    private void appendRow(StringBuilder csv, RevenuePeriod period) {
+    private void appendRow(Writer writer, RevenuePeriod period) throws IOException {
         var value = period.values();
         var label = period.periodStart().equals(period.periodEnd())
                 ? period.periodStart().toString()
                 : period.periodStart() + "~" + period.periodEnd();
-        csv.append(label).append(',').append(value.grossBookings()).append(',')
+        var row = new StringBuilder(label).append(',').append(value.grossBookings()).append(',')
                 .append(value.discountAmount()).append(',').append(value.refundAmount()).append(',')
                 .append(value.netRevenue()).append(',').append(value.completedRides()).append(',')
                 .append(value.activeVehicles()).append(',').append(value.averageDeployedVehicles()).append(',')
@@ -91,6 +98,7 @@ public class RevenueReportService {
                 .append(value.revenuePerVehicleDay()).append(',').append(value.discountRate()).append(',')
                 .append(value.refundRate()).append(',').append(value.averageRideDurationMinutes()).append(',')
                 .append(value.averageRideDistanceKm()).append("\r\n");
+        writer.write(row.toString());
     }
 
     private long inclusiveDays(LocalDate start, LocalDate end) {
@@ -119,7 +127,7 @@ public class RevenueReportService {
         return numerator.divide(BigDecimal.valueOf(denominator), scale, RoundingMode.HALF_UP);
     }
 
-    private void validate(
+    void validateRequest(
             String cityCode, LocalDate fromDate, LocalDate toDate, RevenueGranularity granularity
     ) {
         if (cityCode == null || !cityCode.matches("^[0-9]{6}$")) {

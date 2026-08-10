@@ -3,6 +3,7 @@ package cn.bike.platform.report;
 import cn.bike.platform.report.RevenueReportModels.RawMetrics;
 import cn.bike.platform.report.RevenueReportModels.RawPeriodMetrics;
 import cn.bike.platform.report.RevenueReportModels.RevenueGranularity;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
@@ -19,7 +20,7 @@ public class RevenueReportRepository {
     private static final ZoneId REPORT_ZONE = ZoneId.of("Asia/Shanghai");
     private final JdbcClient jdbcClient;
 
-    public RevenueReportRepository(JdbcClient jdbcClient) {
+    public RevenueReportRepository(@Qualifier("reportingJdbcClient") JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
     }
 
