@@ -32,12 +32,13 @@
 - 电子围栏, 停车点和空间违规.
 - 运营看板和车辆状态 CSV 报表.
 - 日/月收入与独立进程异步报表导出.
+- 换电、调度、维修等运维任务，支持管理员派单、运维抢单和处理时间线.
 - 写操作审计日志.
 
 后续按业务确认增加:
 
-- 车辆告警.
-- 维修, 换电和调度工单.
+- 车辆告警自动生成运维任务.
+- 运维照片、检查单、配件人工成本和自动派单.
 
 调度算法需要单独设计时, 在本目录新增独立文档, 不写入总体架构.
 
@@ -64,6 +65,10 @@
 | `GET/POST/PUT /api/v1/admin/organizations` | 维护组织架构. |
 | `GET/POST/PUT /api/v1/admin/users` | 维护平台用户和密码. |
 | `GET /api/v1/admin/audit-logs` | 分页检索审计日志. |
+| `GET/POST /api/v1/ops/tasks` | 查询或创建换电、调度、维修等运维任务. |
+| `POST /api/v1/ops/tasks/{taskId}/claim` | 运维人员原子抢单. |
+| `PUT /api/v1/ops/tasks/{taskId}/assignment` | 管理员指派或改派运维人员. |
+| `POST /api/v1/ops/tasks/{taskId}/{action}` | 释放、开始、完成或取消任务. |
 
 ## 数据职责
 
