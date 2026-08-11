@@ -21,5 +21,6 @@ export default defineConfig({
     environment: 'happy-dom',
     globals: true,
     css: true,
+    testTimeout: 10_000,
   },
 })

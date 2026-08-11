@@ -49,6 +49,32 @@ export interface TaskSummary {
   myActiveCount: number
 }
 
+export interface RevenueValues {
+  grossBookings: number
+  discountAmount: number
+  refundAmount: number
+  netRevenue: number
+  completedRides: number
+  activeVehicles: number
+  vehicleDays: number
+  averageDeployedVehicles: number
+  ridesPerVehicleDay: number
+  averageRevenuePerRide: number
+  revenuePerVehicleDay: number
+  discountRate: number
+  refundRate: number
+  averageRideDurationMinutes: number
+  averageRideDistanceKm: number
+}
+
+export interface RevenueReport {
+  cityCode: string
+  granularity: 'DAY' | 'MONTH'
+  summary: { fromDate: string; toDate: string; values: RevenueValues }
+  periods: Array<{ periodStart: string; periodEnd: string; values: RevenueValues }>
+  generatedAt: string
+}
+
 export interface TaskDetail {
   task: Task
   events: Array<{ eventId: number; eventType: string; actorName: string; note: string | null; createdAt: string }>

@@ -2,7 +2,7 @@ import axios from 'axios'
 
 import type {
   ApiResponse, Assignee, Attachment, BatchCreateResult, CurrentUser, ExceptionType, MapQuery, MapResult,
-  RoutePlan, TaskDetail, TaskPage, TaskPriority, TaskRule, TaskStatus, TaskSummary, TaskType, Vehicle,
+  RevenueReport, RoutePlan, TaskDetail, TaskPage, TaskPriority, TaskRule, TaskStatus, TaskSummary, TaskType, Vehicle,
 } from '@/types'
 
 export const http = axios.create({
@@ -52,6 +52,11 @@ export async function logout() {
 
 export async function getTaskSummary(cityCode: string) {
   return (await http.get<ApiResponse<TaskSummary>>('/ops/tasks/summary', { params: { cityCode } })).data.data
+}
+
+/** 输入: 城市和完整自然日区间; 输出: 收入、订单、车辆周转和单位经济指标。 */
+export async function getRevenueReport(params: { cityCode: string; fromDate: string; toDate: string; granularity: 'DAY' | 'MONTH' }) {
+  return (await http.get<ApiResponse<RevenueReport>>('/reports/revenue', { params })).data.data
 }
 
 export async function getTasks(params: { cityCode: string; scope: 'ALL' | 'MINE' | 'UNASSIGNED'; status?: TaskStatus; type?: TaskType; keyword?: string }) {
