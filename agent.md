@@ -53,6 +53,7 @@
 已完成可运行的后端 MVP:
 
 - Java 21 + Spring Boot 4.1 模块化单体.
+- MyBatis-Flex 1.11.8 数据库访问层, 复杂 PostgreSQL SQL 使用 Mapper XML.
 - PostgreSQL 17 + TimescaleDB + PostGIS.
 - Redis 最新车辆状态缓存.
 - Kafka 车辆遥测事件队列.
@@ -233,7 +234,7 @@ docker compose down -v
 mvn -B verify
 ```
 
-当前后端有 3 个自动化测试, 覆盖车辆服务基础行为和坐标转换. 数据库, Kafka 和 Redis 链路目前主要通过 Docker 环境做集成验证. 修改核心数据流时应补充最小必要测试.
+当前后端有 35 个自动化测试, 覆盖核心服务行为和 MyBatis-Flex XML Mapper 装载. 数据库, Kafka 和 Redis 链路主要通过 Docker 环境做集成验证. 修改核心数据流时应补充最小必要测试.
 
 ### 后端性能回归
 
@@ -292,6 +293,12 @@ curl.exe -fsS "http://localhost:8080/api/v1/vehicles/YD-BJ-000001/trajectory?sta
 - 读接口压测在 10, 30 和 60 并发下均为 0 错误, 吞吐平台约 690 RPS, 60 并发 P95 为 100.80 ms.
 - 遥测接口 10 并发接收 1,211 RPS, 12,110 条最终全部落库; 当前单分区, 单消费者的持久化速度低于 HTTP 接收速度.
 
+2026-08-11 已验证:
+
+- 数据库访问层已从 Spring JDBC 重构为 MyBatis-Flex 1.11.8, Java 源码不再直接使用 `JdbcClient`, `JdbcTemplate` 或 `ResultSet`.
+- `mvn -B verify` 通过 35 个测试, 其中 Mapper 装载测试使用真实 `FlexSqlSessionFactoryBean` 解析 5 个 XML Mapper.
+- 当前会话未启动 PostgreSQL、Redis 和 Kafka, MyBatis-Flex 重构后的 Compose 接口冒烟需要在 Docker 环境恢复后补做.
+
 ## 未来计划
 
 按当前优先级推进, 不提前拆分微服务:
@@ -327,6 +334,7 @@ curl.exe -fsS "http://localhost:8080/api/v1/vehicles/YD-BJ-000001/trajectory?sta
 ### 后端文档
 
 - `backend/details/architecture.md`: 后端总体架构, 模块, 数据职责和部署演进.
+- `backend/details/database-access.md`: MyBatis-Flex Mapper、复杂 SQL、事务和报表双数据源.
 - `backend/details/trajectory-and-map.md`: 轨迹存储, 坐标, 查询限制和地图聚合.
 - `backend/details/yadea-cloud-api.md`: 雅迪 Mock 接入, 正式联调资料和远程控制约束.
 - `backend/details/cost-control.md`: 后端实现中的成本控制和扩容触发条件.
@@ -376,6 +384,7 @@ curl.exe -fsS "http://localhost:8080/api/v1/vehicles/YD-BJ-000001/trajectory?sta
 ### 代码风格
 
 - 后端使用 Java 21 + Spring Boot 4.1.
+- 后端数据库访问使用 MyBatis-Flex, 不在 Repository 中直接编写 JDBC 结果集映射.
 - 桌面前端使用 Vue 3 + TypeScript + Element Plus.
 - 移动 H5 使用 Vue 3 + TypeScript + Vant.
 - Android 只做 Kotlin WebView 壳和必要原生能力.

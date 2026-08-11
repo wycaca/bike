@@ -83,6 +83,10 @@ docker compose exec -T db psql -U bike -d bike -c "SELECT extname, extversion FR
 - 运营看板返回 100 辆北京车辆及区域指标, CSV 报表包含 UTF-8 BOM.
 - 异步收入报表在 Worker 停止时保持等待，恢复后继续生成；下载文件大小与任务元数据一致且不残留临时文件.
 - 报表 Worker 使用独立队列与只读查询连接池，Compose 限制为 1 CPU、512 MiB 和两个数据库连接.
-- 后端 `mvn verify` 当前通过 19 个测试, 覆盖组织环检测, 自停用保护, 空间归属, 围栏 WKT、收入指标和异步导出失败清理.
+- 后端 `mvn verify` 当前通过 35 个测试, 覆盖组织环检测, 自停用保护, 空间归属, 围栏 WKT、收入指标、异步导出和 Mapper XML 装载.
 - 读接口 10, 30 和 60 并发压测均为 0 错误, 吞吐平台约 690 RPS; 详细环境和结果见 `performance-test.md`.
 - 遥测写入 12,110 条最终全部落库, Kafka 单分区, 单消费者的持久化速度低于 1,211 RPS 的 HTTP 接收速度.
+
+2026-08-11 已完成 JDBC 到 MyBatis-Flex 1.11.8 的数据库访问层重构, `mvn -B verify` 和 5 个 XML Mapper 装载检查通过.
+
+本次验证环境未启动 PostgreSQL、Redis 和 Kafka, MyBatis-Flex 重构后的 Compose 接口冒烟尚未重跑. Docker 环境恢复后按本文件的基础检查和核心接口检查补做.

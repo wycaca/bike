@@ -11,6 +11,7 @@
 - Java 21.
 - Spring Boot 4.1.
 - PostgreSQL 17.
+- MyBatis-Flex 1.11.8.
 - PostGIS + TimescaleDB.
 - Redis.
 - Kafka.
@@ -18,6 +19,7 @@
 - Docker Compose.
 
 后端先采用模块化单体. 当前业务规模不需要注册中心, 配置中心, 服务网格和 Kubernetes.
+数据库访问层的 Mapper、复杂 SQL、双数据源和事务约束见 `database-access.md`.
 
 ## 业务模块
 
@@ -116,4 +118,3 @@ Redis 不是唯一持久化来源. Redis 数据丢失后必须可以从 PostgreS
 - 原始轨迹保留天数待业务确认.
 - 简化轨迹是否永久保存待业务确认.
 - 雅迪正式 API 字段以厂商文档为准, 当前只使用 mock 协议.
-
