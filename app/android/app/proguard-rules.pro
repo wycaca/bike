@@ -1,3 +1,1 @@
--keepclassmembers class cn.bike.platform.mobile.BikeBridge {
-    @android.webkit.JavascriptInterface <methods>;
-}
+# 当前没有需要额外保留的反射入口。

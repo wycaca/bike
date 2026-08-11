@@ -8,6 +8,7 @@ import cn.bike.platform.ops.OperationsModels.TaskSourceType;
 import cn.bike.platform.ops.OperationsModels.TaskStatus;
 import cn.bike.platform.ops.OperationsModels.TaskType;
 import cn.bike.platform.security.PlatformPrincipal;
+import cn.bike.platform.security.PlatformAccessPolicy;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.access.AccessDeniedException;
@@ -30,7 +31,7 @@ class OperationsAttachmentServiceTest {
     void 领取人可上传凭证并保存摘要() {
         var repository = mock(OperationsRepository.class);
         var storage = mock(OperationsEvidenceStorage.class);
-        var service = new OperationsAttachmentService(repository, storage);
+        var service = new OperationsAttachmentService(repository, storage, new PlatformAccessPolicy());
         var file = new MockMultipartFile("file", "after.png", "image/png", new byte[]{1});
         when(repository.findTask("TASK-1")).thenReturn(Optional.of(task("USR-OP-BJ")));
         when(storage.save(file)).thenReturn(new OperationsEvidenceStorage.SavedFile(
@@ -49,7 +50,7 @@ class OperationsAttachmentServiceTest {
     void 非领取人不能上传凭证() {
         var repository = mock(OperationsRepository.class);
         var storage = mock(OperationsEvidenceStorage.class);
-        var service = new OperationsAttachmentService(repository, storage);
+        var service = new OperationsAttachmentService(repository, storage, new PlatformAccessPolicy());
         when(repository.findTask("TASK-1")).thenReturn(Optional.of(task("USR-OTHER")));
 
         assertThatThrownBy(() -> service.upload("TASK-1", AttachmentPurpose.AFTER,
@@ -76,6 +77,6 @@ class OperationsAttachmentServiceTest {
 
     private PlatformPrincipal principal(String userId) {
         return new PlatformPrincipal(userId, "operator.bj", "encoded", "北京运维一组",
-                "ORG-BJ", "北京运营中心", UserRole.OPERATOR, true);
+                "ORG-BJ", "北京运营中心", "110000", UserRole.OPERATOR, true);
     }
 }

@@ -216,7 +216,7 @@ export interface RevenueReport {
 
 export interface ReportExportJob {
   jobId: string
-  reportType: 'REVENUE'
+  reportType: 'REVENUE' | 'VEHICLE_STATUS'
   status: ReportExportStatus
   outputFileName: string
   fileSizeBytes: number | null

@@ -10,6 +10,9 @@ import cn.bike.platform.report.ReportExportModels.ExportStatus;
 import cn.bike.platform.report.ReportExportModels.ReportType;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+
 @Service
 public class ReportExportService {
 
@@ -33,18 +36,29 @@ public class ReportExportService {
         if (request == null || request.reportType() == null) {
             throw new IllegalArgumentException("报表类型不能为空");
         }
-        if (request.reportType() != ReportType.REVENUE) {
-            throw new IllegalArgumentException("暂不支持该报表类型");
+        LocalDate fromDate;
+        LocalDate toDate;
+        cn.bike.platform.report.RevenueReportModels.RevenueGranularity granularity;
+        String outputName;
+        if (request.reportType() == ReportType.REVENUE) {
+            revenueReportService.validateRequest(
+                    request.cityCode(), request.fromDate(), request.toDate(), request.granularity());
+            fromDate = request.fromDate();
+            toDate = request.toDate();
+            granularity = request.granularity();
+            outputName = "revenue-" + request.cityCode() + "-" + fromDate + "-" + toDate + ".csv";
+        } else {
+            validateCityCode(request.cityCode());
+            fromDate = LocalDate.now(ZoneId.of("Asia/Shanghai"));
+            toDate = fromDate;
+            granularity = cn.bike.platform.report.RevenueReportModels.RevenueGranularity.DAY;
+            outputName = "vehicle-status-" + request.cityCode() + "-" + fromDate + ".csv";
         }
-        revenueReportService.validateRequest(
-                request.cityCode(), request.fromDate(), request.toDate(), request.granularity());
         if (repository.countActive(requestedBy) >= MAX_ACTIVE_JOBS_PER_USER) {
             throw new ConflictException("当前已有 3 个报表任务，请等待完成后再提交");
         }
-        var outputName = "revenue-" + request.cityCode() + "-"
-                + request.fromDate() + "-" + request.toDate() + ".csv";
         return ExportJobView.from(repository.create(request.reportType(), requestedBy, request.cityCode(),
-                request.fromDate(), request.toDate(), request.granularity(), outputName));
+                fromDate, toDate, granularity, outputName));
     }
 
     /** 输入: 任务和申请人编号; 输出: 申请人可见的最新任务状态。 */
@@ -69,5 +83,11 @@ public class ReportExportService {
         }
         return repository.findOwned(jobId, requestedBy)
                 .orElseThrow(() -> new NotFoundException("报表任务不存在"));
+    }
+
+    private void validateCityCode(String cityCode) {
+        if (cityCode == null || !cityCode.matches("^[0-9]{6}$")) {
+            throw new IllegalArgumentException("cityCode 必须是 6 位行政区代码");
+        }
     }
 }

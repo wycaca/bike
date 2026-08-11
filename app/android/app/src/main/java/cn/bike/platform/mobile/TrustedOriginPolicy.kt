@@ -19,6 +19,12 @@ class TrustedOriginPolicy(homeUrl: String, private val allowCleartext: Boolean) 
         }.getOrDefault(false)
     }
 
+    /** 输入: 无; 输出: WebMessageListener 使用的精确同源规则。 */
+    fun allowedOriginRule(): String = buildString {
+        append(home.scheme).append("://").append(home.host)
+        if (home.port >= 0) append(':').append(home.port)
+    }
+
     private fun effectivePort(uri: URI): Int = when {
         uri.port >= 0 -> uri.port
         uri.scheme == "https" -> 443

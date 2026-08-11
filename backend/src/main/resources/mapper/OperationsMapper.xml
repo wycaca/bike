@@ -26,6 +26,7 @@
 
     <sql id="taskFilters">
         WHERE t.city_code = #{cityCode}
+        <if test="orgId != null">AND t.org_id = #{orgId}</if>
         <if test="status != null">AND t.task_status = #{status}</if>
         <if test="type != null">AND t.task_type = #{type}</if>
         <choose>
@@ -72,6 +73,7 @@
                      AND task_status IN ('CLAIMED', 'IN_PROGRESS', 'PENDING_REVIEW', 'EXCEPTION')
                ) AS my_active_count
         FROM operations_task WHERE city_code = #{cityCode}
+        <if test="orgId != null">AND org_id = #{orgId}</if>
     </select>
 
     <select id="findTask" resultType="cn.bike.platform.ops.OperationsModels$TaskItem">

@@ -6,6 +6,8 @@ import cn.bike.platform.ops.OperationsModels.RoutePlan;
 import cn.bike.platform.ops.OperationsModels.RouteStop;
 import cn.bike.platform.ops.OperationsModels.TaskItem;
 import cn.bike.platform.ops.OperationsModels.TaskStatus;
+import cn.bike.platform.security.PlatformAccessPolicy;
+import cn.bike.platform.security.PlatformPrincipal;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,14 +20,20 @@ public class OperationsRouteService {
 
     private final OperationsRepository repository;
     private final OperationsRouteProvider provider;
+    private final PlatformAccessPolicy accessPolicy;
 
-    public OperationsRouteService(OperationsRepository repository, OperationsRouteProvider provider) {
+    public OperationsRouteService(
+            OperationsRepository repository,
+            OperationsRouteProvider provider,
+            PlatformAccessPolicy accessPolicy
+    ) {
         this.repository = repository;
         this.provider = provider;
+        this.accessPolicy = accessPolicy;
     }
 
     /** 输入: 最多 16 个任务及可选起点; 输出: 按道路距离优化的作业顺序、分段里程和道路折线。 */
-    public RoutePlan optimize(RouteOptimizationRequest request) {
+    public RoutePlan optimize(RouteOptimizationRequest request, PlatformPrincipal principal) {
         validateCoordinatePair(request);
         if (new HashSet<>(request.taskIds()).size() != request.taskIds().size()) {
             throw new IllegalArgumentException("路线任务编号不能重复");
@@ -37,6 +45,7 @@ public class OperationsRouteService {
             if (task == null) {
                 throw new IllegalArgumentException("路线中包含不存在的任务: " + taskId);
             }
+            accessPolicy.requireTask(principal, task);
             validateTask(task);
             return task;
         }).toList();

@@ -10,11 +10,13 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class ReportExportServiceTest {
@@ -53,12 +55,36 @@ class ReportExportServiceTest {
                 .hasMessageContaining("3 个报表任务");
     }
 
+    @Test
+    void 车辆状态导出应只创建异步任务而不查询车辆() {
+        var repository = mock(ReportExportRepository.class);
+        var revenueService = mock(RevenueReportService.class);
+        var storage = mock(ReportFileStorage.class);
+        var service = new ReportExportService(repository, revenueService, storage);
+        var today = LocalDate.now(ZoneId.of("Asia/Shanghai"));
+        var pending = job(ReportType.VEHICLE_STATUS, ExportStatus.PENDING);
+        when(repository.countActive("USR-ADMIN")).thenReturn(0L);
+        when(repository.create(ReportType.VEHICLE_STATUS, "USR-ADMIN", "110000", today, today,
+                RevenueGranularity.DAY, "vehicle-status-110000-" + today + ".csv")).thenReturn(pending);
+
+        var result = service.create(new ExportRequest(
+                ReportType.VEHICLE_STATUS, "110000", null, null, null), "USR-ADMIN");
+
+        assertThat(result.reportType()).isEqualTo(ReportType.VEHICLE_STATUS);
+        assertThat(result.status()).isEqualTo(ExportStatus.PENDING);
+        verifyNoInteractions(revenueService, storage);
+    }
+
     private ExportRequest request() {
         return new ExportRequest(ReportType.REVENUE, "110000", FROM, TO, RevenueGranularity.DAY);
     }
 
     static ExportJob job(ExportStatus status) {
-        return new ExportJob("11111111-1111-1111-1111-111111111111", ReportType.REVENUE, status,
+        return job(ReportType.REVENUE, status);
+    }
+
+    static ExportJob job(ReportType type, ExportStatus status) {
+        return new ExportJob("11111111-1111-1111-1111-111111111111", type, status,
                 "USR-ADMIN", "110000", FROM, TO, RevenueGranularity.DAY,
                 "revenue.csv", null, null, null, status == ExportStatus.RUNNING ? 1 : 0,
                 null, Instant.parse("2026-08-10T00:00:00Z"),

@@ -16,6 +16,9 @@
     </sql>
 
     <sql id="mapFilters">
+        <if test="cityCode != null">
+            AND v.operation_city_code = #{cityCode}
+        </if>
         <if test="online != null">
             AND l.online = #{online}
         </if>

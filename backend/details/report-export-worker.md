@@ -16,7 +16,9 @@
 5. Worker 回写行数、字节数、完成时间和存储键；API 使用 `FileSystemResource` 流式响应，不把整个文件载入 JVM 堆。
 6. 前端轮询状态，任务成功后才触发浏览器下载。
 
-两个连接池分别持有 `FlexSqlSessionFactoryBean` 和 `SqlSessionTemplate`. 普通 `@Mapper` 使用 `@Primary` 队列会话, `RevenueReportMapper` 只从报表会话获取并且只加载收入聚合 XML, 防止长查询误用队列连接池.
+两个连接池分别持有 `FlexSqlSessionFactoryBean` 和 `SqlSessionTemplate`。普通 `@Mapper` 使用 `@Primary` 队列会话；`RevenueReportMapper` 和 `VehicleStatusReportMapper` 只从报表会话获取，并且只加载报表查询 XML，防止长查询误用队列连接池。
+
+当前队列支持收入报表和车辆状态报表。车辆状态导出不再保留同步 HTTP 接口，避免全量车辆查询和 CSV 字节数组占用核心 API 的连接池、请求线程和 JVM 堆。
 
 ## 隔离边界
 

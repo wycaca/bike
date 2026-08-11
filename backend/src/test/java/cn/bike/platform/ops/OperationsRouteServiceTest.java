@@ -7,6 +7,9 @@ import cn.bike.platform.ops.OperationsModels.TaskPriority;
 import cn.bike.platform.ops.OperationsModels.TaskSourceType;
 import cn.bike.platform.ops.OperationsModels.TaskStatus;
 import cn.bike.platform.ops.OperationsModels.TaskType;
+import cn.bike.platform.admin.AdminModels.UserRole;
+import cn.bike.platform.security.PlatformAccessPolicy;
+import cn.bike.platform.security.PlatformPrincipal;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -24,7 +27,7 @@ class OperationsRouteServiceTest {
     void 应按道路矩阵缩短批量任务路线() {
         var repository = mock(OperationsRepository.class);
         var provider = mock(OperationsRouteProvider.class);
-        var service = new OperationsRouteService(repository, provider);
+        var service = new OperationsRouteService(repository, provider, new PlatformAccessPolicy());
         var tasks = List.of(task("A", "116.40"), task("B", "116.41"), task("C", "116.42"));
         var request = new RouteOptimizationRequest(List.of("A", "B", "C"), null, null);
         var points = tasks.stream()
@@ -37,7 +40,7 @@ class OperationsRouteServiceTest {
         when(provider.matrix(anyList())).thenReturn(matrix);
         when(provider.polyline(anyList(), org.mockito.ArgumentMatchers.same(matrix))).thenReturn(points);
 
-        var result = service.optimize(request);
+        var result = service.optimize(request, admin());
 
         assertThat(result.stops()).extracting(stop -> stop.taskId()).containsExactly("A", "C", "B");
         assertThat(result.totalDistanceMeters()).isEqualTo(4);
@@ -54,5 +57,10 @@ class OperationsRouteServiceTest {
                 null, null, "USR-ADMIN", "系统管理员", null, null,
                 "BATCH-1", "BAT-1", null, 0, now.plusSeconds(3600), null, null,
                 null, null, null, null, null, null, 0, now, now);
+    }
+
+    private PlatformPrincipal admin() {
+        return new PlatformPrincipal("USR-ADMIN", "admin", "encoded", "系统管理员",
+                "ORG-HQ", "运营总部", UserRole.ADMIN, true);
     }
 }

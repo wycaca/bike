@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bike.platform.report.VehicleStatusReportMapper">
+    <select id="findRows" resultType="cn.bike.platform.report.VehicleStatusReportMapper$VehicleStatusRow">
+        SELECT v.vehicle_id, v.plate_number, v.model, v.operation_city_code AS city_code,
+               v.operation_area_code AS area_code, v.lifecycle_status, l.online,
+               l.battery_percent, l.controller_status, l.reported_at
+        FROM vehicle v LEFT JOIN vehicle_latest l ON l.vehicle_id = v.vehicle_id
+        WHERE v.operation_city_code = #{cityCode}
+        ORDER BY v.vehicle_id
+    </select>
+</mapper>

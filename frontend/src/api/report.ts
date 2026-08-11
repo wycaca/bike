@@ -24,6 +24,15 @@ export async function createRevenueExport(query: RevenueReportQuery): Promise<Re
   return response.data.data
 }
 
+/** 输入: 城市代码; 输出: 独立 Worker 等待处理的车辆状态导出任务。 */
+export async function createVehicleStatusExport(cityCode: string): Promise<ReportExportJob> {
+  const response = await http.post<ApiResponse<ReportExportJob>>('/v1/reports/exports', {
+    reportType: 'VEHICLE_STATUS',
+    cityCode,
+  })
+  return response.data.data
+}
+
 /** 输入: 导出任务编号; 输出: 最新任务状态。 */
 export async function getReportExport(jobId: string): Promise<ReportExportJob> {
   const response = await http.get<ApiResponse<ReportExportJob>>(`/v1/reports/exports/${jobId}`)

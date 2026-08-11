@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { Download, Refresh } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-import { downloadVehicleReport, getDashboard } from '@/api/dashboard'
+import { getDashboard } from '@/api/dashboard'
 import { errorMessage } from '@/api/http'
+import { createVehicleStatusExport, downloadReportExport, getReportExport } from '@/api/report'
 import { useAppStore } from '@/stores/app'
 import type { DashboardData } from '@/types/operations'
 import { CITIES, cityName, formatTime } from '@/utils/vehicle'
@@ -15,6 +16,7 @@ const data = ref<DashboardData | null>(null)
 const loading = ref(false)
 const exporting = ref(false)
 const error = ref('')
+let exportCancelled = false
 const maxReports = computed(() => Math.max(...(data.value?.trends.map((item) => item.telemetryReports) ?? [1]), 1))
 
 /** 输入: 当前城市和周期; 输出: 最新看板数据。 */
@@ -30,11 +32,21 @@ async function loadDashboard() {
   }
 }
 
-/** 输入: 当前城市; 输出: 下载车辆状态 CSV。 */
+/** 输入: 当前城市; 输出: 由独立 Worker 异步生成并下载车辆状态 CSV。 */
 async function exportReport() {
   exporting.value = true
+  exportCancelled = false
   try {
-    const blob = await downloadVehicleReport(appStore.cityCode)
+    let job = await createVehicleStatusExport(appStore.cityCode)
+    while (!exportCancelled && (job.status === 'PENDING' || job.status === 'RUNNING')) {
+      await new Promise((resolve) => window.setTimeout(resolve, 1_000))
+      job = await getReportExport(job.jobId)
+    }
+    if (exportCancelled) return
+    if (job.status !== 'SUCCEEDED') {
+      throw new Error(job.errorMessage || '报表生成失败')
+    }
+    const blob = await downloadReportExport(job.jobId)
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -54,6 +66,7 @@ async function exportReport() {
 
 watch([() => appStore.cityCode, days], loadDashboard)
 onMounted(loadDashboard)
+onBeforeUnmount(() => { exportCancelled = true })
 </script>
 
 <template>

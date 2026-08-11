@@ -67,14 +67,20 @@ public class OperationsController {
 
     /** 输入: 城市; 输出: 可指派运维人员。 */
     @GetMapping("/assignees")
-    public ApiResponse<List<AssigneeOption>> assignees(@RequestParam String cityCode) {
-        return ApiResponse.ok(service.assignees(cityCode));
+    public ApiResponse<List<AssigneeOption>> assignees(
+            @RequestParam String cityCode,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.assignees(cityCode, principal));
     }
 
     /** 输入: 任务编号; 输出: 任务详情和事件时间线。 */
     @GetMapping("/{taskId}")
-    public ApiResponse<TaskDetail> detail(@PathVariable String taskId) {
-        return ApiResponse.ok(service.detail(taskId));
+    public ApiResponse<TaskDetail> detail(
+            @PathVariable String taskId,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.detail(taskId, principal));
     }
 
     /** 输入: 新任务和当前用户; 输出: 创建后的任务详情。 */

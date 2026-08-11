@@ -23,6 +23,6 @@ public class PlatformUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("用户名或密码错误"));
         return new PlatformPrincipal(
                 user.userId(), user.username(), user.passwordHash(), user.displayName(),
-                user.orgId(), user.orgName(), user.role(), user.status() == RecordStatus.ACTIVE);
+                user.orgId(), user.orgName(), user.cityCode(), user.role(), user.status() == RecordStatus.ACTIVE);
     }
 }

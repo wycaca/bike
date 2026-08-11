@@ -17,6 +17,7 @@ import cn.bike.platform.ops.OperationsModels.TaskStatus;
 import cn.bike.platform.ops.OperationsModels.TaskType;
 import cn.bike.platform.ops.OperationsModels.VehicleSnapshot;
 import cn.bike.platform.security.PlatformPrincipal;
+import cn.bike.platform.security.PlatformAccessPolicy;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -36,9 +37,22 @@ import static org.mockito.Mockito.when;
 class OperationsServiceTest {
 
     @Test
+    void 运维任务列表应按所属城市和组织过滤() {
+        var repository = mock(OperationsRepository.class);
+        var service = service(repository);
+        when(repository.findTasks(1, 20, "110000", null, null,
+                "ALL", "USR-OP-BJ", "ORG-BJ", null)).thenReturn(List.of());
+
+        service.findTasks(1, 20, "110000", null, null, "ALL", null, operator());
+
+        verify(repository).countTasks("110000", null, null,
+                "ALL", "USR-OP-BJ", "ORG-BJ", null);
+    }
+
+    @Test
     void 运维人员应能原子领取待领取任务() {
         var repository = mock(OperationsRepository.class);
-        var service = new OperationsService(repository);
+        var service = service(repository);
         var open = task(TaskStatus.OPEN, null, 0, TaskType.BATTERY_SWAP);
         var claimed = task(TaskStatus.CLAIMED, "USR-OP-BJ", 1, TaskType.BATTERY_SWAP);
         when(repository.findTask("TASK-1")).thenReturn(Optional.of(open), Optional.of(claimed));
@@ -57,7 +71,7 @@ class OperationsServiceTest {
     @Test
     void 后到的抢单请求应收到状态冲突() {
         var repository = mock(OperationsRepository.class);
-        var service = new OperationsService(repository);
+        var service = service(repository);
         when(repository.findTask("TASK-1")).thenReturn(Optional.of(task(TaskStatus.OPEN, null, 0,
                 TaskType.BATTERY_SWAP)));
         when(repository.findEligibleAssignee("USR-OP-BJ", "110000")).thenReturn(Optional.of(assignee()));
@@ -71,7 +85,7 @@ class OperationsServiceTest {
     @Test
     void 开始维修任务时应同步车辆生命周期() {
         var repository = mock(OperationsRepository.class);
-        var service = new OperationsService(repository);
+        var service = service(repository);
         var claimed = task(TaskStatus.CLAIMED, "USR-OP-BJ", 3, TaskType.REPAIR);
         var started = task(TaskStatus.IN_PROGRESS, "USR-OP-BJ", 4, TaskType.REPAIR);
         when(repository.findTask("TASK-1")).thenReturn(Optional.of(claimed), Optional.of(started));
@@ -87,7 +101,7 @@ class OperationsServiceTest {
     @Test
     void 非领取人不能开始任务() {
         var repository = mock(OperationsRepository.class);
-        var service = new OperationsService(repository);
+        var service = service(repository);
         when(repository.findTask("TASK-1")).thenReturn(Optional.of(
                 task(TaskStatus.CLAIMED, "USR-OP-OTHER", 1, TaskType.REPAIR)));
 
@@ -100,7 +114,7 @@ class OperationsServiceTest {
     @Test
     void 同一车辆存在活跃任务时应拒绝重复创建() {
         var repository = mock(OperationsRepository.class);
-        var service = new OperationsService(repository);
+        var service = service(repository);
         var vehicle = new VehicleSnapshot("YD-BJ-000001", "110000", "110105",
                 new BigDecimal("116.400000"), new BigDecimal("39.900000"), 9);
         var request = new CreateTaskRequest(TaskType.BATTERY_SWAP, TaskPriority.URGENT,
@@ -119,7 +133,7 @@ class OperationsServiceTest {
     @Test
     void 完工凭证缺少处理后照片时应拒绝提交() {
         var repository = mock(OperationsRepository.class);
-        var service = new OperationsService(repository);
+        var service = service(repository);
         when(repository.findTask("TASK-1")).thenReturn(Optional.of(
                 task(TaskStatus.IN_PROGRESS, "USR-OP-BJ", 2, TaskType.REPAIR)));
 
@@ -131,7 +145,7 @@ class OperationsServiceTest {
     @Test
     void 合格完工凭证应进入待验收而不是直接完成() {
         var repository = mock(OperationsRepository.class);
-        var service = new OperationsService(repository);
+        var service = service(repository);
         var started = task(TaskStatus.IN_PROGRESS, "USR-OP-BJ", 2, TaskType.REPAIR);
         var pending = task(TaskStatus.PENDING_REVIEW, "USR-OP-BJ", 3, TaskType.REPAIR);
         var attachment = new StoredAttachment(7, "TASK-1", AttachmentPurpose.AFTER,
@@ -155,6 +169,10 @@ class OperationsServiceTest {
     private void verifyNoInteractionsAfterLookup(OperationsRepository repository) {
         verify(repository).findTask("TASK-1");
         verify(repository, org.mockito.Mockito.never()).start(anyString(), org.mockito.ArgumentMatchers.anyInt(), anyString());
+    }
+
+    private OperationsService service(OperationsRepository repository) {
+        return new OperationsService(repository, new PlatformAccessPolicy());
     }
 
     /** 输入: 状态、领取人、版本和类型; 输出: 完整测试任务。 */
@@ -195,7 +213,7 @@ class OperationsServiceTest {
     /** 输入: 无; 输出: 北京运维人员登录主体。 */
     private PlatformPrincipal operator() {
         return new PlatformPrincipal("USR-OP-BJ", "operator.bj", "encoded", "北京运维一组",
-                "ORG-BJ", "北京运营中心", UserRole.OPERATOR, true);
+                "ORG-BJ", "北京运营中心", "110000", UserRole.OPERATOR, true);
     }
 
     /** 输入: 无; 输出: 系统管理员登录主体。 */

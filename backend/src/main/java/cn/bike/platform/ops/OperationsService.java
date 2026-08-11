@@ -29,6 +29,7 @@ import cn.bike.platform.ops.OperationsModels.TaskSummary;
 import cn.bike.platform.ops.OperationsModels.TaskType;
 import cn.bike.platform.ops.OperationsModels.VehicleSnapshot;
 import cn.bike.platform.security.PlatformPrincipal;
+import cn.bike.platform.security.PlatformAccessPolicy;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,9 +46,11 @@ public class OperationsService {
     private static final List<String> TASK_SCOPES = List.of("ALL", "MINE", "UNASSIGNED");
 
     private final OperationsRepository repository;
+    private final PlatformAccessPolicy accessPolicy;
 
-    public OperationsService(OperationsRepository repository) {
+    public OperationsService(OperationsRepository repository, PlatformAccessPolicy accessPolicy) {
         this.repository = repository;
+        this.accessPolicy = accessPolicy;
     }
 
     // ==================== 查询能力 ====================
@@ -65,11 +68,13 @@ public class OperationsService {
     ) {
         validatePage(page, pageSize);
         validateCityCode(cityCode);
+        accessPolicy.requireCity(principal, cityCode);
         var normalizedScope = normalizeScope(scope);
+        var orgId = principal.role() == UserRole.OPERATOR ? principal.orgId() : null;
         return new TaskPage(
                 repository.findTasks(page, pageSize, cityCode, status, type,
-                        normalizedScope, principal.userId(), keyword),
-                repository.countTasks(cityCode, status, type, normalizedScope, principal.userId(), keyword),
+                        normalizedScope, principal.userId(), orgId, keyword),
+                repository.countTasks(cityCode, status, type, normalizedScope, principal.userId(), orgId, keyword),
                 page,
                 pageSize
         );
@@ -78,17 +83,22 @@ public class OperationsService {
     /** 输入: 城市和当前用户; 输出: 队列、验收、异常和个人任务汇总。 */
     public TaskSummary summary(String cityCode, PlatformPrincipal principal) {
         validateCityCode(cityCode);
-        return repository.summary(cityCode, principal.userId());
+        accessPolicy.requireCity(principal, cityCode);
+        var orgId = principal.role() == UserRole.OPERATOR ? principal.orgId() : null;
+        return repository.summary(cityCode, principal.userId(), orgId);
     }
 
     /** 输入: 任务编号; 输出: 任务、凭证、异常、触发和不可变时间线。 */
-    public TaskDetail detail(String taskId) {
-        return repository.findTaskDetail(requireTask(taskId));
+    public TaskDetail detail(String taskId, PlatformPrincipal principal) {
+        var task = requireTask(taskId);
+        accessPolicy.requireTask(principal, task);
+        return repository.findTaskDetail(task);
     }
 
     /** 输入: 城市; 输出: 管理员可指派的启用运维人员。 */
-    public List<AssigneeOption> assignees(String cityCode) {
+    public List<AssigneeOption> assignees(String cityCode, PlatformPrincipal principal) {
         validateCityCode(cityCode);
+        accessPolicy.requireCity(principal, cityCode);
         return repository.findAssignees(cityCode);
     }
 
@@ -212,6 +222,7 @@ public class OperationsService {
     public TaskDetail claim(String taskId, PlatformPrincipal principal) {
         requireRole(principal, UserRole.OPERATOR, "只有运维人员可以抢单");
         var task = requireTask(taskId);
+        accessPolicy.requireTask(principal, task);
         requireEligibleAssignee(principal.userId(), task.cityCode());
         if (repository.claim(taskId, principal.userId()) == 0) {
             throw new ConflictException("任务已被领取或状态已变化");
@@ -442,6 +453,11 @@ public class OperationsService {
     private TaskItem requireTask(String taskId) {
         return repository.findTask(taskId)
                 .orElseThrow(() -> new NotFoundException("运维任务不存在: " + taskId));
+    }
+
+    /** 输入: 任务编号; 输出: 供事务内部返回的完整任务详情。 */
+    private TaskDetail detail(String taskId) {
+        return repository.findTaskDetail(requireTask(taskId));
     }
 
     private AssigneeOption requireEligibleAssignee(String userId, String cityCode) {

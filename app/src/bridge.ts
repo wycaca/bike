@@ -13,8 +13,8 @@ window.BikeNative = {
   },
 }
 
-/** 输入: 原生 Bridge 方法; 输出: 带超时和明确错误的 Promise 结果。 */
-function invoke(method: 'requestLocation' | 'scanVehicleCode') {
+/** 输入: 原生能力名称; 输出: 通过同源 WebMessage 通道返回的 Promise 结果。 */
+function invoke(action: 'requestLocation' | 'scanVehicleCode') {
   if (!window.BikeBridge) return Promise.reject(new Error('当前环境未提供原生能力'))
   const callbackId = crypto.randomUUID()
   return new Promise<unknown>((resolve, reject) => {
@@ -22,7 +22,7 @@ function invoke(method: 'requestLocation' | 'scanVehicleCode') {
     window.setTimeout(() => {
       if (pending.delete(callbackId)) reject(new Error('原生能力调用超时'))
     }, 15_000)
-    window.BikeBridge![method](callbackId)
+    window.BikeBridge!.postMessage(JSON.stringify({ action, callbackId }))
   })
 }
 

@@ -56,7 +56,7 @@ public interface AdminMapper {
 
     @Select("""
             SELECT u.user_id, u.username, u.password_hash, u.display_name, u.org_id,
-                   o.org_name, u.role, u.status
+                   o.org_name, o.city_code, u.role, u.status
             FROM app_user u JOIN organization o ON o.org_id = u.org_id
             WHERE lower(u.username) = lower(#{username}) AND o.status = 'ACTIVE'
             """)
@@ -206,6 +206,7 @@ public interface AdminMapper {
             String displayName,
             String orgId,
             String orgName,
+            String cityCode,
             UserRole role,
             RecordStatus status
     ) {

@@ -9,12 +9,3 @@ export async function getDashboard(cityCode: string, days: number): Promise<Dash
   })
   return response.data.data
 }
-
-/** 输入: 城市代码; 输出: 车辆状态 CSV 二进制。 */
-export async function downloadVehicleReport(cityCode: string): Promise<Blob> {
-  const response = await http.get('/v1/reports/vehicle-status.csv', {
-    params: { cityCode },
-    responseType: 'blob',
-  })
-  return response.data
-}

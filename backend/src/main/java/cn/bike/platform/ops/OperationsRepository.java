@@ -68,9 +68,10 @@ public class OperationsRepository {
             TaskType type,
             String scope,
             String currentUserId,
+            String orgId,
             String keyword
     ) {
-        return mapper.findTasks(cityCode, enumName(status), enumName(type), scope, currentUserId,
+        return mapper.findTasks(cityCode, enumName(status), enumName(type), scope, currentUserId, orgId,
                 fuzzyOrNull(keyword), pageSize, (page - 1) * pageSize);
     }
 
@@ -81,15 +82,16 @@ public class OperationsRepository {
             TaskType type,
             String scope,
             String currentUserId,
+            String orgId,
             String keyword
     ) {
-        return mapper.countTasks(cityCode, enumName(status), enumName(type), scope, currentUserId,
+        return mapper.countTasks(cityCode, enumName(status), enumName(type), scope, currentUserId, orgId,
                 fuzzyOrNull(keyword));
     }
 
     /** 输入: 城市和当前用户; 输出: 队列、验收、异常、超时和个人任务汇总。 */
-    public TaskSummary summary(String cityCode, String currentUserId) {
-        return mapper.summary(cityCode, currentUserId);
+    public TaskSummary summary(String cityCode, String currentUserId, String orgId) {
+        return mapper.summary(cityCode, currentUserId, orgId);
     }
 
     /** 输入: 任务编号; 输出: 包含人员、规则和批次显示名的任务。 */

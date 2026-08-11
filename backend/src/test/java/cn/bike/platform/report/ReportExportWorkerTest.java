@@ -1,6 +1,7 @@
 package cn.bike.platform.report;
 
 import cn.bike.platform.report.ReportExportModels.ExportStatus;
+import cn.bike.platform.report.ReportExportModels.ReportType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -25,8 +26,9 @@ class ReportExportWorkerTest {
     void Worker应先落盘再把任务标记为成功() throws Exception {
         var repository = mock(ReportExportRepository.class);
         var revenueService = mock(RevenueReportService.class);
+        var vehicleService = mock(VehicleStatusReportService.class);
         var storage = new ReportFileStorage(temporaryDirectory);
-        var worker = new ReportExportWorker(repository, revenueService, storage);
+        var worker = new ReportExportWorker(repository, revenueService, vehicleService, storage);
         var job = ReportExportServiceTest.job(ExportStatus.RUNNING);
         doAnswer(invocation -> {
             java.io.Writer writer = invocation.getArgument(0);
@@ -48,8 +50,9 @@ class ReportExportWorkerTest {
     void 生成异常时应清理临时文件并标记失败() throws Exception {
         var repository = mock(ReportExportRepository.class);
         var revenueService = mock(RevenueReportService.class);
+        var vehicleService = mock(VehicleStatusReportService.class);
         var storage = new ReportFileStorage(temporaryDirectory);
-        var worker = new ReportExportWorker(repository, revenueService, storage);
+        var worker = new ReportExportWorker(repository, revenueService, vehicleService, storage);
         var job = ReportExportServiceTest.job(ExportStatus.RUNNING);
         doAnswer(invocation -> {
             throw new java.io.IOException("模拟导出失败");
@@ -59,5 +62,25 @@ class ReportExportWorkerTest {
 
         assertThat(temporaryDirectory).isEmptyDirectory();
         verify(repository).markFailed(job.jobId(), "模拟导出失败");
+    }
+
+    @Test
+    void Worker应使用车辆报表服务生成车辆状态文件() throws Exception {
+        var repository = mock(ReportExportRepository.class);
+        var revenueService = mock(RevenueReportService.class);
+        var vehicleService = mock(VehicleStatusReportService.class);
+        var storage = new ReportFileStorage(temporaryDirectory);
+        var worker = new ReportExportWorker(repository, revenueService, vehicleService, storage);
+        var job = ReportExportServiceTest.job(ReportType.VEHICLE_STATUS, ExportStatus.RUNNING);
+        doAnswer(invocation -> {
+            java.io.Writer writer = invocation.getArgument(0);
+            writer.write("\uFEFF车辆编号\r\nBIKE-001\r\n");
+            return 1L;
+        }).when(vehicleService).writeCsv(any(), eq("110000"));
+
+        worker.process(job);
+
+        verify(vehicleService).writeCsv(any(), eq("110000"));
+        verify(repository).markSucceeded(eq(job.jobId()), any(), anyLong(), eq(1L), eq(Duration.ofHours(24)));
     }
 }

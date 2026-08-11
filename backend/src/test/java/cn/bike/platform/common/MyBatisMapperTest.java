@@ -2,6 +2,7 @@ package cn.bike.platform.common;
 
 import cn.bike.platform.ops.OperationsMapper;
 import cn.bike.platform.report.RevenueReportMapper;
+import cn.bike.platform.report.VehicleStatusReportMapper;
 import com.mybatisflex.core.mybatis.FlexConfiguration;
 import com.mybatisflex.spring.FlexSqlSessionFactoryBean;
 import org.junit.jupiter.api.Test;
@@ -41,17 +42,19 @@ class MyBatisMapperTest {
 
         var configuration = factory.getObject().getConfiguration();
 
-        assertThat(resources).hasSize(5);
+        assertThat(resources).hasSize(6);
         assertThat(configuration.hasStatement("cn.bike.platform.vehicle.VehicleMapper.findVehicles")).isTrue();
         assertThat(configuration.hasStatement("cn.bike.platform.ops.OperationsMapper.findTasks")).isTrue();
         assertThat(configuration.hasStatement("cn.bike.platform.report.RevenueReportMapper.totals")).isTrue();
         assertThat(configuration.hasStatement("cn.bike.platform.report.ReportExportMapper.claimNext")).isTrue();
         assertThat(configuration.hasStatement("cn.bike.platform.report.MockRideOrderMapper.insertRideOrders")).isTrue();
+        assertThat(configuration.hasStatement("cn.bike.platform.report.VehicleStatusReportMapper.findRows")).isTrue();
     }
 
     @Test
     void Mapper代理方法应只暴露公开类型() {
-        var inaccessibleTypes = Stream.of(OperationsMapper.class, RevenueReportMapper.class)
+        var inaccessibleTypes = Stream.of(OperationsMapper.class, RevenueReportMapper.class,
+                        VehicleStatusReportMapper.class)
                 .flatMap(mapper -> Arrays.stream(mapper.getMethods()))
                 .flatMap(method -> Stream.concat(
                         Stream.of(method.getReturnType()), Arrays.stream(method.getParameterTypes())))

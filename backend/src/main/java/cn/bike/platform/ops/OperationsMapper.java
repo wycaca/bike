@@ -35,6 +35,7 @@ public interface OperationsMapper {
             @Param("type") String type,
             @Param("scope") String scope,
             @Param("currentUserId") String currentUserId,
+            @Param("orgId") String orgId,
             @Param("keyword") String keyword,
             @Param("limit") int limit,
             @Param("offset") int offset
@@ -46,10 +47,12 @@ public interface OperationsMapper {
             @Param("type") String type,
             @Param("scope") String scope,
             @Param("currentUserId") String currentUserId,
+            @Param("orgId") String orgId,
             @Param("keyword") String keyword
     );
 
-    TaskSummary summary(@Param("cityCode") String cityCode, @Param("currentUserId") String currentUserId);
+    TaskSummary summary(@Param("cityCode") String cityCode, @Param("currentUserId") String currentUserId,
+                        @Param("orgId") String orgId);
 
     TaskItem findTask(@Param("taskId") String taskId);
 

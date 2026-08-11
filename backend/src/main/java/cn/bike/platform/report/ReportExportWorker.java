@@ -18,15 +18,18 @@ public class ReportExportWorker {
     private static final Duration FILE_RETENTION = Duration.ofHours(24);
     private final ReportExportRepository repository;
     private final RevenueReportService revenueReportService;
+    private final VehicleStatusReportService vehicleStatusReportService;
     private final ReportFileStorage storage;
 
     public ReportExportWorker(
             ReportExportRepository repository,
             RevenueReportService revenueReportService,
+            VehicleStatusReportService vehicleStatusReportService,
             ReportFileStorage storage
     ) {
         this.repository = repository;
         this.revenueReportService = revenueReportService;
+        this.vehicleStatusReportService = vehicleStatusReportService;
         this.storage = storage;
     }
 
@@ -41,11 +44,11 @@ public class ReportExportWorker {
     void process(ExportJob job) {
         var storageKey = "report-" + job.jobId() + ".csv";
         try {
-            if (job.reportType() != ReportType.REVENUE) {
-                throw new IllegalArgumentException("不支持的报表类型: " + job.reportType());
-            }
-            var stored = storage.write(storageKey, writer -> revenueReportService.writeCsv(writer,
-                    job.cityCode(), job.fromDate(), job.toDate(), job.granularity()));
+            var stored = storage.write(storageKey, writer -> switch (job.reportType()) {
+                case REVENUE -> revenueReportService.writeCsv(writer,
+                        job.cityCode(), job.fromDate(), job.toDate(), job.granularity());
+                case VEHICLE_STATUS -> vehicleStatusReportService.writeCsv(writer, job.cityCode());
+            });
             repository.markSucceeded(job.jobId(), stored.storageKey(), stored.size(),
                     stored.rowCount(), FILE_RETENTION);
             LOG.info("报表任务 {} 已完成, 文件 {} 字节", job.jobId(), stored.size());

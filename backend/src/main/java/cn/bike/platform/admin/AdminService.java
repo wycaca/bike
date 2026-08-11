@@ -11,6 +11,8 @@ import cn.bike.platform.common.NotFoundException;
 import cn.bike.platform.security.PlatformPrincipal;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.session.FindByIndexNameSessionRepository;
+import org.springframework.session.Session;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,10 +24,16 @@ public class AdminService {
 
     private final AdminRepository repository;
     private final PasswordEncoder passwordEncoder;
+    private final FindByIndexNameSessionRepository<? extends Session> sessionRepository;
 
-    public AdminService(AdminRepository repository, PasswordEncoder passwordEncoder) {
+    public AdminService(
+            AdminRepository repository,
+            PasswordEncoder passwordEncoder,
+            FindByIndexNameSessionRepository<? extends Session> sessionRepository
+    ) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
+        this.sessionRepository = sessionRepository;
     }
 
     /** 输入: 无; 输出: 全部组织。 */
@@ -83,6 +91,8 @@ public class AdminService {
         if (operator.userId().equals(userId) && request.status() != AdminModels.RecordStatus.ACTIVE) {
             throw new IllegalArgumentException("不能停用当前登录账号");
         }
+        var previous = repository.findUser(userId)
+                .orElseThrow(() -> new NotFoundException("用户不存在: " + userId));
         try {
             if (repository.updateUser(userId, request) == 0) {
                 throw new NotFoundException("用户不存在: " + userId);
@@ -90,14 +100,22 @@ public class AdminService {
         } catch (DuplicateKeyException exception) {
             throw new IllegalArgumentException("用户名已存在");
         }
-        return repository.findUser(userId).orElseThrow();
+        var updated = repository.findUser(userId).orElseThrow();
+        revokeSessions(previous.username());
+        if (!previous.username().equals(updated.username())) {
+            revokeSessions(updated.username());
+        }
+        return updated;
     }
 
     /** 输入: 用户编号和新密码; 输出: 无。 */
     public void resetPassword(String userId, PasswordResetRequest request) {
+        var user = repository.findUser(userId)
+                .orElseThrow(() -> new NotFoundException("用户不存在: " + userId));
         if (repository.updatePassword(userId, passwordEncoder.encode(request.password())) == 0) {
             throw new NotFoundException("用户不存在: " + userId);
         }
+        revokeSessions(user.username());
     }
 
     /** 输入: 审计分页条件; 输出: 审计日志分页。 */
@@ -138,5 +156,10 @@ public class AdminService {
         if (page < 1 || pageSize < 1 || pageSize > 100) {
             throw new IllegalArgumentException("page 必须大于 0, pageSize 必须在 1 到 100 之间");
         }
+    }
+
+    /** 输入: 登录用户名; 输出: 无，删除该主体当前保存的全部 Redis 会话。 */
+    private void revokeSessions(String username) {
+        sessionRepository.findByPrincipalName(username).keySet().forEach(sessionRepository::deleteById);
     }
 }

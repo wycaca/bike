@@ -1,6 +1,7 @@
 package cn.bike.platform.mobile
 
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -13,6 +14,7 @@ class TrustedOriginPolicyTest {
         assertFalse(policy.isAllowed("https://evil.example.com/"))
         assertFalse(policy.isAllowed("http://ops.example.com/"))
         assertFalse(policy.isAllowed("https://ops.example.com.evil.test/"))
+        assertEquals("https://ops.example.com", policy.allowedOriginRule())
     }
 
     @Test
@@ -20,5 +22,6 @@ class TrustedOriginPolicyTest {
         val debugPolicy = TrustedOriginPolicy("http://192.168.50.204:18082", true)
         assertTrue(debugPolicy.isAllowed("http://192.168.50.204:18082/operator/pool"))
         assertFalse(debugPolicy.isAllowed("http://192.168.50.204:8080/operator/pool"))
+        assertEquals("http://192.168.50.204:18082", debugPolicy.allowedOriginRule())
     }
 }

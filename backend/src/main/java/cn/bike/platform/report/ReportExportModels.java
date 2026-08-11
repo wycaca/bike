@@ -12,7 +12,8 @@ public final class ReportExportModels {
     }
 
     public enum ReportType {
-        REVENUE
+        REVENUE,
+        VEHICLE_STATUS
     }
 
     public enum ExportStatus {

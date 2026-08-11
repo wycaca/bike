@@ -54,6 +54,7 @@ public interface VehicleMapper {
             @Param("minLatitude") BigDecimal minLatitude,
             @Param("maxLongitude") BigDecimal maxLongitude,
             @Param("maxLatitude") BigDecimal maxLatitude,
+            @Param("cityCode") String cityCode,
             @Param("online") Boolean online,
             @Param("lifecycleStatus") String lifecycleStatus,
             @Param("limit") int limit
@@ -64,6 +65,7 @@ public interface VehicleMapper {
             @Param("minLatitude") BigDecimal minLatitude,
             @Param("maxLongitude") BigDecimal maxLongitude,
             @Param("maxLatitude") BigDecimal maxLatitude,
+            @Param("cityCode") String cityCode,
             @Param("online") Boolean online,
             @Param("lifecycleStatus") String lifecycleStatus,
             @Param("gridSize") BigDecimal gridSize,

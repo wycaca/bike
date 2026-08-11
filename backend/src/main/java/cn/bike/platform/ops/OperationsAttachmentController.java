@@ -45,8 +45,11 @@ public class OperationsAttachmentController {
 
     /** 输入: 附件编号; 输出: 通过文件资源流发送的原始凭证，不整体读入 JVM 堆。 */
     @GetMapping("/attachments/{attachmentId}")
-    public ResponseEntity<FileSystemResource> download(@PathVariable long attachmentId) {
-        var file = service.download(attachmentId);
+    public ResponseEntity<FileSystemResource> download(
+            @PathVariable long attachmentId,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        var file = service.download(attachmentId, principal);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(file.attachment().contentType()))
                 .contentLength(file.attachment().sizeBytes())

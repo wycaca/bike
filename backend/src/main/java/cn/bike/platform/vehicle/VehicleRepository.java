@@ -103,12 +103,14 @@ public class VehicleRepository {
             BigDecimal minLatitude,
             BigDecimal maxLongitude,
             BigDecimal maxLatitude,
+            String cityCode,
             Boolean online,
             LifecycleStatus lifecycleStatus,
             int limit
     ) {
         var status = lifecycleStatus == null ? null : lifecycleStatus.name();
-        return mapper.findMapVehicles(minLongitude, minLatitude, maxLongitude, maxLatitude, online, status, limit)
+        return mapper.findMapVehicles(minLongitude, minLatitude, maxLongitude, maxLatitude,
+                        cityCode, online, status, limit)
                 .stream().map(this::mapVehicleMarker).toList();
     }
 
@@ -117,6 +119,7 @@ public class VehicleRepository {
             BigDecimal minLatitude,
             BigDecimal maxLongitude,
             BigDecimal maxLatitude,
+            String cityCode,
             Boolean online,
             LifecycleStatus lifecycleStatus,
             BigDecimal gridSize,
@@ -124,7 +127,7 @@ public class VehicleRepository {
     ) {
         var status = lifecycleStatus == null ? null : lifecycleStatus.name();
         var rows = mapper.findMapClusters(
-                minLongitude, minLatitude, maxLongitude, maxLatitude, online, status, gridSize, limit);
+                minLongitude, minLatitude, maxLongitude, maxLatitude, cityCode, online, status, gridSize, limit);
         var markers = new ArrayList<MapMarker>(rows.size());
         for (var index = 0; index < rows.size(); index++) {
             markers.add(mapClusterMarker(rows.get(index), index));

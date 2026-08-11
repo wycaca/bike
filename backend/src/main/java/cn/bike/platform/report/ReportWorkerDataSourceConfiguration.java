@@ -87,12 +87,12 @@ public class ReportWorkerDataSourceConfiguration {
         return new SqlSessionTemplate(sqlSessionFactory);
     }
 
-    /** 输入: 独立报表数据源; 输出: 仅加载收入聚合 SQL 的 MyBatis-Flex 会话工厂. */
+    /** 输入: 独立报表数据源; 输出: 仅加载报表查询 SQL 的 MyBatis-Flex 会话工厂. */
     @Bean("reportingSqlSessionFactory")
     public SqlSessionFactory reportingSqlSessionFactory(
             @Qualifier("reportingDataSource") HikariDataSource dataSource
     ) throws Exception {
-        return sqlSessionFactory(dataSource, "classpath*:/mapper/RevenueReportMapper.xml");
+        return sqlSessionFactory(dataSource, "classpath*:/mapper/*ReportMapper.xml");
     }
 
     @Bean("reportingSqlSessionTemplate")
@@ -107,6 +107,13 @@ public class ReportWorkerDataSourceConfiguration {
             @Qualifier("reportingSqlSessionTemplate") SqlSessionTemplate sqlSessionTemplate
     ) {
         return sqlSessionTemplate.getMapper(RevenueReportMapper.class);
+    }
+
+    @Bean
+    public VehicleStatusReportMapper vehicleStatusReportMapper(
+            @Qualifier("reportingSqlSessionTemplate") SqlSessionTemplate sqlSessionTemplate
+    ) {
+        return sqlSessionTemplate.getMapper(VehicleStatusReportMapper.class);
     }
 
     // 两个数据源必须分别创建会话工厂, 否则 Mapper 可能被错误路由到任务队列连接池.

@@ -31,7 +31,8 @@ public class TelemetryProcessor {
     }
 
     /**
-     * 将雅迪云临时模型转换为平台标准状态. 数据库先幂等落盘, 再更新 Redis, Kafka 重试时不会生成重复轨迹点.
+     * 将雅迪云临时模型转换为平台标准状态. 数据库先幂等落盘，再生成去重任务，最后刷新 Redis。
+     * 相同时间戳允许 Kafka 重放，因此 Redis 短暂故障恢复后可补写缓存，轨迹唯一键不会产生重复点。
      */
     public void process(YadeaCloudEvent event) {
         var faultCodes = event.state().faultCodes() == null ? List.<String>of() : event.state().faultCodes();
@@ -44,6 +45,7 @@ public class TelemetryProcessor {
 
         var location = event.location();
         var state = event.state();
+        operationsAutomationService.processTelemetry(event);
         latestVehicleCache.put(event.vehicleId(), new LatestState(
                 event.occurredAt(),
                 location.longitude(),
@@ -61,6 +63,5 @@ public class TelemetryProcessor {
                 state.signalStrength(),
                 faultCodes,
                 location.coordinateSystem()));
-        operationsAutomationService.processTelemetry(event);
     }
 }

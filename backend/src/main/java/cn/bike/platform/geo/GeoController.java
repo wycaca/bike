@@ -7,6 +7,7 @@ import cn.bike.platform.geo.GeoModels.GeoOverview;
 import cn.bike.platform.geo.GeoModels.ParkingPoint;
 import cn.bike.platform.geo.GeoModels.ParkingPointRequest;
 import cn.bike.platform.security.PlatformPrincipal;
+import cn.bike.platform.security.PlatformAccessPolicy;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,14 +25,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class GeoController {
 
     private final GeoService service;
+    private final PlatformAccessPolicy accessPolicy;
 
-    public GeoController(GeoService service) {
+    public GeoController(GeoService service, PlatformAccessPolicy accessPolicy) {
         this.service = service;
+        this.accessPolicy = accessPolicy;
     }
 
     /** 输入: 城市代码; 输出: 空间设施与违规总览。 */
     @GetMapping("/overview")
-    public ApiResponse<GeoOverview> overview(@RequestParam String cityCode) {
+    public ApiResponse<GeoOverview> overview(
+            @RequestParam String cityCode,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        accessPolicy.requireCity(principal, cityCode);
         return ApiResponse.ok(service.overview(cityCode));
     }
 

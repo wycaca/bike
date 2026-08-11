@@ -8,6 +8,7 @@ import cn.bike.platform.ops.OperationsModels.AttachmentUploadResult;
 import cn.bike.platform.ops.OperationsModels.StoredAttachment;
 import cn.bike.platform.ops.OperationsModels.TaskStatus;
 import cn.bike.platform.security.PlatformPrincipal;
+import cn.bike.platform.security.PlatformAccessPolicy;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -23,10 +24,16 @@ public class OperationsAttachmentService {
 
     private final OperationsRepository repository;
     private final OperationsEvidenceStorage storage;
+    private final PlatformAccessPolicy accessPolicy;
 
-    public OperationsAttachmentService(OperationsRepository repository, OperationsEvidenceStorage storage) {
+    public OperationsAttachmentService(
+            OperationsRepository repository,
+            OperationsEvidenceStorage storage,
+            PlatformAccessPolicy accessPolicy
+    ) {
         this.repository = repository;
         this.storage = storage;
+        this.accessPolicy = accessPolicy;
     }
 
     /** 输入: 任务、凭证用途、图片和当前运维人员; 输出: 可用于完工或异常提交的附件编号。 */
@@ -67,9 +74,12 @@ public class OperationsAttachmentService {
     }
 
     /** 输入: 附件编号; 输出: 数据库元数据和可流式读取的文件路径。 */
-    public DownloadFile download(long attachmentId) {
+    public DownloadFile download(long attachmentId, PlatformPrincipal principal) {
         StoredAttachment attachment = repository.findAttachment(attachmentId)
                 .orElseThrow(() -> new NotFoundException("运维凭证不存在: " + attachmentId));
+        var task = repository.findTask(attachment.taskId())
+                .orElseThrow(() -> new NotFoundException("运维任务不存在: " + attachment.taskId()));
+        accessPolicy.requireTask(principal, task);
         var path = storage.resolve(attachment.storagePath());
         if (!Files.isRegularFile(path)) {
             throw new NotFoundException("运维凭证文件已丢失: " + attachmentId);

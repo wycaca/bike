@@ -54,7 +54,8 @@ app\android\gradlew.bat -p app\android assembleRelease -PBIKE_WEB_APP_URL=https:
 
 ## 原生能力
 
-- `BikeBridge.requestLocation`：定位授权、近期位置复用、单次定位与超时错误。
-- `BikeBridge.scanVehicleCode`：二维码和条码扫描。
+- `BikeBridge.postMessage`：AndroidX WebKit 注入的同源消息入口，仅接收主框架的定位与扫码白名单动作。
+- `requestLocation`：定位授权、近期位置复用、单次定位与超时错误。
+- `scanVehicleCode`：二维码和条码扫描。
 - WebChromeClient：相机拍照或相册选择，并交给 H5 上传作业凭证。
 - 仅配置的同源页面可以调用 Bridge；调试包允许本地 HTTP，发布包禁止明文流量。

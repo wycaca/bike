@@ -23,6 +23,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import org.json.JSONObject
@@ -72,7 +74,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         pendingFileCallback?.onReceiveValue(null)
-        webView.removeJavascriptInterface(BRIDGE_NAME)
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+            WebViewCompat.removeWebMessageListener(webView, BRIDGE_NAME)
+        }
         webView.destroy()
         super.onDestroy()
     }
@@ -94,7 +98,18 @@ class MainActivity : AppCompatActivity() {
             cacheMode = WebSettings.LOAD_DEFAULT
             userAgentString = "$userAgentString BikeOperationsAndroid/${BuildConfig.VERSION_NAME}"
         }
-        webView.addJavascriptInterface(BikeBridge(this), BRIDGE_NAME)
+        check(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+            "系统 WebView 版本过低，无法建立安全消息通道"
+        }
+        WebViewCompat.addWebMessageListener(
+            webView,
+            BRIDGE_NAME,
+            setOf(originPolicy.allowedOriginRule())
+        ) { _, message, sourceOrigin, isMainFrame, _ ->
+            if (isMainFrame && originPolicy.isAllowed(sourceOrigin.toString())) {
+                handleBridgeMessage(message.data)
+            }
+        }
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val url = request.url.toString()
@@ -122,6 +137,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ---------- JSBridge 能力 ----------
+
+    /** 输入: 受信任页面发送的 JSON 消息; 输出: 分派到定位或扫码白名单能力。 */
+    private fun handleBridgeMessage(payload: String?) {
+        val message = runCatching { JSONObject(payload ?: "") }.getOrNull() ?: return
+        val callbackId = message.optString("callbackId")
+        when (message.optString("action")) {
+            "requestLocation" -> requestLocation(callbackId)
+            "scanVehicleCode" -> scanVehicleCode(callbackId)
+            else -> finishCallback(callbackId, false, "UNSUPPORTED_ACTION", "不支持的原生能力")
+        }
+    }
 
     /** 输入: H5 回调编号; 输出: 授权后返回设备当前位置。 */
     fun requestLocation(callbackId: String) = runOnUiThread {

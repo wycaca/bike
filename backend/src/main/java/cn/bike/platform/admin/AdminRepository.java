@@ -52,7 +52,7 @@ public class AdminRepository {
         return Optional.ofNullable(mapper.findAuthenticatedUser(username))
                 .map(row -> new AuthenticatedUser(
                         row.userId(), row.username(), row.passwordHash(), row.displayName(),
-                        row.orgId(), row.orgName(), row.role(), row.status()));
+                        row.orgId(), row.orgName(), row.cityCode(), row.role(), row.status()));
     }
 
     /** 输入: 分页和关键字; 输出: 用户列表。 */
@@ -126,7 +126,7 @@ public class AdminRepository {
 
     public record AuthenticatedUser(
             String userId, String username, String passwordHash, String displayName,
-            String orgId, String orgName, UserRole role, RecordStatus status
+            String orgId, String orgName, String cityCode, UserRole role, RecordStatus status
     ) {
     }
 }
