@@ -126,7 +126,7 @@ services:
     build:
       context: ./app
     ports:
-      - "8082:80"
+      - "18082:80"
     depends_on:
       backend:
         condition: service_healthy

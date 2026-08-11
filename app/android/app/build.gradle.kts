@@ -24,7 +24,7 @@ android {
         debug {
             manifestPlaceholders["usesCleartextTraffic"] = "true"
             val webAppUrl = providers.gradleProperty("BIKE_DEBUG_WEB_APP_URL")
-                .orElse("http://192.168.50.204:8082")
+                .orElse("http://192.168.50.204:18082")
             buildConfigField("String", "WEB_APP_URL", "\"${webAppUrl.get()}\"")
         }
         release {
