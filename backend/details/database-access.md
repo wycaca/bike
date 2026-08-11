@@ -12,6 +12,15 @@
 
 MyBatis-Flex 支持原生 MyBatis 注解和 XML. 当前 SQL 包含较多 PostgreSQL 专用能力, 因此不强制为每张表增加 Entity 和 `BaseMapper`. 只有出现大量标准单表 CRUD 时再评估代码生成, 避免为了框架形式增加无用模型.
 
+## Mapper 组织
+
+| 方式 | Mapper | 使用场景 |
+| --- | --- | --- |
+| 注解 SQL | `AdminMapper`、`DashboardMapper`、`GeoMapper`、`OperationsRuleMapper` | 语句固定、条件简单的管理、看板、地理和规则查询 |
+| XML SQL | `VehicleMapper`、`OperationsMapper`、`ReportExportMapper`、`RevenueReportMapper`、`MockRideOrderMapper` | 动态条件、空间查询、批量写入、`RETURNING`、任务锁和报表聚合 |
+
+`INSERT/UPDATE ... RETURNING` 在 XML 中声明为 `affectData="true"`, 让 MyBatis 正确处理会修改数据的查询型语句. `MockRideOrderMapper` 只用于 `mock` Profile 的开发数据初始化, 不是生产订单写入入口.
+
 ## 报表 Worker
 
 报表 Worker 保留两个独立的 MyBatis-Flex 会话工厂:
@@ -19,6 +28,8 @@ MyBatis-Flex 支持原生 MyBatis 注解和 XML. 当前 SQL 包含较多 Postgre
 - 主会话使用读写连接池, 负责领取任务和更新任务状态.
 - 报表会话使用只读连接池, 只加载收入聚合 Mapper.
 - 报表连接池限制连接数和 `statement_timeout`, 避免聚合查询挤占在线业务连接.
+
+两个连接池分别创建 `FlexSqlSessionFactoryBean` 和 `SqlSessionTemplate`. 带 `@Mapper` 的队列 Mapper 使用 `@Primary` 主会话, `RevenueReportMapper` 则从只读报表会话显式获取. 普通 API 进程没有双数据源, 由 `RevenueReportMapperConfiguration` 将收入 Mapper 绑定到主业务会话.
 
 ## 事务和数据一致性
 

@@ -82,5 +82,6 @@
 - `OperationsAutomationServiceTest`: 规则首次建单、活跃任务聚合和触发恢复自动关闭。
 - `OperationsRouteServiceTest`: 道路矩阵排序和路线里程、时长汇总。
 - `OperationsEvidenceStorageTest`: 真实图片落盘、SHA-256 和伪图片拒绝。
+- `MyBatisMapperTest`: 使用真实 MyBatis-Flex 会话工厂装载 5 个 XML Mapper, 校验 XML、命名空间、结果类型和关键语句编号。
 - Docker 构建执行全部 Maven/Vitest 测试与 TypeScript 检查。
 - 浏览器冒烟覆盖登录、看板、高德空间地图、运维任务中文展示、组织更新、CSRF 和审计落库。

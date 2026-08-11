@@ -24,4 +24,4 @@ docker compose --env-file .env.local up -d --build
 
 桌面端访问 `http://localhost:8081`，移动端访问 `http://localhost:8082`。Mock 环境默认管理员为 `admin`，北京和上海运维账号分别为 `operator.bj`、`operator.sh`，密码统一由 `APP_ADMIN_PASSWORD` 配置；示例文件中的密码仅用于本机开发，部署前必须修改。
 
-详细说明见 [安卓移动作业端](app/README.md)、[后端本地开发](backend/details/local-development.md)、[桌面端本地开发](frontend/details/local-development.md)、[运营模块设计](backend/details/operations-modules.md)、[运维任务与竞品调研](backend/details/operations-tasks.md)、[收入报表口径](backend/details/revenue-reports.md) 和 [异步报表 Worker](backend/details/report-export-worker.md)。
+详细说明见 [安卓移动作业端](app/README.md)、[后端本地开发](backend/details/local-development.md)、[数据库访问层](backend/details/database-access.md)、[桌面端本地开发](frontend/details/local-development.md)、[运营模块设计](backend/details/operations-modules.md)、[运维任务与竞品调研](backend/details/operations-tasks.md)、[收入报表口径](backend/details/revenue-reports.md) 和 [异步报表 Worker](backend/details/report-export-worker.md)。
