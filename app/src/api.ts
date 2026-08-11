@@ -1,8 +1,8 @@
 import axios from 'axios'
 
 import type {
-  ApiResponse, Assignee, Attachment, BatchCreateResult, CurrentUser, ExceptionType, RoutePlan,
-  TaskDetail, TaskPage, TaskPriority, TaskRule, TaskStatus, TaskSummary, TaskType, Vehicle,
+  ApiResponse, Assignee, Attachment, BatchCreateResult, CurrentUser, ExceptionType, MapQuery, MapResult,
+  RoutePlan, TaskDetail, TaskPage, TaskPriority, TaskRule, TaskStatus, TaskSummary, TaskType, Vehicle,
 } from '@/types'
 
 export const http = axios.create({
@@ -147,6 +147,11 @@ export async function getVehicles(cityCode: string, keyword = '') {
   return (await http.get<ApiResponse<{ items: Vehicle[] }>>('/vehicles', {
     params: { cityCode, keyword: keyword || undefined, page: 1, pageSize: 50 },
   })).data.data.items
+}
+
+/** 输入: 地图视野、缩放级别和在线筛选; 输出: GCJ02 坐标的车辆或聚合标记。 */
+export async function getMapVehicles(query: MapQuery, signal?: AbortSignal) {
+  return (await http.get<ApiResponse<MapResult>>('/map/vehicles', { params: query, signal })).data.data
 }
 
 export function errorText(error: unknown) {

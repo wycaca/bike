@@ -125,6 +125,11 @@ services:
     image: bike-mobile-web:local
     build:
       context: ./app
+      args:
+        VITE_AMAP_KEY: ${VITE_AMAP_KEY:?VITE_AMAP_KEY is required in .env.local}
+        VITE_AMAP_SERVICE_HOST: ${VITE_AMAP_SERVICE_HOST:-/_AMapService}
+    environment:
+      AMAP_SECURITY_JSCODE: ${AMAP_SECURITY_JSCODE:?AMAP_SECURITY_JSCODE is required in .env.local}
     ports:
       - "18082:80"
     depends_on:

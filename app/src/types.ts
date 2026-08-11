@@ -112,3 +112,44 @@ export interface Vehicle {
   lifecycleStatus: string
   latestState: { batteryPercent: number | null; online: boolean; controllerStatus: string } | null
 }
+
+export interface MapVehicleState {
+  reportedAt: string
+  longitude: number
+  latitude: number
+  batteryPercent: number | null
+  rideStatus: string
+  controllerStatus: string
+  online: boolean
+  faultCodes: string[]
+}
+
+export interface MapMarker {
+  markerType: 'VEHICLE' | 'CLUSTER'
+  markerId: string
+  vehicleId: string | null
+  longitude: number
+  latitude: number
+  vehicleCount: number
+  lowBatteryCount: number
+  faultCount: number
+  batteryPercent: number | null
+  lifecycleStatus: string | null
+  latestState: MapVehicleState | null
+}
+
+export interface MapResult {
+  markers: MapMarker[]
+  clustered: boolean
+  coordinateSystem: 'WGS84' | 'GCJ02'
+}
+
+export interface MapQuery {
+  minLongitude: number
+  minLatitude: number
+  maxLongitude: number
+  maxLatitude: number
+  zoom: number
+  online?: boolean
+  coordinateSystem: 'GCJ02'
+}
