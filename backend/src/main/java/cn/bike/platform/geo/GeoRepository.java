@@ -8,6 +8,7 @@ import cn.bike.platform.geo.GeoModels.GeofenceRequest;
 import cn.bike.platform.geo.GeoModels.GeoViolation;
 import cn.bike.platform.geo.GeoModels.ParkingPoint;
 import cn.bike.platform.geo.GeoModels.ParkingPointRequest;
+import cn.bike.platform.security.DataPermission;
 import org.springframework.stereotype.Repository;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
@@ -35,13 +36,13 @@ public class GeoRepository {
     }
 
     /** 输入: 城市代码; 输出: 该城市全部围栏。 */
-    public List<Geofence> findFences(String cityCode) {
-        return mapper.findFences(cityCode).stream().map(this::mapFence).toList();
+    public List<Geofence> findFences(String cityCode, DataPermission permission) {
+        return mapper.findFences(cityCode, permission).stream().map(this::mapFence).toList();
     }
 
     /** 输入: 围栏编号; 输出: 对应围栏。 */
-    public Optional<Geofence> findFence(String fenceId) {
-        return Optional.ofNullable(mapper.findFence(fenceId)).map(this::mapFence);
+    public Optional<Geofence> findFence(String fenceId, DataPermission permission) {
+        return Optional.ofNullable(mapper.findFence(fenceId, permission)).map(this::mapFence);
     }
 
     /** 输入: 围栏编号、请求、WKT 和操作者; 输出: 无, 新增围栏。 */
@@ -62,13 +63,13 @@ public class GeoRepository {
     }
 
     /** 输入: 城市代码; 输出: 停车点及当前覆盖车辆数。 */
-    public List<ParkingPoint> findParkingPoints(String cityCode) {
-        return mapper.findParkingPoints(cityCode).stream().map(this::mapParkingPoint).toList();
+    public List<ParkingPoint> findParkingPoints(String cityCode, DataPermission permission) {
+        return mapper.findParkingPoints(cityCode, permission).stream().map(this::mapParkingPoint).toList();
     }
 
     /** 输入: 停车点编号; 输出: 对应停车点。 */
-    public Optional<ParkingPoint> findParkingPoint(String pointId) {
-        return Optional.ofNullable(mapper.findParkingPoint(pointId)).map(this::mapParkingPoint);
+    public Optional<ParkingPoint> findParkingPoint(String pointId, DataPermission permission) {
+        return Optional.ofNullable(mapper.findParkingPoint(pointId, permission)).map(this::mapParkingPoint);
     }
 
     /** 输入: 停车点编号、请求和操作者; 输出: 无, 新增停车点。 */
@@ -91,8 +92,8 @@ public class GeoRepository {
     }
 
     /** 输入: 城市代码; 输出: 基于最新位置计算的空间违规车辆, 最多 500 条。 */
-    public List<GeoViolation> findViolations(String cityCode) {
-        return mapper.findViolations(cityCode);
+    public List<GeoViolation> findViolations(String cityCode, DataPermission permission) {
+        return mapper.findViolations(cityCode, permission);
     }
 
     /** 输入: 组织编号和城市代码; 输出: 组织是否启用且可管理该城市。 */

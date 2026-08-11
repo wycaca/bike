@@ -31,8 +31,11 @@ public class GeoController {
 
     /** 输入: 城市代码; 输出: 空间设施与违规总览。 */
     @GetMapping("/overview")
-    public ApiResponse<GeoOverview> overview(@RequestParam String cityCode) {
-        return ApiResponse.ok(service.overview(cityCode));
+    public ApiResponse<GeoOverview> overview(
+            @RequestParam String cityCode,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.overview(cityCode, principal));
     }
 
     /** 输入: 围栏请求和当前用户; 输出: 新建围栏。 */
@@ -56,8 +59,11 @@ public class GeoController {
 
     /** 输入: 围栏编号; 输出: 空成功响应。 */
     @DeleteMapping("/fences/{fenceId}")
-    public ApiResponse<Void> disableFence(@PathVariable String fenceId) {
-        service.disableFence(fenceId);
+    public ApiResponse<Void> disableFence(
+            @PathVariable String fenceId,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        service.disableFence(fenceId, principal);
         return ApiResponse.ok(null);
     }
 
@@ -82,8 +88,11 @@ public class GeoController {
 
     /** 输入: 停车点编号; 输出: 空成功响应。 */
     @DeleteMapping("/parking-points/{pointId}")
-    public ApiResponse<Void> disableParkingPoint(@PathVariable String pointId) {
-        service.disableParkingPoint(pointId);
+    public ApiResponse<Void> disableParkingPoint(
+            @PathVariable String pointId,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        service.disableParkingPoint(pointId, principal);
         return ApiResponse.ok(null);
     }
 }

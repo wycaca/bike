@@ -1,6 +1,7 @@
 package cn.bike.platform.security;
 
 import cn.bike.platform.admin.AdminModels.UserRole;
+import cn.bike.platform.admin.AdminModels.DataScope;
 import cn.bike.platform.common.ApiResponse;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -33,11 +34,12 @@ public class AuthController {
             String displayName,
             String orgId,
             String orgName,
-            UserRole role
+            UserRole role,
+            DataScope dataScope
     ) {
         public static CurrentUser from(PlatformPrincipal principal) {
             return new CurrentUser(principal.userId(), principal.username(), principal.displayName(),
-                    principal.orgId(), principal.orgName(), principal.role());
+                    principal.orgId(), principal.orgName(), principal.role(), principal.dataScope());
         }
     }
 }

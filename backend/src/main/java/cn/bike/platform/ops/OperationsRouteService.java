@@ -6,6 +6,8 @@ import cn.bike.platform.ops.OperationsModels.RoutePlan;
 import cn.bike.platform.ops.OperationsModels.RouteStop;
 import cn.bike.platform.ops.OperationsModels.TaskItem;
 import cn.bike.platform.ops.OperationsModels.TaskStatus;
+import cn.bike.platform.security.DataPermissionService;
+import cn.bike.platform.security.PlatformPrincipal;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,25 +20,33 @@ public class OperationsRouteService {
 
     private final OperationsRepository repository;
     private final OperationsRouteProvider provider;
+    private final DataPermissionService dataPermissionService;
 
-    public OperationsRouteService(OperationsRepository repository, OperationsRouteProvider provider) {
+    public OperationsRouteService(
+            OperationsRepository repository,
+            OperationsRouteProvider provider,
+            DataPermissionService dataPermissionService
+    ) {
         this.repository = repository;
         this.provider = provider;
+        this.dataPermissionService = dataPermissionService;
     }
 
     /** 输入: 最多 16 个任务及可选起点; 输出: 按道路距离优化的作业顺序、分段里程和道路折线。 */
-    public RoutePlan optimize(RouteOptimizationRequest request) {
+    public RoutePlan optimize(RouteOptimizationRequest request, PlatformPrincipal principal) {
         validateCoordinatePair(request);
         if (new HashSet<>(request.taskIds()).size() != request.taskIds().size()) {
             throw new IllegalArgumentException("路线任务编号不能重复");
         }
         var taskById = new HashMap<String, TaskItem>();
         repository.findTasksByIds(request.taskIds()).forEach(task -> taskById.put(task.taskId(), task));
+        var permission = dataPermissionService.resolve(principal);
         var tasks = request.taskIds().stream().map(taskId -> {
             var task = taskById.get(taskId);
             if (task == null) {
                 throw new IllegalArgumentException("路线中包含不存在的任务: " + taskId);
             }
+            dataPermissionService.requireOrganization(permission, task.orgId());
             validateTask(task);
             return task;
         }).toList();

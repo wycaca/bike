@@ -1,5 +1,7 @@
 package cn.bike.platform.ops;
 
+import cn.bike.platform.TestDataPermissions;
+import cn.bike.platform.admin.AdminModels.DataScope;
 import cn.bike.platform.admin.AdminModels.UserRole;
 import cn.bike.platform.ops.OperationsModels.AttachmentPurpose;
 import cn.bike.platform.ops.OperationsModels.TaskItem;
@@ -30,7 +32,7 @@ class OperationsAttachmentServiceTest {
     void 领取人可上传凭证并保存摘要() {
         var repository = mock(OperationsRepository.class);
         var storage = mock(OperationsEvidenceStorage.class);
-        var service = new OperationsAttachmentService(repository, storage);
+        var service = new OperationsAttachmentService(repository, storage, TestDataPermissions.allService());
         var file = new MockMultipartFile("file", "after.png", "image/png", new byte[]{1});
         when(repository.findTask("TASK-1")).thenReturn(Optional.of(task("USR-OP-BJ")));
         when(storage.save(file)).thenReturn(new OperationsEvidenceStorage.SavedFile(
@@ -49,7 +51,7 @@ class OperationsAttachmentServiceTest {
     void 非领取人不能上传凭证() {
         var repository = mock(OperationsRepository.class);
         var storage = mock(OperationsEvidenceStorage.class);
-        var service = new OperationsAttachmentService(repository, storage);
+        var service = new OperationsAttachmentService(repository, storage, TestDataPermissions.allService());
         when(repository.findTask("TASK-1")).thenReturn(Optional.of(task("USR-OTHER")));
 
         assertThatThrownBy(() -> service.upload("TASK-1", AttachmentPurpose.AFTER,
@@ -76,6 +78,6 @@ class OperationsAttachmentServiceTest {
 
     private PlatformPrincipal principal(String userId) {
         return new PlatformPrincipal(userId, "operator.bj", "encoded", "北京运维一组",
-                "ORG-BJ", "北京运营中心", UserRole.OPERATOR, true);
+                "ORG-BJ", "北京运营中心", UserRole.OPERATOR, DataScope.ORG_ONLY, true);
     }
 }

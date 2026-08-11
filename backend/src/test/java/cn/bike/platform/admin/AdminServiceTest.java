@@ -1,5 +1,7 @@
 package cn.bike.platform.admin;
 
+import cn.bike.platform.TestDataPermissions;
+import cn.bike.platform.admin.AdminModels.DataScope;
 import cn.bike.platform.admin.AdminModels.RecordStatus;
 import cn.bike.platform.admin.AdminModels.UserRequest;
 import cn.bike.platform.admin.AdminModels.UserRole;
@@ -20,14 +22,14 @@ class AdminServiceTest {
     void 管理员不能停用当前登录账号() {
         var repository = mock(AdminRepository.class);
         var passwordEncoder = mock(PasswordEncoder.class);
-        var service = new AdminService(repository, passwordEncoder);
+        var service = new AdminService(repository, passwordEncoder, TestDataPermissions.allService());
         var request = new UserRequest(
                 "admin", "系统管理员", "13800000000", "ORG-HQ",
-                UserRole.ADMIN, RecordStatus.DISABLED, null
+                UserRole.ADMIN, DataScope.ALL, RecordStatus.DISABLED, null
         );
         var principal = new PlatformPrincipal(
                 "USR-ADMIN", "admin", "encoded", "系统管理员", "ORG-HQ", "运营总部",
-                UserRole.ADMIN, true
+                UserRole.ADMIN, DataScope.ALL, true
         );
         when(repository.findOrganization("ORG-HQ"))
                 .thenReturn(Optional.of(new AdminModels.Organization(
@@ -45,7 +47,8 @@ class AdminServiceTest {
     @Test
     void 组织不能把自己的下级设为上级() {
         var repository = mock(AdminRepository.class);
-        var service = new AdminService(repository, mock(PasswordEncoder.class));
+        var service = new AdminService(repository, mock(PasswordEncoder.class),
+                TestDataPermissions.allService());
         var request = new AdminModels.OrganizationRequest(
                 "ORG-TEAM", "运营总部", AdminModels.OrganizationType.COMPANY,
                 "", RecordStatus.ACTIVE
@@ -59,8 +62,13 @@ class AdminServiceTest {
                 "110000", RecordStatus.ACTIVE, null, null
         )));
 
-        assertThatThrownBy(() -> service.updateOrganization("ORG-HQ", request))
+        assertThatThrownBy(() -> service.updateOrganization("ORG-HQ", request, admin()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("不能是当前组织的下级");
+    }
+
+    private PlatformPrincipal admin() {
+        return new PlatformPrincipal("USR-ADMIN", "admin", "encoded", "系统管理员",
+                "ORG-HQ", "运营总部", UserRole.ADMIN, DataScope.ALL, true);
     }
 }

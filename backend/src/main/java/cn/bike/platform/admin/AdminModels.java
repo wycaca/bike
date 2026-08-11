@@ -19,6 +19,8 @@ public final class AdminModels {
 
     public enum UserRole { ADMIN, OPERATOR, AUDITOR }
 
+    public enum DataScope { ALL, ORG_AND_CHILDREN, ORG_ONLY }
+
     public record Organization(
             String orgId,
             String parentOrgId,
@@ -48,6 +50,7 @@ public final class AdminModels {
             String orgId,
             String orgName,
             UserRole role,
+            DataScope dataScope,
             RecordStatus status,
             Instant lastLoginAt,
             Instant createdAt
@@ -60,6 +63,7 @@ public final class AdminModels {
             @Pattern(regexp = "^$|^1[3-9][0-9]{9}$", message = "手机号格式不正确") String phone,
             @NotBlank String orgId,
             @NotNull UserRole role,
+            @NotNull DataScope dataScope,
             @NotNull RecordStatus status,
             @Size(min = 8, max = 64) String password
     ) {

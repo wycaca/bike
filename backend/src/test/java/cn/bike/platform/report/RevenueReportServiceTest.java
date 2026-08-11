@@ -1,5 +1,6 @@
 package cn.bike.platform.report;
 
+import cn.bike.platform.TestDataPermissions;
 import cn.bike.platform.report.RevenueReportModels.RawMetrics;
 import cn.bike.platform.report.RevenueReportModels.RawPeriodMetrics;
 import cn.bike.platform.report.RevenueReportModels.RevenueGranularity;
@@ -44,13 +45,14 @@ class RevenueReportServiceTest {
         var service = new RevenueReportService(repository);
         var from = LocalDate.of(2026, 7, 15);
         var to = LocalDate.of(2026, 8, 10);
-        when(repository.totals("110000", from, to)).thenReturn(METRICS);
-        when(repository.periods("110000", from, to, RevenueGranularity.MONTH)).thenReturn(List.of(
+        when(repository.totals("110000", from, to, TestDataPermissions.ALL)).thenReturn(METRICS);
+        when(repository.periods("110000", from, to, RevenueGranularity.MONTH,
+                TestDataPermissions.ALL)).thenReturn(List.of(
                 new RawPeriodMetrics(LocalDate.of(2026, 7, 1), METRICS),
                 new RawPeriodMetrics(LocalDate.of(2026, 8, 1), METRICS)
         ));
 
-        var report = service.report("110000", from, to, RevenueGranularity.MONTH);
+        var report = service.report("110000", from, to, RevenueGranularity.MONTH, TestDataPermissions.ALL);
 
         assertThat(report.periods()).hasSize(2);
         assertThat(report.periods().getFirst().periodStart()).isEqualTo(from);
@@ -66,12 +68,13 @@ class RevenueReportServiceTest {
         var repository = mock(RevenueReportRepository.class);
         var service = new RevenueReportService(repository);
         var date = LocalDate.of(2026, 8, 9);
-        when(repository.totals("110000", date, date)).thenReturn(METRICS);
-        when(repository.periods("110000", date, date, RevenueGranularity.DAY))
+        when(repository.totals("110000", date, date, TestDataPermissions.ALL)).thenReturn(METRICS);
+        when(repository.periods("110000", date, date, RevenueGranularity.DAY, TestDataPermissions.ALL))
                 .thenReturn(List.of(new RawPeriodMetrics(date, METRICS)));
 
         var writer = new StringWriter();
-        var rowCount = service.writeCsv(writer, "110000", date, date, RevenueGranularity.DAY);
+        var rowCount = service.writeCsv(
+                writer, "110000", date, date, RevenueGranularity.DAY, TestDataPermissions.ALL);
         var csv = writer.toString();
 
         assertThat(rowCount).isEqualTo(1);
@@ -85,7 +88,7 @@ class RevenueReportServiceTest {
         var service = new RevenueReportService(mock(RevenueReportRepository.class));
 
         assertThatThrownBy(() -> service.report("110000", LocalDate.of(2025, 1, 1),
-                LocalDate.of(2026, 1, 2), RevenueGranularity.DAY))
+                LocalDate.of(2026, 1, 2), RevenueGranularity.DAY, TestDataPermissions.ALL))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("366 天");
     }

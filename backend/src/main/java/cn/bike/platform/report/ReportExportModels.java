@@ -1,5 +1,6 @@
 package cn.bike.platform.report;
 
+import cn.bike.platform.admin.AdminModels.DataScope;
 import cn.bike.platform.report.RevenueReportModels.RevenueGranularity;
 
 import java.nio.file.Path;
@@ -37,6 +38,8 @@ public final class ReportExportModels {
             ReportType reportType,
             ExportStatus status,
             String requestedBy,
+            String requestedOrgId,
+            DataScope requestedDataScope,
             String cityCode,
             LocalDate fromDate,
             LocalDate toDate,

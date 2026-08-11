@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import cn.bike.platform.security.PlatformPrincipal;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -28,19 +30,23 @@ public class DashboardController {
     @GetMapping("/dashboard")
     public ApiResponse<DashboardData> dashboard(
             @RequestParam String cityCode,
-            @RequestParam(defaultValue = "7") int days
+            @RequestParam(defaultValue = "7") int days,
+            @AuthenticationPrincipal PlatformPrincipal principal
     ) {
-        return ApiResponse.ok(service.dashboard(cityCode, days));
+        return ApiResponse.ok(service.dashboard(cityCode, days, principal));
     }
 
     /** 输入: 城市代码; 输出: UTF-8 CSV 下载响应。 */
     @GetMapping("/reports/vehicle-status.csv")
-    public ResponseEntity<byte[]> vehicleStatusCsv(@RequestParam String cityCode) {
+    public ResponseEntity<byte[]> vehicleStatusCsv(
+            @RequestParam String cityCode,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
         var filename = "vehicle-status-" + cityCode + "-" + LocalDate.now() + ".csv";
         return ResponseEntity.ok()
                 .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         ContentDisposition.attachment().filename(filename, StandardCharsets.UTF_8).build().toString())
-                .body(service.vehicleStatusCsv(cityCode));
+                .body(service.vehicleStatusCsv(cityCode, principal));
     }
 }

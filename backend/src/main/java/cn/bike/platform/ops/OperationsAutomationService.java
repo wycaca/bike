@@ -1,5 +1,6 @@
 package cn.bike.platform.ops;
 
+import cn.bike.platform.admin.AdminModels.DataScope;
 import cn.bike.platform.ops.OperationsModels.AutomationScanResult;
 import cn.bike.platform.ops.OperationsModels.AutomationVehicleState;
 import cn.bike.platform.ops.OperationsModels.CreateTaskRequest;
@@ -8,6 +9,9 @@ import cn.bike.platform.ops.OperationsModels.TaskRule;
 import cn.bike.platform.ops.OperationsModels.TaskSourceType;
 import cn.bike.platform.ops.OperationsModels.TaskStatus;
 import cn.bike.platform.ops.OperationsModels.TriggerType;
+import cn.bike.platform.security.DataPermissionService;
+import cn.bike.platform.security.DataPermission;
+import cn.bike.platform.security.PlatformPrincipal;
 import cn.bike.platform.telemetry.TelemetryModels.YadeaCloudEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,15 +35,18 @@ public class OperationsAutomationService {
     private final OperationsRepository taskRepository;
     private final OperationsRuleRepository ruleRepository;
     private final JsonMapper jsonMapper;
+    private final DataPermissionService dataPermissionService;
 
     public OperationsAutomationService(
             OperationsRepository taskRepository,
             OperationsRuleRepository ruleRepository,
-            JsonMapper jsonMapper
+            JsonMapper jsonMapper,
+            DataPermissionService dataPermissionService
     ) {
         this.taskRepository = taskRepository;
         this.ruleRepository = ruleRepository;
         this.jsonMapper = jsonMapper;
+        this.dataPermissionService = dataPermissionService;
     }
 
     /**
@@ -56,7 +63,7 @@ public class OperationsAutomationService {
         var state = event.state();
         var location = event.location();
         evaluate(new AutomationVehicleState(
-                event.vehicleId(), null, null, location.longitude(), location.latitude(),
+                event.vehicleId(), null, null, null, location.longitude(), location.latitude(),
                 state.batteryPercent(), state.online(), state.controllerStatus().name(),
                 state.rideStatus().name(), state.faultCodes() == null ? List.of() : state.faultCodes(),
                 event.occurredAt()), now);
@@ -64,11 +71,20 @@ public class OperationsAutomationService {
 
     /** 输入: 城市; 输出: 对数据库最新车辆状态执行一次规则扫描的统计结果。 */
     @Transactional
-    public AutomationScanResult scanCity(String cityCode) {
+    public AutomationScanResult scanCity(String cityCode, PlatformPrincipal principal) {
+        return scanCity(cityCode, dataPermissionService.resolve(principal));
+    }
+
+    /** 输入: Mock 初始化城市; 输出: 使用系统级范围执行扫描. */
+    AutomationScanResult scanCity(String cityCode) {
+        return scanCity(cityCode, new DataPermission(DataScope.ALL, null, List.of()));
+    }
+
+    private AutomationScanResult scanCity(String cityCode, DataPermission permission) {
         if (cityCode == null || !cityCode.matches("\\d{6}")) {
             throw new IllegalArgumentException("cityCode 必须是 6 位行政区划代码");
         }
-        var states = taskRepository.findAutomationVehicleStates(cityCode);
+        var states = taskRepository.findAutomationVehicleStates(cityCode, permission);
         var created = 0;
         var deduplicated = 0;
         var now = Instant.now();
@@ -93,7 +109,8 @@ public class OperationsAutomationService {
         if (state.cityCode() == null) {
             return EvaluationOutcome.EMPTY;
         }
-        var rules = ruleRepository.findEnabledRules(state.cityCode());
+        var rules = ruleRepository.findEnabledRules(state.cityCode()).stream()
+                .filter(rule -> rule.orgId().equals(state.orgId())).toList();
         var rulesById = new HashMap<String, TaskRule>();
         var created = 0;
         var deduplicated = 0;
@@ -130,7 +147,7 @@ public class OperationsAutomationService {
         }
         return taskRepository.findVehicleSnapshot(state.vehicleId())
                 .map(vehicle -> new AutomationVehicleState(
-                        state.vehicleId(), vehicle.cityCode(), vehicle.areaCode(), state.longitude(),
+                        state.vehicleId(), vehicle.orgId(), vehicle.cityCode(), vehicle.areaCode(), state.longitude(),
                         state.latitude(), state.batteryPercent(), state.online(), state.controllerStatus(),
                         state.rideStatus(), state.faultCodes(), state.occurredAt()))
                 .orElse(state);

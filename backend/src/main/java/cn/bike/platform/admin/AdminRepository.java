@@ -1,12 +1,14 @@
 package cn.bike.platform.admin;
 
 import cn.bike.platform.admin.AdminModels.AuditLog;
+import cn.bike.platform.admin.AdminModels.DataScope;
 import cn.bike.platform.admin.AdminModels.Organization;
 import cn.bike.platform.admin.AdminModels.OrganizationRequest;
 import cn.bike.platform.admin.AdminModels.PlatformUser;
 import cn.bike.platform.admin.AdminModels.RecordStatus;
 import cn.bike.platform.admin.AdminModels.UserRequest;
 import cn.bike.platform.admin.AdminModels.UserRole;
+import cn.bike.platform.security.DataPermission;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -35,6 +37,11 @@ public class AdminRepository {
         return Optional.ofNullable(mapper.findOrganization(orgId));
     }
 
+    /** 输入: 根组织编号; 输出: 根组织及全部下级组织编号. */
+    public List<String> findOrganizationTreeIds(String orgId) {
+        return mapper.findOrganizationTreeIds(orgId);
+    }
+
     /** 输入: 组织编号与请求; 输出: 无, 新增组织记录。 */
     public void insertOrganization(String orgId, OrganizationRequest request) {
         mapper.insertOrganization(orgId, request.parentOrgId(), request.orgName().trim(), request.orgType().name(),
@@ -52,7 +59,7 @@ public class AdminRepository {
         return Optional.ofNullable(mapper.findAuthenticatedUser(username))
                 .map(row -> new AuthenticatedUser(
                         row.userId(), row.username(), row.passwordHash(), row.displayName(),
-                        row.orgId(), row.orgName(), row.role(), row.status()));
+                        row.orgId(), row.orgName(), row.role(), row.dataScope(), row.status()));
     }
 
     /** 输入: 分页和关键字; 输出: 用户列表。 */
@@ -73,13 +80,15 @@ public class AdminRepository {
     /** 输入: 用户编号、请求和密码摘要; 输出: 无, 新增用户。 */
     public void insertUser(String userId, UserRequest request, String passwordHash) {
         mapper.insertUser(userId, request.username().trim(), passwordHash, request.displayName().trim(),
-                blankToNull(request.phone()), request.orgId(), request.role().name(), request.status().name());
+                blankToNull(request.phone()), request.orgId(), request.role().name(), request.dataScope().name(),
+                request.status().name());
     }
 
     /** 输入: 用户编号与请求; 输出: 受影响行数。 */
     public int updateUser(String userId, UserRequest request) {
         return mapper.updateUser(userId, request.username().trim(), request.displayName().trim(),
-                blankToNull(request.phone()), request.orgId(), request.role().name(), request.status().name());
+                blankToNull(request.phone()), request.orgId(), request.role().name(), request.dataScope().name(),
+                request.status().name());
     }
 
     /** 输入: 用户编号和密码摘要; 输出: 受影响行数。 */
@@ -93,13 +102,17 @@ public class AdminRepository {
     }
 
     /** 输入: 审计查询条件; 输出: 审计日志列表。 */
-    public List<AuditLog> findAuditLogs(int page, int pageSize, String keyword, String action) {
-        return mapper.findAuditLogs(fuzzy(keyword), exactOrAny(action), pageSize, (page - 1) * pageSize);
+    public List<AuditLog> findAuditLogs(
+            int page, int pageSize, String keyword, String action, DataPermission permission
+    ) {
+        return mapper.findAuditLogs(fuzzy(keyword), exactOrAny(action), permission.unrestricted(),
+                sqlOrgIds(permission), pageSize, (page - 1) * pageSize);
     }
 
     /** 输入: 审计查询条件; 输出: 匹配日志总数。 */
-    public long countAuditLogs(String keyword, String action) {
-        return mapper.countAuditLogs(fuzzy(keyword), exactOrAny(action));
+    public long countAuditLogs(String keyword, String action, DataPermission permission) {
+        return mapper.countAuditLogs(fuzzy(keyword), exactOrAny(action), permission.unrestricted(),
+                sqlOrgIds(permission));
     }
 
     /** 输入: 完整审计记录字段; 输出: 无, 写入一条审计日志。 */
@@ -124,9 +137,13 @@ public class AdminRepository {
         return value == null || value.isBlank() ? null : value.trim();
     }
 
+    private List<String> sqlOrgIds(DataPermission permission) {
+        return permission.orgIds().isEmpty() ? List.of("__NONE__") : permission.orgIds();
+    }
+
     public record AuthenticatedUser(
             String userId, String username, String passwordHash, String displayName,
-            String orgId, String orgName, UserRole role, RecordStatus status
+            String orgId, String orgName, UserRole role, DataScope dataScope, RecordStatus status
     ) {
     }
 }

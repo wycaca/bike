@@ -38,7 +38,7 @@ public class ReportExportController {
             @RequestBody ExportRequest request,
             @AuthenticationPrincipal PlatformPrincipal principal
     ) {
-        return ApiResponse.ok(service.create(request, principal.userId()));
+        return ApiResponse.ok(service.create(request, principal));
     }
 
     /** 输入: 任务编号和当前用户; 输出: 任务执行状态。 */

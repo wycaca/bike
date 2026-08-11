@@ -28,6 +28,7 @@ import cn.bike.platform.ops.OperationsModels.TaskStatus;
 import cn.bike.platform.ops.OperationsModels.TaskSummary;
 import cn.bike.platform.ops.OperationsModels.TaskType;
 import cn.bike.platform.ops.OperationsModels.VehicleSnapshot;
+import cn.bike.platform.security.DataPermissionService;
 import cn.bike.platform.security.PlatformPrincipal;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -45,9 +46,11 @@ public class OperationsService {
     private static final List<String> TASK_SCOPES = List.of("ALL", "MINE", "UNASSIGNED");
 
     private final OperationsRepository repository;
+    private final DataPermissionService dataPermissionService;
 
-    public OperationsService(OperationsRepository repository) {
+    public OperationsService(OperationsRepository repository, DataPermissionService dataPermissionService) {
         this.repository = repository;
+        this.dataPermissionService = dataPermissionService;
     }
 
     // ==================== 查询能力 ====================
@@ -66,10 +69,12 @@ public class OperationsService {
         validatePage(page, pageSize);
         validateCityCode(cityCode);
         var normalizedScope = normalizeScope(scope);
+        var permission = dataPermissionService.resolve(principal);
         return new TaskPage(
                 repository.findTasks(page, pageSize, cityCode, status, type,
-                        normalizedScope, principal.userId(), keyword),
-                repository.countTasks(cityCode, status, type, normalizedScope, principal.userId(), keyword),
+                        normalizedScope, principal.userId(), keyword, permission),
+                repository.countTasks(cityCode, status, type, normalizedScope, principal.userId(), keyword,
+                        permission),
                 page,
                 pageSize
         );
@@ -78,18 +83,18 @@ public class OperationsService {
     /** 输入: 城市和当前用户; 输出: 队列、验收、异常和个人任务汇总。 */
     public TaskSummary summary(String cityCode, PlatformPrincipal principal) {
         validateCityCode(cityCode);
-        return repository.summary(cityCode, principal.userId());
+        return repository.summary(cityCode, principal.userId(), dataPermissionService.resolve(principal));
     }
 
     /** 输入: 任务编号; 输出: 任务、凭证、异常、触发和不可变时间线。 */
-    public TaskDetail detail(String taskId) {
-        return repository.findTaskDetail(requireTask(taskId));
+    public TaskDetail detail(String taskId, PlatformPrincipal principal) {
+        return repository.findTaskDetail(requireTask(taskId, principal));
     }
 
     /** 输入: 城市; 输出: 管理员可指派的启用运维人员。 */
-    public List<AssigneeOption> assignees(String cityCode) {
+    public List<AssigneeOption> assignees(String cityCode, PlatformPrincipal principal) {
         validateCityCode(cityCode);
-        return repository.findAssignees(cityCode);
+        return repository.findAssignees(cityCode, dataPermissionService.resolve(principal));
     }
 
     // ==================== 单条与批量创建 ====================
@@ -101,7 +106,7 @@ public class OperationsService {
         if (task == null) {
             throw new ConflictException("该车辆已有未结束的运维任务");
         }
-        return detail(task.taskId());
+        return detail(task.taskId(), principal);
     }
 
     /**
@@ -119,6 +124,8 @@ public class OperationsService {
                 skipped.add(new BatchSkippedItem(normalized, "批次内车辆编号重复"));
             }
         }
+        var permission = dataPermissionService.resolve(principal);
+        dataPermissionService.requireOrganization(permission, request.orgId());
         var organization = validateOrganization(request.orgId(), null);
         if (principal.role() == UserRole.OPERATOR && !principal.orgId().equals(request.orgId())) {
             throw new AccessDeniedException("运维人员只能为所属组织创建批量任务");
@@ -129,7 +136,8 @@ public class OperationsService {
 
         var vehicles = uniqueVehicleIds.stream()
                 .map(id -> repository.findVehicleSnapshot(id).orElse(null)).toList();
-        var firstVehicle = vehicles.stream().filter(java.util.Objects::nonNull).findFirst()
+        var firstVehicle = vehicles.stream().filter(java.util.Objects::nonNull)
+                .filter(vehicle -> permission.includes(vehicle.orgId())).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("批量任务中没有可用车辆"));
         var cityCode = organization.cityCode() == null ? firstVehicle.cityCode() : organization.cityCode();
         validateOrganization(request.orgId(), cityCode);
@@ -142,8 +150,8 @@ public class OperationsService {
         var created = new ArrayList<TaskItem>();
         for (var vehicleId : uniqueVehicleIds) {
             var vehicle = repository.findVehicleSnapshot(vehicleId).orElse(null);
-            if (vehicle == null) {
-                skipped.add(new BatchSkippedItem(vehicleId, "车辆不存在或已退役/扣押"));
+            if (vehicle == null || !permission.includes(vehicle.orgId())) {
+                skipped.add(new BatchSkippedItem(vehicleId, "车辆不存在、不可用或无权限"));
                 continue;
             }
             if (!cityCode.equals(vehicle.cityCode())) {
@@ -172,12 +180,14 @@ public class OperationsService {
             String batchId
     ) {
         var vehicle = repository.findVehicleSnapshot(request.vehicleId()).orElse(null);
-        if (vehicle == null) {
+        var permission = dataPermissionService.resolve(principal);
+        if (vehicle == null || !permission.includes(vehicle.orgId())) {
             if (sourceType == TaskSourceType.BATCH) {
                 return null;
             }
             throw new IllegalArgumentException("车辆不存在或不可执行运维任务");
         }
+        dataPermissionService.requireOrganization(permission, request.orgId());
         validateOrganization(request.orgId(), vehicle.cityCode());
         if (principal.role() == UserRole.OPERATOR && !principal.orgId().equals(request.orgId())) {
             throw new AccessDeniedException("运维人员只能为所属组织创建任务");
@@ -187,7 +197,7 @@ public class OperationsService {
         AssigneeOption assignee = null;
         if (assigneeId != null) {
             requireRole(principal, UserRole.ADMIN, "只有管理员可以创建已指派任务");
-            assignee = requireEligibleAssignee(assigneeId, vehicle.cityCode());
+            assignee = requireEligibleAssignee(assigneeId, vehicle.cityCode(), principal);
         }
         var taskId = UUID.randomUUID().toString();
         if (repository.insertTask(taskId, "OPS-" + randomCode(), request, vehicle, assigneeId,
@@ -203,7 +213,7 @@ public class OperationsService {
             repository.insertEvent(taskId, TaskEventType.ASSIGNED, TaskStatus.OPEN, TaskStatus.CLAIMED,
                     principal.userId(), principal.displayName(), "指派给 " + assignee.displayName());
         }
-        return requireTask(taskId);
+        return requireTask(taskId, principal);
     }
 
     // ==================== 领取、执行与验收 ====================
@@ -211,27 +221,27 @@ public class OperationsService {
     @Transactional
     public TaskDetail claim(String taskId, PlatformPrincipal principal) {
         requireRole(principal, UserRole.OPERATOR, "只有运维人员可以抢单");
-        var task = requireTask(taskId);
-        requireEligibleAssignee(principal.userId(), task.cityCode());
+        var task = requireTask(taskId, principal);
+        requireEligibleAssignee(principal.userId(), task.cityCode(), principal);
         if (repository.claim(taskId, principal.userId()) == 0) {
             throw new ConflictException("任务已被领取或状态已变化");
         }
         repository.insertEvent(taskId, TaskEventType.CLAIMED, TaskStatus.OPEN, TaskStatus.CLAIMED,
                 principal.userId(), principal.displayName(), "抢单成功");
-        return detail(taskId);
+        return detail(taskId, principal);
     }
 
     @Transactional
     public TaskDetail assign(String taskId, AssignmentRequest request, PlatformPrincipal principal) {
         requireRole(principal, UserRole.ADMIN, "只有管理员可以指派任务");
-        var task = requireTask(taskId);
-        var assignee = requireEligibleAssignee(request.assigneeId(), task.cityCode());
+        var task = requireTask(taskId, principal);
+        var assignee = requireEligibleAssignee(request.assigneeId(), task.cityCode(), principal);
         if (repository.assign(taskId, task.version(), assignee.userId()) == 0) {
             throw stateConflict();
         }
         repository.insertEvent(taskId, TaskEventType.ASSIGNED, task.status(), TaskStatus.CLAIMED,
                 principal.userId(), principal.displayName(), "指派给 " + assignee.displayName());
-        return detail(taskId);
+        return detail(taskId, principal);
     }
 
     @Transactional
@@ -243,7 +253,7 @@ public class OperationsService {
         }
         repository.insertEvent(taskId, TaskEventType.RELEASED, TaskStatus.CLAIMED, TaskStatus.OPEN,
                 principal.userId(), principal.displayName(), "释放回公共任务池");
-        return detail(taskId);
+        return detail(taskId, principal);
     }
 
     @Transactional
@@ -258,7 +268,7 @@ public class OperationsService {
         repository.updateVehicleLifecycle(task.vehicleId(), vehicleStatus);
         repository.insertEvent(taskId, TaskEventType.STARTED, TaskStatus.CLAIMED, TaskStatus.IN_PROGRESS,
                 principal.userId(), principal.displayName(), "开始执行任务");
-        return detail(taskId);
+        return detail(taskId, principal);
     }
 
     /** 输入: 执行结果和结构化凭证; 输出: 等待管理员验收的任务详情。 */
@@ -278,14 +288,14 @@ public class OperationsService {
         }
         repository.insertEvent(taskId, TaskEventType.SUBMITTED, TaskStatus.IN_PROGRESS,
                 TaskStatus.PENDING_REVIEW, principal.userId(), principal.displayName(), "提交完工凭证，等待验收");
-        return detail(taskId);
+        return detail(taskId, principal);
     }
 
     /** 输入: 管理员验收动作; 输出: 完成或退回执行的任务。 */
     @Transactional
     public TaskDetail review(String taskId, ReviewRequest request, PlatformPrincipal principal) {
         requireRole(principal, UserRole.ADMIN, "只有管理员可以验收任务");
-        var task = requireTask(taskId);
+        var task = requireTask(taskId, principal);
         if (task.status() != TaskStatus.PENDING_REVIEW) {
             throw new ConflictException("只有待验收任务可以执行验收");
         }
@@ -311,7 +321,7 @@ public class OperationsService {
             repository.insertEvent(taskId, TaskEventType.REVIEW_REJECTED, TaskStatus.PENDING_REVIEW,
                     TaskStatus.IN_PROGRESS, principal.userId(), principal.displayName(), request.note());
         }
-        return detail(taskId);
+        return detail(taskId, principal);
     }
 
     // ==================== 异常闭环与取消 ====================
@@ -331,7 +341,7 @@ public class OperationsService {
         repository.linkExceptionAttachments(exceptionId, request.attachmentIds());
         repository.insertEvent(taskId, TaskEventType.EXCEPTION_REPORTED, task.status(), TaskStatus.EXCEPTION,
                 principal.userId(), principal.displayName(), request.note());
-        return detail(taskId);
+        return detail(taskId, principal);
     }
 
     /** 输入: 管理员重开或关闭动作; 输出: 异常处理后的任务。 */
@@ -342,7 +352,7 @@ public class OperationsService {
             PlatformPrincipal principal
     ) {
         requireRole(principal, UserRole.ADMIN, "只有管理员可以处理任务异常");
-        var task = requireTask(taskId);
+        var task = requireTask(taskId, principal);
         if (task.status() != TaskStatus.EXCEPTION) {
             throw new ConflictException("只有异常任务可以执行异常处理");
         }
@@ -359,13 +369,13 @@ public class OperationsService {
         }
         repository.insertEvent(taskId, TaskEventType.EXCEPTION_RESOLVED, TaskStatus.EXCEPTION, targetStatus,
                 principal.userId(), principal.displayName(), request.note());
-        return detail(taskId);
+        return detail(taskId, principal);
     }
 
     @Transactional
     public TaskDetail cancel(String taskId, CancellationRequest request, PlatformPrincipal principal) {
         requireRole(principal, UserRole.ADMIN, "只有管理员可以取消任务");
-        var task = requireTask(taskId);
+        var task = requireTask(taskId, principal);
         if (repository.cancel(taskId, task.version(), request.reason()) == 0) {
             throw stateConflict();
         }
@@ -375,7 +385,7 @@ public class OperationsService {
         }
         repository.insertEvent(taskId, TaskEventType.CANCELLED, task.status(), TaskStatus.CANCELLED,
                 principal.userId(), principal.displayName(), request.reason());
-        return detail(taskId);
+        return detail(taskId, principal);
     }
 
     // ==================== 凭证校验 ====================
@@ -432,7 +442,7 @@ public class OperationsService {
     // ==================== 权限和通用校验 ====================
 
     private TaskItem requireOwnedTask(String taskId, PlatformPrincipal principal) {
-        var task = requireTask(taskId);
+        var task = requireTask(taskId, principal);
         if (!principal.userId().equals(task.assigneeId())) {
             throw new AccessDeniedException("只能操作自己领取的任务");
         }
@@ -444,9 +454,21 @@ public class OperationsService {
                 .orElseThrow(() -> new NotFoundException("运维任务不存在: " + taskId));
     }
 
-    private AssigneeOption requireEligibleAssignee(String userId, String cityCode) {
-        return repository.findEligibleAssignee(userId, cityCode)
+    private TaskItem requireTask(String taskId, PlatformPrincipal principal) {
+        var task = requireTask(taskId);
+        dataPermissionService.requireOrganization(dataPermissionService.resolve(principal), task.orgId());
+        return task;
+    }
+
+    private AssigneeOption requireEligibleAssignee(
+            String userId,
+            String cityCode,
+            PlatformPrincipal principal
+    ) {
+        var assignee = repository.findEligibleAssignee(userId, cityCode)
                 .orElseThrow(() -> new IllegalArgumentException("指派人员未启用或不负责任务城市"));
+        dataPermissionService.requireOrganization(dataPermissionService.resolve(principal), assignee.orgId());
+        return assignee;
     }
 
     private OperationsModels.OrganizationSnapshot validateOrganization(String orgId, String cityCode) {

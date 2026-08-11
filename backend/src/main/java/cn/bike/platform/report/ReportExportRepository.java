@@ -3,6 +3,7 @@ package cn.bike.platform.report;
 import cn.bike.platform.report.ReportExportModels.ExportJob;
 import cn.bike.platform.report.ReportExportModels.ReportType;
 import cn.bike.platform.report.RevenueReportModels.RevenueGranularity;
+import cn.bike.platform.security.PlatformPrincipal;
 import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
@@ -27,14 +28,15 @@ public class ReportExportRepository {
     /** 输入: 报表参数和申请人; 输出: 已持久化的等待任务. */
     public ExportJob create(
             ReportType reportType,
-            String requestedBy,
+            PlatformPrincipal principal,
             String cityCode,
             LocalDate fromDate,
             LocalDate toDate,
             RevenueGranularity granularity,
             String outputFileName
     ) {
-        return mapper.create(UUID.randomUUID().toString(), reportType.name(), requestedBy, cityCode,
+        return mapper.create(UUID.randomUUID().toString(), reportType.name(), principal.userId(),
+                principal.orgId(), principal.dataScope(), cityCode,
                 fromDate, toDate, granularity.name(), outputFileName);
     }
 

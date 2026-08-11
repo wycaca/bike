@@ -1,5 +1,7 @@
 package cn.bike.platform.ops;
 
+import cn.bike.platform.TestDataPermissions;
+import cn.bike.platform.admin.AdminModels.DataScope;
 import cn.bike.platform.admin.AdminModels.UserRole;
 import cn.bike.platform.common.ConflictException;
 import cn.bike.platform.ops.OperationsModels.AssigneeOption;
@@ -38,7 +40,7 @@ class OperationsServiceTest {
     @Test
     void 运维人员应能原子领取待领取任务() {
         var repository = mock(OperationsRepository.class);
-        var service = new OperationsService(repository);
+        var service = new OperationsService(repository, TestDataPermissions.allService());
         var open = task(TaskStatus.OPEN, null, 0, TaskType.BATTERY_SWAP);
         var claimed = task(TaskStatus.CLAIMED, "USR-OP-BJ", 1, TaskType.BATTERY_SWAP);
         when(repository.findTask("TASK-1")).thenReturn(Optional.of(open), Optional.of(claimed));
@@ -57,7 +59,7 @@ class OperationsServiceTest {
     @Test
     void 后到的抢单请求应收到状态冲突() {
         var repository = mock(OperationsRepository.class);
-        var service = new OperationsService(repository);
+        var service = new OperationsService(repository, TestDataPermissions.allService());
         when(repository.findTask("TASK-1")).thenReturn(Optional.of(task(TaskStatus.OPEN, null, 0,
                 TaskType.BATTERY_SWAP)));
         when(repository.findEligibleAssignee("USR-OP-BJ", "110000")).thenReturn(Optional.of(assignee()));
@@ -71,7 +73,7 @@ class OperationsServiceTest {
     @Test
     void 开始维修任务时应同步车辆生命周期() {
         var repository = mock(OperationsRepository.class);
-        var service = new OperationsService(repository);
+        var service = new OperationsService(repository, TestDataPermissions.allService());
         var claimed = task(TaskStatus.CLAIMED, "USR-OP-BJ", 3, TaskType.REPAIR);
         var started = task(TaskStatus.IN_PROGRESS, "USR-OP-BJ", 4, TaskType.REPAIR);
         when(repository.findTask("TASK-1")).thenReturn(Optional.of(claimed), Optional.of(started));
@@ -87,7 +89,7 @@ class OperationsServiceTest {
     @Test
     void 非领取人不能开始任务() {
         var repository = mock(OperationsRepository.class);
-        var service = new OperationsService(repository);
+        var service = new OperationsService(repository, TestDataPermissions.allService());
         when(repository.findTask("TASK-1")).thenReturn(Optional.of(
                 task(TaskStatus.CLAIMED, "USR-OP-OTHER", 1, TaskType.REPAIR)));
 
@@ -100,8 +102,8 @@ class OperationsServiceTest {
     @Test
     void 同一车辆存在活跃任务时应拒绝重复创建() {
         var repository = mock(OperationsRepository.class);
-        var service = new OperationsService(repository);
-        var vehicle = new VehicleSnapshot("YD-BJ-000001", "110000", "110105",
+        var service = new OperationsService(repository, TestDataPermissions.allService());
+        var vehicle = new VehicleSnapshot("YD-BJ-000001", "ORG-BJ", "110000", "110105",
                 new BigDecimal("116.400000"), new BigDecimal("39.900000"), 9);
         var request = new CreateTaskRequest(TaskType.BATTERY_SWAP, TaskPriority.URGENT,
                 "低电量换电", null, vehicle.vehicleId(), "ORG-BJ", null, Instant.now(), null);
@@ -119,7 +121,7 @@ class OperationsServiceTest {
     @Test
     void 完工凭证缺少处理后照片时应拒绝提交() {
         var repository = mock(OperationsRepository.class);
-        var service = new OperationsService(repository);
+        var service = new OperationsService(repository, TestDataPermissions.allService());
         when(repository.findTask("TASK-1")).thenReturn(Optional.of(
                 task(TaskStatus.IN_PROGRESS, "USR-OP-BJ", 2, TaskType.REPAIR)));
 
@@ -131,7 +133,7 @@ class OperationsServiceTest {
     @Test
     void 合格完工凭证应进入待验收而不是直接完成() {
         var repository = mock(OperationsRepository.class);
-        var service = new OperationsService(repository);
+        var service = new OperationsService(repository, TestDataPermissions.allService());
         var started = task(TaskStatus.IN_PROGRESS, "USR-OP-BJ", 2, TaskType.REPAIR);
         var pending = task(TaskStatus.PENDING_REVIEW, "USR-OP-BJ", 3, TaskType.REPAIR);
         var attachment = new StoredAttachment(7, "TASK-1", AttachmentPurpose.AFTER,
@@ -195,12 +197,12 @@ class OperationsServiceTest {
     /** 输入: 无; 输出: 北京运维人员登录主体。 */
     private PlatformPrincipal operator() {
         return new PlatformPrincipal("USR-OP-BJ", "operator.bj", "encoded", "北京运维一组",
-                "ORG-BJ", "北京运营中心", UserRole.OPERATOR, true);
+                "ORG-BJ", "北京运营中心", UserRole.OPERATOR, DataScope.ORG_ONLY, true);
     }
 
     /** 输入: 无; 输出: 系统管理员登录主体。 */
     private PlatformPrincipal admin() {
         return new PlatformPrincipal("USR-ADMIN", "admin", "encoded", "系统管理员",
-                "ORG-HQ", "运营总部", UserRole.ADMIN, true);
+                "ORG-HQ", "运营总部", UserRole.ADMIN, DataScope.ALL, true);
     }
 }

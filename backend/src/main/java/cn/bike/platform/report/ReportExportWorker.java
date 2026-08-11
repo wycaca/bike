@@ -2,6 +2,7 @@ package cn.bike.platform.report;
 
 import cn.bike.platform.report.ReportExportModels.ExportJob;
 import cn.bike.platform.report.ReportExportModels.ReportType;
+import cn.bike.platform.security.DataPermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
@@ -19,15 +20,18 @@ public class ReportExportWorker {
     private final ReportExportRepository repository;
     private final RevenueReportService revenueReportService;
     private final ReportFileStorage storage;
+    private final DataPermissionService dataPermissionService;
 
     public ReportExportWorker(
             ReportExportRepository repository,
             RevenueReportService revenueReportService,
-            ReportFileStorage storage
+            ReportFileStorage storage,
+            DataPermissionService dataPermissionService
     ) {
         this.repository = repository;
         this.revenueReportService = revenueReportService;
         this.storage = storage;
+        this.dataPermissionService = dataPermissionService;
     }
 
     /** 输入: 数据库等待队列; 输出: 每次串行领取并处理一个任务。 */
@@ -44,8 +48,9 @@ public class ReportExportWorker {
             if (job.reportType() != ReportType.REVENUE) {
                 throw new IllegalArgumentException("不支持的报表类型: " + job.reportType());
             }
+            var permission = dataPermissionService.resolve(job.requestedDataScope(), job.requestedOrgId());
             var stored = storage.write(storageKey, writer -> revenueReportService.writeCsv(writer,
-                    job.cityCode(), job.fromDate(), job.toDate(), job.granularity()));
+                    job.cityCode(), job.fromDate(), job.toDate(), job.granularity(), permission));
             repository.markSucceeded(job.jobId(), stored.storageKey(), stored.size(),
                     stored.rowCount(), FILE_RETENTION);
             LOG.info("报表任务 {} 已完成, 文件 {} 字节", job.jobId(), stored.size());

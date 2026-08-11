@@ -34,23 +34,29 @@ public class AdminController {
 
     /** 输入: 无; 输出: 全部组织。 */
     @GetMapping("/organizations")
-    public ApiResponse<List<Organization>> findOrganizations() {
-        return ApiResponse.ok(service.findOrganizations());
+    public ApiResponse<List<Organization>> findOrganizations(
+            @AuthenticationPrincipal PlatformPrincipal operator
+    ) {
+        return ApiResponse.ok(service.findOrganizations(operator));
     }
 
     /** 输入: 组织请求; 输出: 新建组织。 */
     @PostMapping("/organizations")
-    public ApiResponse<Organization> createOrganization(@Valid @RequestBody OrganizationRequest request) {
-        return ApiResponse.ok(service.createOrganization(request));
+    public ApiResponse<Organization> createOrganization(
+            @Valid @RequestBody OrganizationRequest request,
+            @AuthenticationPrincipal PlatformPrincipal operator
+    ) {
+        return ApiResponse.ok(service.createOrganization(request, operator));
     }
 
     /** 输入: 组织编号和请求; 输出: 更新后的组织。 */
     @PutMapping("/organizations/{orgId}")
     public ApiResponse<Organization> updateOrganization(
             @PathVariable String orgId,
-            @Valid @RequestBody OrganizationRequest request
+            @Valid @RequestBody OrganizationRequest request,
+            @AuthenticationPrincipal PlatformPrincipal operator
     ) {
-        return ApiResponse.ok(service.updateOrganization(orgId, request));
+        return ApiResponse.ok(service.updateOrganization(orgId, request, operator));
     }
 
     /** 输入: 用户分页条件; 输出: 用户分页。 */
@@ -58,15 +64,19 @@ public class AdminController {
     public ApiResponse<UserPage> findUsers(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam(required = false) String keyword
+            @RequestParam(required = false) String keyword,
+            @AuthenticationPrincipal PlatformPrincipal operator
     ) {
-        return ApiResponse.ok(service.findUsers(page, pageSize, keyword));
+        return ApiResponse.ok(service.findUsers(page, pageSize, keyword, operator));
     }
 
     /** 输入: 用户请求; 输出: 新建用户。 */
     @PostMapping("/users")
-    public ApiResponse<PlatformUser> createUser(@Valid @RequestBody UserRequest request) {
-        return ApiResponse.ok(service.createUser(request));
+    public ApiResponse<PlatformUser> createUser(
+            @Valid @RequestBody UserRequest request,
+            @AuthenticationPrincipal PlatformPrincipal operator
+    ) {
+        return ApiResponse.ok(service.createUser(request, operator));
     }
 
     /** 输入: 用户编号、请求和当前操作者; 输出: 更新后的用户。 */
@@ -83,9 +93,10 @@ public class AdminController {
     @PutMapping("/users/{userId}/password")
     public ApiResponse<Void> resetPassword(
             @PathVariable String userId,
-            @Valid @RequestBody PasswordResetRequest request
+            @Valid @RequestBody PasswordResetRequest request,
+            @AuthenticationPrincipal PlatformPrincipal operator
     ) {
-        service.resetPassword(userId, request);
+        service.resetPassword(userId, request, operator);
         return ApiResponse.ok(null);
     }
 
@@ -95,8 +106,9 @@ public class AdminController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String action
+            @RequestParam(required = false) String action,
+            @AuthenticationPrincipal PlatformPrincipal operator
     ) {
-        return ApiResponse.ok(service.findAuditLogs(page, pageSize, keyword, action));
+        return ApiResponse.ok(service.findAuditLogs(page, pageSize, keyword, action, operator));
     }
 }

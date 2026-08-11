@@ -30,6 +30,7 @@ import cn.bike.platform.ops.OperationsModels.TaskSummary;
 import cn.bike.platform.ops.OperationsModels.TaskTrigger;
 import cn.bike.platform.ops.OperationsModels.TaskType;
 import cn.bike.platform.ops.OperationsModels.VehicleSnapshot;
+import cn.bike.platform.security.DataPermission;
 import org.springframework.stereotype.Repository;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
@@ -68,10 +69,11 @@ public class OperationsRepository {
             TaskType type,
             String scope,
             String currentUserId,
-            String keyword
+            String keyword,
+            DataPermission permission
     ) {
         return mapper.findTasks(cityCode, enumName(status), enumName(type), scope, currentUserId,
-                fuzzyOrNull(keyword), pageSize, (page - 1) * pageSize);
+                fuzzyOrNull(keyword), permission, pageSize, (page - 1) * pageSize);
     }
 
     /** 输入: 任务筛选; 输出: 匹配任务总数。 */
@@ -81,15 +83,16 @@ public class OperationsRepository {
             TaskType type,
             String scope,
             String currentUserId,
-            String keyword
+            String keyword,
+            DataPermission permission
     ) {
         return mapper.countTasks(cityCode, enumName(status), enumName(type), scope, currentUserId,
-                fuzzyOrNull(keyword));
+                fuzzyOrNull(keyword), permission);
     }
 
     /** 输入: 城市和当前用户; 输出: 队列、验收、异常、超时和个人任务汇总。 */
-    public TaskSummary summary(String cityCode, String currentUserId) {
-        return mapper.summary(cityCode, currentUserId);
+    public TaskSummary summary(String cityCode, String currentUserId, DataPermission permission) {
+        return mapper.summary(cityCode, currentUserId, permission);
     }
 
     /** 输入: 任务编号; 输出: 包含人员、规则和批次显示名的任务。 */
@@ -131,8 +134,8 @@ public class OperationsRepository {
         return Optional.ofNullable(mapper.findEligibleAssignee(userId, cityCode));
     }
 
-    public List<AssigneeOption> findAssignees(String cityCode) {
-        return mapper.findAssignees(cityCode);
+    public List<AssigneeOption> findAssignees(String cityCode, DataPermission permission) {
+        return mapper.findAssignees(cityCode, permission);
     }
 
     // ==================== 任务与批次写入 ====================
@@ -354,8 +357,8 @@ public class OperationsRepository {
     }
 
     /** 输入: 城市; 输出: 可用于手工扫描规则的车辆最新状态。 */
-    public List<AutomationVehicleState> findAutomationVehicleStates(String cityCode) {
-        return mapper.findAutomationVehicleStates(cityCode).stream().map(this::mapAutomationState).toList();
+    public List<AutomationVehicleState> findAutomationVehicleStates(String cityCode, DataPermission permission) {
+        return mapper.findAutomationVehicleStates(cityCode, permission).stream().map(this::mapAutomationState).toList();
     }
 
     public boolean hasGeoViolation(AutomationVehicleState state) {
@@ -412,7 +415,7 @@ public class OperationsRepository {
 
     private AutomationVehicleState mapAutomationState(AutomationRow row) {
         return new AutomationVehicleState(
-                row.vehicleId(), row.cityCode(), row.areaCode(), row.longitude(), row.latitude(),
+                row.vehicleId(), row.orgId(), row.cityCode(), row.areaCode(), row.longitude(), row.latitude(),
                 row.batteryPercent(), row.online(), row.controllerStatus(), row.rideStatus(),
                 readStringList(row.faultCodes()), row.occurredAt());
     }

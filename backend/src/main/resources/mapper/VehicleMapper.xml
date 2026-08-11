@@ -4,6 +4,7 @@
 <mapper namespace="cn.bike.platform.vehicle.VehicleMapper">
 
     <sql id="vehicleFilters">
+        <include refid="dataPermissionFilter"/>
         <if test="keyword != null">
             AND (v.vehicle_id ILIKE #{keyword} OR v.plate_number ILIKE #{keyword} OR v.lock_id ILIKE #{keyword})
         </if>
@@ -16,6 +17,7 @@
     </sql>
 
     <sql id="mapFilters">
+        <include refid="dataPermissionFilter"/>
         <if test="online != null">
             AND l.online = #{online}
         </if>
@@ -24,8 +26,17 @@
         </if>
     </sql>
 
+    <sql id="dataPermissionFilter">
+        <if test="!permission.unrestricted()">
+            AND v.org_id IN
+            <foreach collection="permission.orgIds" item="orgId" open="(" separator="," close=")">
+                #{orgId}
+            </foreach>
+        </if>
+    </sql>
+
     <sql id="vehicleWithLatestColumns">
-        v.vehicle_id, v.company_id, v.lock_id, v.controller_id, v.plate_number, v.filing_code,
+        v.vehicle_id, v.company_id, v.org_id, v.lock_id, v.controller_id, v.plate_number, v.filing_code,
         v.model, v.batch_no, v.operation_city_code, v.operation_area_code, v.launch_date,
         v.lifecycle_status, l.reported_at, l.longitude, l.latitude, l.accuracy_meters,
         l.speed_kmh, l.direction_degrees, l.satellite_count, l.battery_percent,
@@ -35,15 +46,16 @@
 
     <insert id="upsertVehicle">
         INSERT INTO vehicle (
-            vehicle_id, company_id, lock_id, controller_id, plate_number, filing_code,
+            vehicle_id, company_id, org_id, lock_id, controller_id, plate_number, filing_code,
             model, batch_no, operation_city_code, operation_area_code, launch_date,
             lifecycle_status
         ) VALUES (
-            #{vehicleId}, #{companyId}, #{lockId}, #{controllerId}, #{plateNumber}, #{filingCode},
+            #{vehicleId}, #{companyId}, #{orgId}, #{lockId}, #{controllerId}, #{plateNumber}, #{filingCode},
             #{model}, #{batchNo}, #{operationCityCode}, #{operationAreaCode}, #{launchDate}, #{lifecycleStatus}
         )
         ON CONFLICT (vehicle_id) DO UPDATE SET
             plate_number = EXCLUDED.plate_number,
+            org_id = EXCLUDED.org_id,
             filing_code = EXCLUDED.filing_code,
             model = EXCLUDED.model,
             batch_no = EXCLUDED.batch_no,
@@ -130,6 +142,7 @@
         FROM vehicle v
         LEFT JOIN vehicle_latest l ON l.vehicle_id = v.vehicle_id
         WHERE v.vehicle_id = #{vehicleId}
+        <include refid="dataPermissionFilter"/>
     </select>
 
     <select id="findTrajectory" resultType="cn.bike.platform.vehicle.VehicleMapper$TrajectoryRow">

@@ -1,6 +1,7 @@
 package cn.bike.platform.report;
 
 import cn.bike.platform.report.RevenueReportModels.RawMetrics;
+import cn.bike.platform.security.DataPermission;
 import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
@@ -19,7 +20,8 @@ public interface RevenueReportMapper {
             @Param("fromDate") LocalDate fromDate,
             @Param("toDate") LocalDate toDate,
             @Param("fromInstant") Instant fromInstant,
-            @Param("toInstant") Instant toInstant
+            @Param("toInstant") Instant toInstant,
+            @Param("permission") DataPermission permission
     );
 
     List<PeriodRow> periods(
@@ -28,7 +30,8 @@ public interface RevenueReportMapper {
             @Param("toDate") LocalDate toDate,
             @Param("fromInstant") Instant fromInstant,
             @Param("toInstant") Instant toInstant,
-            @Param("granularity") String granularity
+            @Param("granularity") String granularity,
+            @Param("permission") DataPermission permission
     );
 
     record PeriodRow(

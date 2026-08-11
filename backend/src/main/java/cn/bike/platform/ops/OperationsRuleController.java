@@ -29,8 +29,11 @@ public class OperationsRuleController {
 
     /** 输入: 城市; 输出: 自动任务规则。 */
     @GetMapping
-    public ApiResponse<List<TaskRule>> findRules(@RequestParam String cityCode) {
-        return ApiResponse.ok(service.findRules(cityCode));
+    public ApiResponse<List<TaskRule>> findRules(
+            @RequestParam String cityCode,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        return ApiResponse.ok(service.findRules(cityCode, principal));
     }
 
     /** 输入: 规则配置和管理员; 输出: 新建规则。 */

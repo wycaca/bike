@@ -1,11 +1,14 @@
 package cn.bike.platform.report;
 
+import cn.bike.platform.admin.AdminModels.DataScope;
+import cn.bike.platform.admin.AdminModels.UserRole;
 import cn.bike.platform.common.ConflictException;
 import cn.bike.platform.report.ReportExportModels.ExportJob;
 import cn.bike.platform.report.ReportExportModels.ExportRequest;
 import cn.bike.platform.report.ReportExportModels.ExportStatus;
 import cn.bike.platform.report.ReportExportModels.ReportType;
 import cn.bike.platform.report.RevenueReportModels.RevenueGranularity;
+import cn.bike.platform.security.PlatformPrincipal;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -31,10 +34,10 @@ class ReportExportServiceTest {
         var request = request();
         var pending = job(ExportStatus.PENDING);
         when(repository.countActive("USR-ADMIN")).thenReturn(0L);
-        when(repository.create(ReportType.REVENUE, "USR-ADMIN", "110000", FROM, TO,
+        when(repository.create(ReportType.REVENUE, principal(), "110000", FROM, TO,
                 RevenueGranularity.DAY, "revenue-110000-2026-07-01-2026-07-31.csv")).thenReturn(pending);
 
-        var result = service.create(request, "USR-ADMIN");
+        var result = service.create(request, principal());
 
         assertThat(result.status()).isEqualTo(ExportStatus.PENDING);
         assertThat(result.downloadable()).isFalse();
@@ -48,7 +51,7 @@ class ReportExportServiceTest {
         var service = new ReportExportService(repository, mock(RevenueReportService.class),
                 mock(ReportFileStorage.class));
 
-        assertThatThrownBy(() -> service.create(request(), "USR-ADMIN"))
+        assertThatThrownBy(() -> service.create(request(), principal()))
                 .isInstanceOf(ConflictException.class)
                 .hasMessageContaining("3 个报表任务");
     }
@@ -59,10 +62,15 @@ class ReportExportServiceTest {
 
     static ExportJob job(ExportStatus status) {
         return new ExportJob("11111111-1111-1111-1111-111111111111", ReportType.REVENUE, status,
-                "USR-ADMIN", "110000", FROM, TO, RevenueGranularity.DAY,
+                "USR-ADMIN", "ORG-HQ", DataScope.ALL, "110000", FROM, TO, RevenueGranularity.DAY,
                 "revenue.csv", null, null, null, status == ExportStatus.RUNNING ? 1 : 0,
                 null, Instant.parse("2026-08-10T00:00:00Z"),
                 status == ExportStatus.RUNNING ? Instant.parse("2026-08-10T00:00:01Z") : null,
                 null, null);
+    }
+
+    private static PlatformPrincipal principal() {
+        return new PlatformPrincipal("USR-ADMIN", "admin", "encoded", "系统管理员",
+                "ORG-HQ", "运营总部", UserRole.ADMIN, DataScope.ALL, true);
     }
 }

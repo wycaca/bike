@@ -1,5 +1,6 @@
 package cn.bike.platform.report;
 
+import cn.bike.platform.admin.AdminModels.DataScope;
 import cn.bike.platform.report.ReportExportModels.ExportJob;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -19,6 +20,8 @@ public interface ReportExportMapper {
             @Param("jobId") String jobId,
             @Param("reportType") String reportType,
             @Param("requestedBy") String requestedBy,
+            @Param("requestedOrgId") String requestedOrgId,
+            @Param("requestedDataScope") DataScope requestedDataScope,
             @Param("cityCode") String cityCode,
             @Param("fromDate") LocalDate fromDate,
             @Param("toDate") LocalDate toDate,

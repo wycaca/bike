@@ -26,6 +26,12 @@
 
     <sql id="taskFilters">
         WHERE t.city_code = #{cityCode}
+        <if test="!permission.unrestricted()">
+            AND t.org_id IN
+            <foreach collection="permission.orgIds" item="orgId" open="(" separator="," close=")">
+                #{orgId}
+            </foreach>
+        </if>
         <if test="status != null">AND t.task_status = #{status}</if>
         <if test="type != null">AND t.task_type = #{type}</if>
         <choose>
@@ -71,7 +77,14 @@
                    WHERE assignee_id = #{currentUserId}
                      AND task_status IN ('CLAIMED', 'IN_PROGRESS', 'PENDING_REVIEW', 'EXCEPTION')
                ) AS my_active_count
-        FROM operations_task WHERE city_code = #{cityCode}
+        FROM operations_task
+        WHERE city_code = #{cityCode}
+        <if test="!permission.unrestricted()">
+            AND org_id IN
+            <foreach collection="permission.orgIds" item="orgId" open="(" separator="," close=")">
+                #{orgId}
+            </foreach>
+        </if>
     </select>
 
     <select id="findTask" resultType="cn.bike.platform.ops.OperationsModels$TaskItem">
@@ -101,7 +114,7 @@
     </select>
 
     <select id="findVehicleSnapshot" resultType="cn.bike.platform.ops.OperationsModels$VehicleSnapshot">
-        SELECT v.vehicle_id, v.operation_city_code AS city_code, v.operation_area_code AS area_code,
+        SELECT v.vehicle_id, v.org_id, v.operation_city_code AS city_code, v.operation_area_code AS area_code,
                l.longitude, l.latitude, l.battery_percent
         FROM vehicle v LEFT JOIN vehicle_latest l ON l.vehicle_id = v.vehicle_id
         WHERE v.vehicle_id = #{vehicleId} AND v.lifecycle_status NOT IN ('RETIRED', 'IMPOUNDED')
@@ -124,6 +137,12 @@
         FROM app_user u JOIN organization o ON o.org_id = u.org_id
         WHERE u.role = 'OPERATOR' AND u.status = 'ACTIVE' AND o.status = 'ACTIVE'
           AND (o.city_code IS NULL OR o.city_code = #{cityCode})
+        <if test="!permission.unrestricted()">
+            AND u.org_id IN
+            <foreach collection="permission.orgIds" item="orgId" open="(" separator="," close=")">
+                #{orgId}
+            </foreach>
+        </if>
         ORDER BY o.org_name, u.display_name
     </select>
 
@@ -366,13 +385,19 @@
     </select>
 
     <select id="findAutomationVehicleStates" resultType="cn.bike.platform.ops.OperationsMapper$AutomationRow">
-        SELECT v.vehicle_id, v.operation_city_code AS city_code, v.operation_area_code AS area_code,
+        SELECT v.vehicle_id, v.org_id, v.operation_city_code AS city_code, v.operation_area_code AS area_code,
                l.longitude, l.latitude, l.battery_percent, l.online,
                l.controller_status, l.ride_status, l.fault_codes::text,
                l.reported_at AS occurred_at
         FROM vehicle v JOIN vehicle_latest l ON l.vehicle_id = v.vehicle_id
         WHERE v.operation_city_code = #{cityCode}
           AND v.lifecycle_status NOT IN ('RETIRED', 'IMPOUNDED')
+        <if test="!permission.unrestricted()">
+            AND v.org_id IN
+            <foreach collection="permission.orgIds" item="orgId" open="(" separator="," close=")">
+                #{orgId}
+            </foreach>
+        </if>
     </select>
 
     <!-- 城市未配置运营围栏时不判定越界, 避免把全部车辆误报为异常. -->

@@ -30,6 +30,6 @@ public class OperationsAutomationController {
         if (principal.role() != UserRole.ADMIN) {
             throw new AccessDeniedException("只有管理员可以触发规则扫描");
         }
-        return ApiResponse.ok(service.scanCity(cityCode));
+        return ApiResponse.ok(service.scanCity(cityCode, principal));
     }
 }

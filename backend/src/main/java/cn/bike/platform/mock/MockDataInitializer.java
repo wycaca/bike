@@ -59,11 +59,26 @@ public class MockDataInitializer implements ApplicationRunner {
         var vehiclesResource = resourceLoader.getResource("classpath:mock/vehicles.json");
         var eventsResource = resourceLoader.getResource("classpath:mock/yadea-cloud-events.json");
 
-        var vehicles = jsonMapper.readValue(vehiclesResource.getInputStream(), VEHICLE_LIST_TYPE);
+        var vehicles = jsonMapper.readValue(vehiclesResource.getInputStream(), VEHICLE_LIST_TYPE).stream()
+                .map(this::assignMockOrganization)
+                .toList();
         vehicles.forEach(vehicleRepository::upsertVehicle);
 
         var events = jsonMapper.readValue(eventsResource.getInputStream(), EVENT_LIST_TYPE);
         events.reversed().forEach(telemetryProcessor::process);
         LOG.info("已载入模拟车辆 {} 辆, 雅迪云事件 {} 条", vehicles.size(), events.size());
+    }
+
+    /** 输入: 缺少组织字段的固定车辆; 输出: 按试点城市补齐运营组织的车辆. */
+    private VehicleAsset assignMockOrganization(VehicleAsset vehicle) {
+        var orgId = switch (vehicle.operationCityCode()) {
+            case "110000" -> "ORG-BJ";
+            case "310000" -> "ORG-SH";
+            default -> throw new IllegalArgumentException("模拟车辆城市未配置运营组织: " + vehicle.operationCityCode());
+        };
+        return new VehicleAsset(vehicle.vehicleId(), vehicle.companyId(), orgId, vehicle.lockId(),
+                vehicle.controllerId(), vehicle.plateNumber(), vehicle.filingCode(), vehicle.model(),
+                vehicle.batchNo(), vehicle.operationCityCode(), vehicle.operationAreaCode(),
+                vehicle.launchDate(), vehicle.lifecycleStatus());
     }
 }

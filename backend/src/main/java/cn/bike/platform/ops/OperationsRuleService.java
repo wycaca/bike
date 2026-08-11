@@ -6,6 +6,7 @@ import cn.bike.platform.common.NotFoundException;
 import cn.bike.platform.ops.OperationsModels.TaskRule;
 import cn.bike.platform.ops.OperationsModels.TaskRuleRequest;
 import cn.bike.platform.ops.OperationsModels.TriggerType;
+import cn.bike.platform.security.DataPermissionService;
 import cn.bike.platform.security.PlatformPrincipal;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.access.AccessDeniedException;
@@ -20,25 +21,31 @@ public class OperationsRuleService {
 
     private final OperationsRuleRepository ruleRepository;
     private final OperationsRepository taskRepository;
+    private final DataPermissionService dataPermissionService;
 
     public OperationsRuleService(
             OperationsRuleRepository ruleRepository,
-            OperationsRepository taskRepository
+            OperationsRepository taskRepository,
+            DataPermissionService dataPermissionService
     ) {
         this.ruleRepository = ruleRepository;
         this.taskRepository = taskRepository;
+        this.dataPermissionService = dataPermissionService;
     }
 
     /** 输入: 城市; 输出: 自动任务规则列表。 */
-    public List<TaskRule> findRules(String cityCode) {
+    public List<TaskRule> findRules(String cityCode, PlatformPrincipal principal) {
         validateCityCode(cityCode);
-        return ruleRepository.findRules(cityCode);
+        var permission = dataPermissionService.resolve(principal);
+        return ruleRepository.findRules(cityCode).stream()
+                .filter(rule -> permission.includes(rule.orgId())).toList();
     }
 
     /** 输入: 规则配置和管理员; 输出: 新建规则。 */
     @Transactional
     public TaskRule create(TaskRuleRequest request, PlatformPrincipal principal) {
         requireAdmin(principal);
+        dataPermissionService.requireOrganization(dataPermissionService.resolve(principal), request.orgId());
         validateRequest(request);
         var id = "RULE-" + UUID.randomUUID().toString().substring(0, 12);
         try {
@@ -58,8 +65,11 @@ public class OperationsRuleService {
             PlatformPrincipal principal
     ) {
         requireAdmin(principal);
+        var permission = dataPermissionService.resolve(principal);
+        dataPermissionService.requireOrganization(permission, request.orgId());
         validateRequest(request);
-        if (ruleRepository.findRule(ruleId).isEmpty()) {
+        var existing = ruleRepository.findRule(ruleId).orElse(null);
+        if (existing == null || !permission.includes(existing.orgId())) {
             throw new NotFoundException("自动任务规则不存在: " + ruleId);
         }
         try {

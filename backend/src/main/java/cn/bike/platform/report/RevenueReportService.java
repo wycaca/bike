@@ -6,6 +6,7 @@ import cn.bike.platform.report.RevenueReportModels.RevenuePeriod;
 import cn.bike.platform.report.RevenueReportModels.RevenueReport;
 import cn.bike.platform.report.RevenueReportModels.RevenueSummary;
 import cn.bike.platform.report.RevenueReportModels.RevenueValues;
+import cn.bike.platform.security.DataPermission;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -27,11 +28,12 @@ public class RevenueReportService {
 
     /** 输入: 城市、闭区间日期和粒度; 输出: 收入、利用率及单位经济报表。 */
     public RevenueReport report(
-            String cityCode, LocalDate fromDate, LocalDate toDate, RevenueGranularity granularity
+            String cityCode, LocalDate fromDate, LocalDate toDate, RevenueGranularity granularity,
+            DataPermission permission
     ) {
         validateRequest(cityCode, fromDate, toDate, granularity);
-        var totals = repository.totals(cityCode, fromDate, toDate);
-        var periods = repository.periods(cityCode, fromDate, toDate, granularity).stream()
+        var totals = repository.totals(cityCode, fromDate, toDate, permission);
+        var periods = repository.periods(cityCode, fromDate, toDate, granularity, permission).stream()
                 .map(raw -> {
                     var periodEnd = granularity == RevenueGranularity.MONTH
                             ? earlier(raw.periodStart().plusMonths(1).minusDays(1), toDate)
@@ -51,9 +53,10 @@ public class RevenueReportService {
             String cityCode,
             LocalDate fromDate,
             LocalDate toDate,
-            RevenueGranularity granularity
+            RevenueGranularity granularity,
+            DataPermission permission
     ) throws IOException {
-        var report = report(cityCode, fromDate, toDate, granularity);
+        var report = report(cityCode, fromDate, toDate, granularity, permission);
         writer.write("\uFEFF周期,总流水(元),优惠(元),退款(元),净收入(元),有效订单,活跃车辆,平均投放车辆,"
                 + "单车日均骑行次数(RpD),单均收入(元),单车日均收入(元),优惠率(%),退款率(%),平均时长(分钟),平均距离(公里)\r\n");
         for (var period : report.periods()) appendRow(writer, period);

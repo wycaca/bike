@@ -41,7 +41,7 @@ class MyBatisMapperTest {
 
         var configuration = factory.getObject().getConfiguration();
 
-        assertThat(resources).hasSize(5);
+        assertThat(resources).hasSize(7);
         assertThat(configuration.hasStatement("cn.bike.platform.vehicle.VehicleMapper.findVehicles")).isTrue();
         assertThat(configuration.hasStatement("cn.bike.platform.ops.OperationsMapper.findTasks")).isTrue();
         assertThat(configuration.hasStatement("cn.bike.platform.report.RevenueReportMapper.totals")).isTrue();

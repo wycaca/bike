@@ -1,6 +1,8 @@
 package cn.bike.platform.vehicle;
 
 import cn.bike.platform.common.NotFoundException;
+import cn.bike.platform.security.DataPermissionService;
+import cn.bike.platform.security.PlatformPrincipal;
 import cn.bike.platform.vehicle.VehicleModels.CoordinateSystem;
 import cn.bike.platform.vehicle.VehicleModels.LatestState;
 import cn.bike.platform.vehicle.VehicleModels.LifecycleStatus;
@@ -27,10 +29,16 @@ public class VehicleService {
 
     private final VehicleRepository repository;
     private final LatestVehicleCache latestVehicleCache;
+    private final DataPermissionService dataPermissionService;
 
-    public VehicleService(VehicleRepository repository, LatestVehicleCache latestVehicleCache) {
+    public VehicleService(
+            VehicleRepository repository,
+            LatestVehicleCache latestVehicleCache,
+            DataPermissionService dataPermissionService
+    ) {
         this.repository = repository;
         this.latestVehicleCache = latestVehicleCache;
+        this.dataPermissionService = dataPermissionService;
     }
 
     public PageData<VehicleListItem> findVehicles(
@@ -38,19 +46,21 @@ public class VehicleService {
             int pageSize,
             String keyword,
             String cityCode,
-            LifecycleStatus lifecycleStatus
+            LifecycleStatus lifecycleStatus,
+            PlatformPrincipal principal
     ) {
         if (page < 1 || pageSize < 1 || pageSize > 100) {
             throw new IllegalArgumentException("page 必须大于 0, pageSize 必须在 1 到 100 之间");
         }
-        return repository.findVehicles(page, pageSize, keyword, cityCode, lifecycleStatus);
+        return repository.findVehicles(page, pageSize, keyword, cityCode, lifecycleStatus,
+                dataPermissionService.resolve(principal));
     }
 
     /**
      * 查询车辆详情时优先读取 Redis 最新状态, 缓存缺失时回退到 PostgreSQL 最新投影.
      */
-    public VehicleDetail findVehicle(String vehicleId) {
-        var detail = repository.findVehicle(vehicleId)
+    public VehicleDetail findVehicle(String vehicleId, PlatformPrincipal principal) {
+        var detail = repository.findVehicle(vehicleId, dataPermissionService.resolve(principal))
                 .orElseThrow(() -> new NotFoundException("车辆不存在: " + vehicleId));
         var latestState = latestVehicleCache.get(vehicleId).orElse(detail.latestState());
         return new VehicleDetail(detail.asset(), latestState);
@@ -63,7 +73,8 @@ public class VehicleService {
             String vehicleId,
             Instant startTime,
             Instant endTime,
-            CoordinateSystem coordinateSystem
+            CoordinateSystem coordinateSystem,
+            PlatformPrincipal principal
     ) {
         if (!startTime.isBefore(endTime)) {
             throw new IllegalArgumentException("startTime 必须早于 endTime");
@@ -71,7 +82,7 @@ public class VehicleService {
         if (Duration.between(startTime, endTime).toDays() > 31) {
             throw new IllegalArgumentException("单次轨迹查询不能超过 31 天");
         }
-        repository.findVehicle(vehicleId)
+        repository.findVehicle(vehicleId, dataPermissionService.resolve(principal))
                 .orElseThrow(() -> new NotFoundException("车辆不存在: " + vehicleId));
         var points = repository.findTrajectory(vehicleId, startTime, endTime, TRAJECTORY_LIMIT);
         var truncated = points.size() == TRAJECTORY_LIMIT;
@@ -93,7 +104,8 @@ public class VehicleService {
             int zoom,
             Boolean online,
             LifecycleStatus lifecycleStatus,
-            CoordinateSystem coordinateSystem
+            CoordinateSystem coordinateSystem,
+            PlatformPrincipal principal
     ) {
         validateBounds(minLongitude, minLatitude, maxLongitude, maxLatitude, zoom);
         var queryMin = CoordinateConverter.convert(
@@ -101,13 +113,14 @@ public class VehicleService {
         var queryMax = CoordinateConverter.convert(
                 maxLongitude, maxLatitude, coordinateSystem, CoordinateSystem.WGS84);
         var clustered = zoom < CLUSTER_ZOOM_THRESHOLD;
+        var permission = dataPermissionService.resolve(principal);
         var markers = clustered
                 ? repository.findMapClusters(
                         queryMin.longitude(), queryMin.latitude(), queryMax.longitude(), queryMax.latitude(),
-                        online, lifecycleStatus, gridSizeForZoom(zoom), MAP_LIMIT)
+                        online, lifecycleStatus, gridSizeForZoom(zoom), MAP_LIMIT, permission)
                 : repository.findMapVehicles(
                         queryMin.longitude(), queryMin.latitude(), queryMax.longitude(), queryMax.latitude(),
-                        online, lifecycleStatus, MAP_LIMIT);
+                        online, lifecycleStatus, MAP_LIMIT, permission);
         return new MapResult(
                 convertMarkers(markers, coordinateSystem), clustered, coordinateSystem.name());
     }

@@ -43,9 +43,11 @@ public class MockAdminInitializer implements ApplicationRunner {
         insertOrganization("ORG-BJ", "ORG-HQ", "北京运营中心", "REGION", "110000");
         insertOrganization("ORG-SH", "ORG-HQ", "上海运营中心", "REGION", "310000");
         var passwordHash = passwordEncoder.encode(password);
-        insertUser("USR-ADMIN", username, passwordHash, "系统管理员", null, "ORG-HQ", "ADMIN");
-        insertUser("USR-OP-BJ", "operator.bj", passwordHash, "北京运维一组", "13800001101", "ORG-BJ", "OPERATOR");
-        insertUser("USR-OP-SH", "operator.sh", passwordHash, "上海运维一组", "13800003101", "ORG-SH", "OPERATOR");
+        insertUser("USR-ADMIN", username, passwordHash, "系统管理员", null, "ORG-HQ", "ADMIN", "ALL");
+        insertUser("USR-OP-BJ", "operator.bj", passwordHash, "北京运维一组", "13800001101",
+                "ORG-BJ", "OPERATOR", "ORG_ONLY");
+        insertUser("USR-OP-SH", "operator.sh", passwordHash, "上海运维一组", "13800003101",
+                "ORG-SH", "OPERATOR", "ORG_ONLY");
     }
 
     /** 输入: 用户基础信息; 输出: 无, 用户名存在时保持已有账号。 */
@@ -56,9 +58,10 @@ public class MockAdminInitializer implements ApplicationRunner {
             String displayName,
             String phone,
             String orgId,
-            String role
+            String role,
+            String dataScope
     ) {
-        mapper.insertMockUser(userId, userName, passwordHash, displayName, phone, orgId, role);
+        mapper.insertMockUser(userId, userName, passwordHash, displayName, phone, orgId, role, dataScope);
     }
 
     /** 输入: 组织基础信息; 输出: 无, 组织编号存在时保持已有数据。 */

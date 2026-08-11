@@ -3,6 +3,7 @@ package cn.bike.platform.geo;
 import cn.bike.platform.geo.GeoModels.FacilityStatus;
 import cn.bike.platform.geo.GeoModels.FenceType;
 import cn.bike.platform.geo.GeoModels.GeoViolation;
+import cn.bike.platform.security.DataPermission;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -20,35 +21,15 @@ import java.util.List;
 @Mapper
 public interface GeoMapper {
 
-    String FENCE_SELECT = """
-            SELECT f.fence_id, f.fence_name, f.city_code, f.fence_type, f.org_id, o.org_name,
-                   f.status, ST_AsGeoJSON(f.boundary) AS boundary_json,
-                   round(ST_Area(f.boundary::geography)::numeric, 2) AS area_square_meters,
-                   f.updated_at
-            FROM geofence f JOIN organization o ON o.org_id = f.org_id
-            """;
+    List<FenceRow> findFences(
+            @Param("cityCode") String cityCode,
+            @Param("permission") DataPermission permission
+    );
 
-    String PARKING_POINT_SELECT = """
-            SELECT p.point_id, p.point_name, p.city_code, p.org_id, o.org_name, p.status,
-                   ST_X(p.location) AS longitude, ST_Y(p.location) AS latitude,
-                   p.radius_meters, p.capacity,
-                   count(l.vehicle_id) FILTER (
-                       WHERE ST_DWithin(l.position::geography, p.location::geography, p.radius_meters)
-                   ) AS vehicle_count,
-                   p.updated_at
-            FROM parking_point p
-            JOIN organization o ON o.org_id = p.org_id
-            LEFT JOIN vehicle_latest l ON true
-            """;
-
-    @Select(FENCE_SELECT + """
-            WHERE f.city_code = #{cityCode} AND f.status = 'ACTIVE'
-            ORDER BY f.created_at DESC
-            """)
-    List<FenceRow> findFences(@Param("cityCode") String cityCode);
-
-    @Select(FENCE_SELECT + " WHERE f.fence_id = #{fenceId}")
-    FenceRow findFence(@Param("fenceId") String fenceId);
+    FenceRow findFence(
+            @Param("fenceId") String fenceId,
+            @Param("permission") DataPermission permission
+    );
 
     @Insert("""
             INSERT INTO geofence (
@@ -87,17 +68,15 @@ public interface GeoMapper {
     @Update("UPDATE geofence SET status = 'DISABLED', updated_at = now() WHERE fence_id = #{id}")
     int disableFence(@Param("id") String fenceId);
 
-    @Select(PARKING_POINT_SELECT + """
-            WHERE p.city_code = #{cityCode} AND p.status = 'ACTIVE'
-            GROUP BY p.point_id, o.org_name ORDER BY p.created_at DESC
-            """)
-    List<ParkingPointRow> findParkingPoints(@Param("cityCode") String cityCode);
+    List<ParkingPointRow> findParkingPoints(
+            @Param("cityCode") String cityCode,
+            @Param("permission") DataPermission permission
+    );
 
-    @Select(PARKING_POINT_SELECT + """
-            WHERE p.point_id = #{pointId}
-            GROUP BY p.point_id, o.org_name
-            """)
-    ParkingPointRow findParkingPoint(@Param("pointId") String pointId);
+    ParkingPointRow findParkingPoint(
+            @Param("pointId") String pointId,
+            @Param("permission") DataPermission permission
+    );
 
     @Insert("""
             INSERT INTO parking_point (
@@ -143,42 +122,10 @@ public interface GeoMapper {
     @Update("UPDATE parking_point SET status = 'DISABLED', updated_at = now() WHERE point_id = #{id}")
     int disableParkingPoint(@Param("id") String pointId);
 
-    @Select("""
-            WITH city_vehicles AS (
-                SELECT l.* FROM vehicle v
-                JOIN vehicle_latest l ON l.vehicle_id = v.vehicle_id
-                WHERE v.operation_city_code = #{cityCode}
-            ), violations AS (
-                SELECT cv.vehicle_id, 'OUTSIDE_OPERATION' AS violation_type,
-                       NULL::varchar AS facility_id, NULL::varchar AS facility_name,
-                       cv.longitude, cv.latitude, cv.battery_percent, cv.reported_at
-                FROM city_vehicles cv
-                WHERE EXISTS (
-                    SELECT 1 FROM geofence f WHERE f.city_code = #{cityCode}
-                      AND f.fence_type = 'OPERATION' AND f.status = 'ACTIVE'
-                ) AND NOT EXISTS (
-                    SELECT 1 FROM geofence f WHERE f.city_code = #{cityCode}
-                      AND f.fence_type = 'OPERATION' AND f.status = 'ACTIVE'
-                      AND ST_Covers(f.boundary, cv.position)
-                )
-                UNION ALL
-                SELECT cv.vehicle_id, 'IN_NO_PARK', f.fence_id, f.fence_name,
-                       cv.longitude, cv.latitude, cv.battery_percent, cv.reported_at
-                FROM city_vehicles cv JOIN geofence f
-                  ON f.city_code = #{cityCode} AND f.fence_type = 'NO_PARK' AND f.status = 'ACTIVE'
-                 AND ST_Covers(f.boundary, cv.position)
-                WHERE cv.ride_status = 'IDLE'
-                UNION ALL
-                SELECT cv.vehicle_id, 'RIDING_IN_NO_RIDE', f.fence_id, f.fence_name,
-                       cv.longitude, cv.latitude, cv.battery_percent, cv.reported_at
-                FROM city_vehicles cv JOIN geofence f
-                  ON f.city_code = #{cityCode} AND f.fence_type = 'NO_RIDE' AND f.status = 'ACTIVE'
-                 AND ST_Covers(f.boundary, cv.position)
-                WHERE cv.ride_status = 'RIDING'
-            )
-            SELECT * FROM violations ORDER BY reported_at DESC LIMIT 500
-            """)
-    List<GeoViolation> findViolations(@Param("cityCode") String cityCode);
+    List<GeoViolation> findViolations(
+            @Param("cityCode") String cityCode,
+            @Param("permission") DataPermission permission
+    );
 
     @Select("""
             SELECT count(*) > 0 FROM organization

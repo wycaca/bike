@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bike.platform.geo.GeoMapper">
+
+    <sql id="organizationFilter">
+        <if test="!permission.unrestricted()">
+            AND ${alias}.org_id IN
+            <foreach collection="permission.orgIds" item="orgId" open="(" separator="," close=")">
+                #{orgId}
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="fenceColumns">
+        f.fence_id, f.fence_name, f.city_code, f.fence_type, f.org_id, o.org_name,
+        f.status, ST_AsGeoJSON(f.boundary) AS boundary_json,
+        round(ST_Area(f.boundary::geography)::numeric, 2) AS area_square_meters, f.updated_at
+    </sql>
+
+    <select id="findFences" resultType="cn.bike.platform.geo.GeoMapper$FenceRow">
+        SELECT <include refid="fenceColumns"/>
+        FROM geofence f JOIN organization o ON o.org_id = f.org_id
+        WHERE f.city_code = #{cityCode} AND f.status = 'ACTIVE'
+        <include refid="organizationFilter"><property name="alias" value="f"/></include>
+        ORDER BY f.created_at DESC
+    </select>
+
+    <select id="findFence" resultType="cn.bike.platform.geo.GeoMapper$FenceRow">
+        SELECT <include refid="fenceColumns"/>
+        FROM geofence f JOIN organization o ON o.org_id = f.org_id
+        WHERE f.fence_id = #{fenceId}
+        <include refid="organizationFilter"><property name="alias" value="f"/></include>
+    </select>
+
+    <sql id="parkingPointColumns">
+        p.point_id, p.point_name, p.city_code, p.org_id, o.org_name, p.status,
+        ST_X(p.location) AS longitude, ST_Y(p.location) AS latitude,
+        p.radius_meters, p.capacity,
+        count(v.vehicle_id) FILTER (
+            WHERE ST_DWithin(l.position::geography, p.location::geography, p.radius_meters)
+        ) AS vehicle_count, p.updated_at
+    </sql>
+
+    <sql id="parkingPointJoins">
+        FROM parking_point p
+        JOIN organization o ON o.org_id = p.org_id
+        LEFT JOIN vehicle_latest l ON true
+        LEFT JOIN vehicle v ON v.vehicle_id = l.vehicle_id
+        <if test="!permission.unrestricted()">
+            AND v.org_id IN
+            <foreach collection="permission.orgIds" item="orgId" open="(" separator="," close=")">
+                #{orgId}
+            </foreach>
+        </if>
+    </sql>
+
+    <select id="findParkingPoints" resultType="cn.bike.platform.geo.GeoMapper$ParkingPointRow">
+        SELECT <include refid="parkingPointColumns"/>
+        <include refid="parkingPointJoins"/>
+        WHERE p.city_code = #{cityCode} AND p.status = 'ACTIVE'
+        <include refid="organizationFilter"><property name="alias" value="p"/></include>
+        GROUP BY p.point_id, o.org_name ORDER BY p.created_at DESC
+    </select>
+
+    <select id="findParkingPoint" resultType="cn.bike.platform.geo.GeoMapper$ParkingPointRow">
+        SELECT <include refid="parkingPointColumns"/>
+        <include refid="parkingPointJoins"/>
+        WHERE p.point_id = #{pointId}
+        <include refid="organizationFilter"><property name="alias" value="p"/></include>
+        GROUP BY p.point_id, o.org_name
+    </select>
+
+    <select id="findViolations" resultType="cn.bike.platform.geo.GeoModels$GeoViolation">
+        WITH visible_fences AS (
+            SELECT f.* FROM geofence f
+            WHERE f.city_code = #{cityCode} AND f.status = 'ACTIVE'
+            <include refid="organizationFilter"><property name="alias" value="f"/></include>
+        ), city_vehicles AS (
+            SELECT l.* FROM vehicle v
+            JOIN vehicle_latest l ON l.vehicle_id = v.vehicle_id
+            WHERE v.operation_city_code = #{cityCode}
+            <include refid="organizationFilter"><property name="alias" value="v"/></include>
+        ), violations AS (
+            SELECT cv.vehicle_id, 'OUTSIDE_OPERATION' AS violation_type,
+                   NULL::varchar AS facility_id, NULL::varchar AS facility_name,
+                   cv.longitude, cv.latitude, cv.battery_percent, cv.reported_at
+            FROM city_vehicles cv
+            WHERE EXISTS (SELECT 1 FROM visible_fences f WHERE f.fence_type = 'OPERATION')
+              AND NOT EXISTS (
+                  SELECT 1 FROM visible_fences f WHERE f.fence_type = 'OPERATION'
+                    AND ST_Covers(f.boundary, cv.position)
+              )
+            UNION ALL
+            SELECT cv.vehicle_id, 'IN_NO_PARK', f.fence_id, f.fence_name,
+                   cv.longitude, cv.latitude, cv.battery_percent, cv.reported_at
+            FROM city_vehicles cv JOIN visible_fences f
+              ON f.fence_type = 'NO_PARK' AND ST_Covers(f.boundary, cv.position)
+            WHERE cv.ride_status = 'IDLE'
+            UNION ALL
+            SELECT cv.vehicle_id, 'RIDING_IN_NO_RIDE', f.fence_id, f.fence_name,
+                   cv.longitude, cv.latitude, cv.battery_percent, cv.reported_at
+            FROM city_vehicles cv JOIN visible_fences f
+              ON f.fence_type = 'NO_RIDE' AND ST_Covers(f.boundary, cv.position)
+            WHERE cv.ride_status = 'RIDING'
+        )
+        SELECT * FROM violations ORDER BY reported_at DESC LIMIT 500
+    </select>
+</mapper>

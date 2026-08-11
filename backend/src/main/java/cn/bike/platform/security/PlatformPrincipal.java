@@ -1,6 +1,7 @@
 package cn.bike.platform.security;
 
 import cn.bike.platform.admin.AdminModels.UserRole;
+import cn.bike.platform.admin.AdminModels.DataScope;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +19,7 @@ public record PlatformPrincipal(
         String orgId,
         String orgName,
         UserRole role,
+        DataScope dataScope,
         boolean enabled
 ) implements UserDetails, Serializable {
 

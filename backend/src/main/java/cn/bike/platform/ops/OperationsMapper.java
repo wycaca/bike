@@ -15,6 +15,7 @@ import cn.bike.platform.ops.OperationsModels.TaskStatus;
 import cn.bike.platform.ops.OperationsModels.TaskSummary;
 import cn.bike.platform.ops.OperationsModels.TaskTrigger;
 import cn.bike.platform.ops.OperationsModels.VehicleSnapshot;
+import cn.bike.platform.security.DataPermission;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -36,6 +37,7 @@ public interface OperationsMapper {
             @Param("scope") String scope,
             @Param("currentUserId") String currentUserId,
             @Param("keyword") String keyword,
+            @Param("permission") DataPermission permission,
             @Param("limit") int limit,
             @Param("offset") int offset
     );
@@ -46,10 +48,12 @@ public interface OperationsMapper {
             @Param("type") String type,
             @Param("scope") String scope,
             @Param("currentUserId") String currentUserId,
-            @Param("keyword") String keyword
+            @Param("keyword") String keyword,
+            @Param("permission") DataPermission permission
     );
 
-    TaskSummary summary(@Param("cityCode") String cityCode, @Param("currentUserId") String currentUserId);
+    TaskSummary summary(@Param("cityCode") String cityCode, @Param("currentUserId") String currentUserId,
+                        @Param("permission") DataPermission permission);
 
     TaskItem findTask(@Param("taskId") String taskId);
 
@@ -65,7 +69,8 @@ public interface OperationsMapper {
 
     AssigneeOption findEligibleAssignee(@Param("userId") String userId, @Param("cityCode") String cityCode);
 
-    List<AssigneeOption> findAssignees(@Param("cityCode") String cityCode);
+    List<AssigneeOption> findAssignees(@Param("cityCode") String cityCode,
+                                       @Param("permission") DataPermission permission);
 
     int insertTask(TaskInsert row);
 
@@ -156,7 +161,8 @@ public interface OperationsMapper {
     boolean hasRecentRuleTask(@Param("vehicleId") String vehicleId, @Param("ruleId") String ruleId,
                               @Param("cutoff") Instant cutoff);
 
-    List<AutomationRow> findAutomationVehicleStates(@Param("cityCode") String cityCode);
+    List<AutomationRow> findAutomationVehicleStates(@Param("cityCode") String cityCode,
+                                                     @Param("permission") DataPermission permission);
 
     boolean hasGeoViolation(@Param("cityCode") String cityCode, @Param("rideStatus") String rideStatus,
                             @Param("longitude") BigDecimal longitude, @Param("latitude") BigDecimal latitude);
@@ -297,6 +303,7 @@ public interface OperationsMapper {
 
     record AutomationRow(
             String vehicleId,
+            String orgId,
             String cityCode,
             String areaCode,
             BigDecimal longitude,

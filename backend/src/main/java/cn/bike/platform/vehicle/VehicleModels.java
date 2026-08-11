@@ -46,6 +46,7 @@ public final class VehicleModels {
     public record VehicleAsset(
             String vehicleId,
             String companyId,
+            String orgId,
             String lockId,
             String controllerId,
             String plateNumber,
