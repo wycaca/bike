@@ -1,4 +1,5 @@
 export type UserRole = 'ADMIN' | 'OPERATOR' | 'AUDITOR'
+export type DataScope = 'ALL' | 'ORG_AND_CHILDREN' | 'ORG_ONLY'
 export type RecordStatus = 'ACTIVE' | 'DISABLED'
 export type OrganizationType = 'COMPANY' | 'REGION' | 'TEAM'
 export type FenceType = 'OPERATION' | 'NO_RIDE' | 'NO_PARK'
@@ -22,6 +23,7 @@ export interface CurrentUser {
   orgId: string
   orgName: string
   role: UserRole
+  dataScope: DataScope
 }
 
 export interface Organization {
@@ -51,6 +53,7 @@ export interface PlatformUser {
   orgId: string
   orgName: string
   role: UserRole
+  dataScope: DataScope
   status: RecordStatus
   lastLoginAt: string | null
   createdAt: string
@@ -62,6 +65,7 @@ export interface UserRequest {
   phone: string
   orgId: string
   role: UserRole
+  dataScope: DataScope
   status: RecordStatus
   password: string | null
 }
