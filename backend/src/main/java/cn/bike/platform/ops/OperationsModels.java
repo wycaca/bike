@@ -382,7 +382,7 @@ public final class OperationsModels {
     public record AutomationScanResult(int scannedVehicles, int createdTasks, int deduplicatedSignals) {
     }
 
-    record VehicleSnapshot(
+    public record VehicleSnapshot(
             String vehicleId,
             String cityCode,
             String areaCode,
@@ -392,7 +392,7 @@ public final class OperationsModels {
     ) {
     }
 
-    record OrganizationSnapshot(String orgId, String cityCode, boolean active) {
+    public record OrganizationSnapshot(String orgId, String cityCode, boolean active) {
     }
 
     record AutomationVehicleState(
@@ -410,7 +410,7 @@ public final class OperationsModels {
     ) {
     }
 
-    record StoredAttachment(
+    public record StoredAttachment(
             long attachmentId,
             String taskId,
             AttachmentPurpose purpose,

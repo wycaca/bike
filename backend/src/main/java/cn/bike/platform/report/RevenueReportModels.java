@@ -59,7 +59,7 @@ public final class RevenueReportModels {
     }
 
     /** 仓储层原始合计, 由服务层统一计算比率和均值。 */
-    record RawMetrics(
+    public record RawMetrics(
             BigDecimal grossBookings,
             BigDecimal discountAmount,
             BigDecimal refundAmount,

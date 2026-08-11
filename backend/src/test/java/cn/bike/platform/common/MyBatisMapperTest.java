@@ -1,13 +1,18 @@
 package cn.bike.platform.common;
 
+import cn.bike.platform.ops.OperationsMapper;
+import cn.bike.platform.report.RevenueReportMapper;
 import com.mybatisflex.core.mybatis.FlexConfiguration;
 import com.mybatisflex.spring.FlexSqlSessionFactoryBean;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import javax.sql.DataSource;
+import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -42,5 +47,22 @@ class MyBatisMapperTest {
         assertThat(configuration.hasStatement("cn.bike.platform.report.RevenueReportMapper.totals")).isTrue();
         assertThat(configuration.hasStatement("cn.bike.platform.report.ReportExportMapper.claimNext")).isTrue();
         assertThat(configuration.hasStatement("cn.bike.platform.report.MockRideOrderMapper.insertRideOrders")).isTrue();
+    }
+
+    @Test
+    void Mapper代理方法应只暴露公开类型() {
+        var inaccessibleTypes = Stream.of(OperationsMapper.class, RevenueReportMapper.class)
+                .flatMap(mapper -> Arrays.stream(mapper.getMethods()))
+                .flatMap(method -> Stream.concat(
+                        Stream.of(method.getReturnType()), Arrays.stream(method.getParameterTypes())))
+                .filter(type -> !type.isPrimitive())
+                .filter(type -> !Modifier.isPublic(type.getModifiers()))
+                .map(Class::getName)
+                .distinct()
+                .toList();
+
+        assertThat(inaccessibleTypes)
+                .as("JDK 动态代理无法访问 Mapper 签名中的包级类型")
+                .isEmpty();
     }
 }
