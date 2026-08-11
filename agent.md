@@ -384,7 +384,7 @@ curl.exe -fsS "http://localhost:8080/api/v1/vehicles/YD-BJ-000001/trajectory?sta
 
 ### 注释要求
 
-- 所有新增或修改的注释和 docstring 使用中文.
+- 所有新增或修改的注释和 docstring 保持中文, 技术专有名词可以保留原文.
 - 标点统一使用英文标点.
 - 注释解释设计原因, 不只复述代码行为.
 - 复杂逻辑必须有解释性注释.
@@ -402,7 +402,7 @@ curl.exe -fsS "http://localhost:8080/api/v1/vehicles/YD-BJ-000001/trajectory?sta
 
 ### Git 要求
 
-- commit 消息使用中文.
+- commit 消息保持中文, 不使用 `feat`, `fix`, `docs` 等英文类型前缀, 技术专有名词可以保留原文.
 - commit 消息说明实际变更内容, 不写空泛描述.
 - 不提交密钥, 正式密码, 证书或真实车辆敏感数据.
 - 不回退或覆盖与当前任务无关的用户修改.
