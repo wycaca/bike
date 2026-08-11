@@ -1,14 +1,13 @@
 package cn.bike.platform.ops;
 
+import cn.bike.platform.ops.OperationsMapper.MockTask;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
@@ -17,10 +16,10 @@ import java.time.temporal.ChronoUnit;
 @Order(50)
 public class MockOperationsInitializer implements ApplicationRunner {
 
-    private final JdbcClient jdbcClient;
+    private final OperationsMapper mapper;
 
-    public MockOperationsInitializer(JdbcClient jdbcClient) {
-        this.jdbcClient = jdbcClient;
+    public MockOperationsInitializer(OperationsMapper mapper) {
+        this.mapper = mapper;
     }
 
     /**
@@ -57,35 +56,10 @@ public class MockOperationsInitializer implements ApplicationRunner {
 
     /** 输入: 单条演示任务; 输出: 无, 任务已存在时不重复生成。 */
     private void seed(Seed seed) {
-        var inserted = jdbcClient.sql("""
-                        INSERT INTO operations_task (
-                            task_id, task_no, task_type, task_status, priority, title,
-                            vehicle_id, city_code, area_code, org_id, target_name,
-                            source_longitude, source_latitude, battery_percent,
-                            assignee_id, created_by, due_at, claimed_at, started_at, completed_at, result_note
-                        )
-                        SELECT :taskId, :taskNo, :taskType, :taskStatus, :priority, :title,
-                               v.vehicle_id, v.operation_city_code, v.operation_area_code, :orgId, :targetName,
-                               latest.longitude, latest.latitude, latest.battery_percent,
-                               :assigneeId, 'USR-ADMIN', :dueAt,
-                               CASE WHEN CAST(:assigneeId AS VARCHAR) IS NULL
-                                    THEN NULL ELSE now() - interval '40 minutes' END,
-                               CASE WHEN CAST(:taskStatus AS VARCHAR) IN ('IN_PROGRESS', 'COMPLETED')
-                                    THEN now() - interval '25 minutes' ELSE NULL END,
-                               CASE WHEN CAST(:taskStatus AS VARCHAR) = 'COMPLETED'
-                                    THEN now() - interval '5 minutes' ELSE NULL END,
-                               :resultNote
-                        FROM vehicle v LEFT JOIN vehicle_latest latest ON latest.vehicle_id = v.vehicle_id
-                        WHERE v.vehicle_id = :vehicleId
-                        ON CONFLICT DO NOTHING
-                        """)
-                .param("taskId", seed.taskId()).param("taskNo", seed.taskNo())
-                .param("taskType", seed.taskType()).param("taskStatus", seed.status())
-                .param("priority", seed.priority()).param("title", seed.title())
-                .param("vehicleId", seed.vehicleId()).param("orgId", seed.orgId())
-                .param("targetName", seed.targetName()).param("assigneeId", seed.assigneeId())
-                .param("dueAt", Timestamp.from(seed.dueAt())).param("resultNote", seed.resultNote())
-                .update();
+        var inserted = mapper.insertMockTask(new MockTask(
+                seed.taskId(), seed.taskNo(), seed.taskType(), seed.status(), seed.priority(), seed.title(),
+                seed.vehicleId(), seed.orgId(), seed.targetName(), seed.assigneeId(), seed.dueAt(),
+                seed.resultNote()));
         if (inserted == 0) {
             return;
         }
@@ -98,14 +72,12 @@ public class MockOperationsInitializer implements ApplicationRunner {
         if ("IN_PROGRESS".equals(seed.status()) || "COMPLETED".equals(seed.status())) {
             insertEvent(seed.taskId(), "STARTED", "CLAIMED", "IN_PROGRESS",
                     seed.assigneeId(), "北京运维一组", "开始执行任务");
-            jdbcClient.sql("UPDATE vehicle SET lifecycle_status = 'MAINTENANCE' WHERE vehicle_id = :vehicleId")
-                    .param("vehicleId", seed.vehicleId()).update();
+            mapper.updateMockVehicleLifecycle(seed.vehicleId(), "MAINTENANCE");
         }
         if ("COMPLETED".equals(seed.status())) {
             insertEvent(seed.taskId(), "COMPLETED", "IN_PROGRESS", "COMPLETED",
                     seed.assigneeId(), "北京运维一组", seed.resultNote());
-            jdbcClient.sql("UPDATE vehicle SET lifecycle_status = 'OPERATING' WHERE vehicle_id = :vehicleId")
-                    .param("vehicleId", seed.vehicleId()).update();
+            mapper.updateMockVehicleLifecycle(seed.vehicleId(), "OPERATING");
         }
     }
 
@@ -119,14 +91,7 @@ public class MockOperationsInitializer implements ApplicationRunner {
             String actorName,
             String note
     ) {
-        jdbcClient.sql("""
-                        INSERT INTO operations_task_event (
-                            task_id, event_type, from_status, to_status, actor_id, actor_name, note
-                        ) VALUES (:taskId, :eventType, :fromStatus, :toStatus, :actorId, :actorName, :note)
-                        """)
-                .param("taskId", taskId).param("eventType", eventType).param("fromStatus", fromStatus)
-                .param("toStatus", toStatus).param("actorId", actorId)
-                .param("actorName", actorName).param("note", note).update();
+        mapper.insertMockEvent(taskId, eventType, fromStatus, toStatus, actorId, actorName, note);
     }
 
     private record Seed(

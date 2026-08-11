@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bike.platform.report.MockRideOrderMapper">
+
+    <select id="countOrders" resultType="long">
+        SELECT count(*) FROM ride_order
+    </select>
+
+    <select id="findVehicles" resultType="cn.bike.platform.report.MockRideOrderMapper$VehicleSeed">
+        SELECT vehicle_id, operation_city_code AS city_code, operation_area_code AS area_code, launch_date
+        FROM vehicle
+        WHERE lifecycle_status IN ('OPERATING', 'DISPATCHING')
+        ORDER BY vehicle_id
+    </select>
+
+    <insert id="insertRideOrders">
+        INSERT INTO ride_order (
+            order_id, vehicle_id, rider_id, city_code, area_code, started_at, ended_at,
+            duration_seconds, distance_meters, gross_amount, discount_amount, refund_amount,
+            order_status, payment_channel
+        ) VALUES
+        <foreach collection="rows" item="row" separator=",">
+            (
+                #{row.orderId}, #{row.vehicleId}, #{row.riderId}, #{row.cityCode}, #{row.areaCode},
+                #{row.startedAt}, #{row.endedAt}, #{row.durationSeconds}, #{row.distanceMeters},
+                #{row.grossAmount}, #{row.discountAmount}, #{row.refundAmount},
+                #{row.orderStatus}, #{row.paymentChannel}
+            )
+        </foreach>
+    </insert>
+</mapper>

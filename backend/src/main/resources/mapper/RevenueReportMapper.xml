@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bike.platform.report.RevenueReportMapper">
+
+    <sql id="calendarBucket">
+        <choose>
+            <when test="granularity == 'MONTH'">date_trunc('month', c.report_date)::date</when>
+            <otherwise>c.report_date</otherwise>
+        </choose>
+    </sql>
+
+    <sql id="orderBucket">
+        <choose>
+            <when test="granularity == 'MONTH'">
+                date_trunc('month', (started_at AT TIME ZONE 'Asia/Shanghai')::date)::date
+            </when>
+            <otherwise>(started_at AT TIME ZONE 'Asia/Shanghai')::date</otherwise>
+        </choose>
+    </sql>
+
+    <select id="totals" resultType="cn.bike.platform.report.RevenueReportModels$RawMetrics">
+        WITH calendar AS (
+            SELECT day::date AS report_date
+            FROM generate_series(CAST(#{fromDate} AS date), CAST(#{toDate} AS date), interval '1 day') day
+        ), fleet_daily AS (
+            SELECT c.report_date, count(v.vehicle_id) AS deployed_vehicles
+            FROM calendar c LEFT JOIN vehicle v
+              ON v.operation_city_code = #{cityCode}
+             AND v.launch_date &lt;= c.report_date
+             AND v.lifecycle_status IN ('OPERATING', 'DISPATCHING')
+            GROUP BY c.report_date
+        ), order_metrics AS (
+            SELECT coalesce(sum(gross_amount) FILTER (WHERE order_status &lt;&gt; 'CANCELLED'), 0)
+                       AS gross_bookings,
+                   coalesce(sum(discount_amount) FILTER (WHERE order_status &lt;&gt; 'CANCELLED'), 0)
+                       AS discount_amount,
+                   coalesce(sum(refund_amount) FILTER (WHERE order_status &lt;&gt; 'CANCELLED'), 0)
+                       AS refund_amount,
+                   coalesce(sum(net_revenue) FILTER (WHERE order_status &lt;&gt; 'CANCELLED'), 0)
+                       AS net_revenue,
+                   count(*) FILTER (WHERE order_status &lt;&gt; 'CANCELLED') AS completed_rides,
+                   count(DISTINCT vehicle_id) FILTER (WHERE order_status &lt;&gt; 'CANCELLED')
+                       AS active_vehicles,
+                   coalesce(sum(duration_seconds) FILTER (WHERE order_status &lt;&gt; 'CANCELLED'), 0)
+                       AS duration_seconds,
+                   coalesce(sum(distance_meters) FILTER (WHERE order_status &lt;&gt; 'CANCELLED'), 0)
+                       AS distance_meters
+            FROM ride_order
+            WHERE city_code = #{cityCode} AND started_at &gt;= #{fromInstant} AND started_at &lt; #{toInstant}
+        )
+        SELECT o.*, coalesce(sum(f.deployed_vehicles), 0) AS vehicle_days
+        FROM order_metrics o CROSS JOIN fleet_daily f
+        GROUP BY o.gross_bookings, o.discount_amount, o.refund_amount, o.net_revenue,
+                 o.completed_rides, o.active_vehicles, o.duration_seconds, o.distance_meters
+    </select>
+
+    <select id="periods" resultType="cn.bike.platform.report.RevenueReportMapper$PeriodRow">
+        WITH calendar AS (
+            SELECT day::date AS report_date
+            FROM generate_series(CAST(#{fromDate} AS date), CAST(#{toDate} AS date), interval '1 day') day
+        ), fleet_daily AS (
+            SELECT c.report_date, count(v.vehicle_id) AS deployed_vehicles
+            FROM calendar c LEFT JOIN vehicle v
+              ON v.operation_city_code = #{cityCode}
+             AND v.launch_date &lt;= c.report_date
+             AND v.lifecycle_status IN ('OPERATING', 'DISPATCHING')
+            GROUP BY c.report_date
+        ), periods AS (
+            SELECT DISTINCT <include refid="calendarBucket"/> AS period_start FROM calendar c
+        ), fleet_metrics AS (
+            SELECT <include refid="calendarBucket"/> AS period_start,
+                   sum(f.deployed_vehicles) AS vehicle_days
+            FROM fleet_daily f JOIN calendar c ON c.report_date = f.report_date
+            GROUP BY period_start
+        ), order_metrics AS (
+            SELECT <include refid="orderBucket"/> AS period_start,
+                   coalesce(sum(gross_amount) FILTER (WHERE order_status &lt;&gt; 'CANCELLED'), 0)
+                       AS gross_bookings,
+                   coalesce(sum(discount_amount) FILTER (WHERE order_status &lt;&gt; 'CANCELLED'), 0)
+                       AS discount_amount,
+                   coalesce(sum(refund_amount) FILTER (WHERE order_status &lt;&gt; 'CANCELLED'), 0)
+                       AS refund_amount,
+                   coalesce(sum(net_revenue) FILTER (WHERE order_status &lt;&gt; 'CANCELLED'), 0)
+                       AS net_revenue,
+                   count(*) FILTER (WHERE order_status &lt;&gt; 'CANCELLED') AS completed_rides,
+                   count(DISTINCT vehicle_id) FILTER (WHERE order_status &lt;&gt; 'CANCELLED')
+                       AS active_vehicles,
+                   coalesce(sum(duration_seconds) FILTER (WHERE order_status &lt;&gt; 'CANCELLED'), 0)
+                       AS duration_seconds,
+                   coalesce(sum(distance_meters) FILTER (WHERE order_status &lt;&gt; 'CANCELLED'), 0)
+                       AS distance_meters
+            FROM ride_order
+            WHERE city_code = #{cityCode} AND started_at &gt;= #{fromInstant} AND started_at &lt; #{toInstant}
+            GROUP BY period_start
+        )
+        SELECT p.period_start, coalesce(o.gross_bookings, 0) AS gross_bookings,
+               coalesce(o.discount_amount, 0) AS discount_amount,
+               coalesce(o.refund_amount, 0) AS refund_amount,
+               coalesce(o.net_revenue, 0) AS net_revenue,
+               coalesce(o.completed_rides, 0) AS completed_rides,
+               coalesce(o.active_vehicles, 0) AS active_vehicles,
+               coalesce(o.duration_seconds, 0) AS duration_seconds,
+               coalesce(o.distance_meters, 0) AS distance_meters,
+               coalesce(f.vehicle_days, 0) AS vehicle_days
+        FROM periods p LEFT JOIN order_metrics o ON o.period_start = p.period_start
+        LEFT JOIN fleet_metrics f ON f.period_start = p.period_start
+        ORDER BY p.period_start
+    </select>
+</mapper>

@@ -4,7 +4,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,10 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Order(20)
 public class MockOperationsRuleInitializer implements ApplicationRunner {
 
-    private final JdbcClient jdbcClient;
+    private final OperationsRuleMapper mapper;
 
-    public MockOperationsRuleInitializer(JdbcClient jdbcClient) {
-        this.jdbcClient = jdbcClient;
+    public MockOperationsRuleInitializer(OperationsRuleMapper mapper) {
+        this.mapper = mapper;
     }
 
     /** 输入: 启动参数; 输出: 无, 在车辆遥测载入前准备默认自动任务规则。 */
@@ -57,20 +56,7 @@ public class MockOperationsRuleInitializer implements ApplicationRunner {
             int cooldownMinutes,
             boolean autoClose
     ) {
-        jdbcClient.sql("""
-                        INSERT INTO operations_task_rule (
-                            rule_id, rule_name, city_code, org_id, trigger_type, threshold_value,
-                            task_type, priority, title_template, description_template,
-                            due_minutes, cooldown_minutes, auto_close, enabled, created_by
-                        ) VALUES (
-                            :ruleId, :ruleName, :cityCode, :orgId, :triggerType, :threshold,
-                            :taskType, :priority, :title, :description,
-                            :dueMinutes, :cooldownMinutes, :autoClose, true, 'USR-ADMIN'
-                        ) ON CONFLICT DO NOTHING
-                        """).param("ruleId", ruleId).param("ruleName", ruleName).param("cityCode", cityCode)
-                .param("orgId", orgId).param("triggerType", triggerType).param("threshold", threshold)
-                .param("taskType", taskType).param("priority", priority).param("title", title)
-                .param("description", description).param("dueMinutes", dueMinutes)
-                .param("cooldownMinutes", cooldownMinutes).param("autoClose", autoClose).update();
+        mapper.insertMockRule(ruleId, ruleName, cityCode, orgId, triggerType, threshold, taskType, priority,
+                title, description, dueMinutes, cooldownMinutes, autoClose);
     }
 }

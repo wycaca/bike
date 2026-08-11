@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bike.platform.vehicle.VehicleMapper">
+
+    <sql id="vehicleFilters">
+        <if test="keyword != null">
+            AND (v.vehicle_id ILIKE #{keyword} OR v.plate_number ILIKE #{keyword} OR v.lock_id ILIKE #{keyword})
+        </if>
+        <if test="cityCode != null">
+            AND v.operation_city_code = #{cityCode}
+        </if>
+        <if test="lifecycleStatus != null">
+            AND v.lifecycle_status = #{lifecycleStatus}
+        </if>
+    </sql>
+
+    <sql id="mapFilters">
+        <if test="online != null">
+            AND l.online = #{online}
+        </if>
+        <if test="lifecycleStatus != null">
+            AND v.lifecycle_status = #{lifecycleStatus}
+        </if>
+    </sql>
+
+    <sql id="vehicleWithLatestColumns">
+        v.vehicle_id, v.company_id, v.lock_id, v.controller_id, v.plate_number, v.filing_code,
+        v.model, v.batch_no, v.operation_city_code, v.operation_area_code, v.launch_date,
+        v.lifecycle_status, l.reported_at, l.longitude, l.latitude, l.accuracy_meters,
+        l.speed_kmh, l.direction_degrees, l.satellite_count, l.battery_percent,
+        l.remaining_range_km, l.lock_status, l.ride_status, l.controller_status,
+        l.online, l.signal_strength, l.fault_codes::text AS fault_codes
+    </sql>
+
+    <insert id="upsertVehicle">
+        INSERT INTO vehicle (
+            vehicle_id, company_id, lock_id, controller_id, plate_number, filing_code,
+            model, batch_no, operation_city_code, operation_area_code, launch_date,
+            lifecycle_status
+        ) VALUES (
+            #{vehicleId}, #{companyId}, #{lockId}, #{controllerId}, #{plateNumber}, #{filingCode},
+            #{model}, #{batchNo}, #{operationCityCode}, #{operationAreaCode}, #{launchDate}, #{lifecycleStatus}
+        )
+        ON CONFLICT (vehicle_id) DO UPDATE SET
+            plate_number = EXCLUDED.plate_number,
+            filing_code = EXCLUDED.filing_code,
+            model = EXCLUDED.model,
+            batch_no = EXCLUDED.batch_no,
+            operation_city_code = EXCLUDED.operation_city_code,
+            operation_area_code = EXCLUDED.operation_area_code,
+            lifecycle_status = EXCLUDED.lifecycle_status,
+            updated_at = now()
+    </insert>
+
+    <insert id="insertVehiclePosition">
+        INSERT INTO vehicle_position (
+            vehicle_id, reported_at, longitude, latitude, position, accuracy_meters,
+            speed_kmh, direction_degrees, satellite_count, battery_percent,
+            remaining_range_km, lock_status, ride_status, controller_status,
+            signal_strength, fault_codes, source, raw_payload
+        ) VALUES (
+            #{vehicleId}, #{reportedAt}, #{longitude}, #{latitude},
+            ST_SetSRID(ST_MakePoint(#{longitude}, #{latitude}), 4326), #{accuracyMeters},
+            #{speedKmh}, #{directionDegrees}, #{satelliteCount}, #{batteryPercent},
+            #{remainingRangeKm}, #{lockStatus}, #{rideStatus}, #{controllerStatus},
+            #{signalStrength}, CAST(#{faultCodesJson} AS jsonb), 'YADEA_CLOUD_MOCK',
+            CAST(#{rawPayload} AS jsonb)
+        )
+        ON CONFLICT (vehicle_id, reported_at) DO NOTHING
+    </insert>
+
+    <insert id="upsertVehicleLatest">
+        INSERT INTO vehicle_latest (
+            vehicle_id, reported_at, longitude, latitude, position, accuracy_meters,
+            speed_kmh, direction_degrees, satellite_count, battery_percent,
+            remaining_range_km, lock_status, ride_status, controller_status,
+            online, signal_strength, fault_codes
+        ) VALUES (
+            #{vehicleId}, #{reportedAt}, #{longitude}, #{latitude},
+            ST_SetSRID(ST_MakePoint(#{longitude}, #{latitude}), 4326), #{accuracyMeters},
+            #{speedKmh}, #{directionDegrees}, #{satelliteCount}, #{batteryPercent},
+            #{remainingRangeKm}, #{lockStatus}, #{rideStatus}, #{controllerStatus},
+            #{online}, #{signalStrength}, CAST(#{faultCodesJson} AS jsonb)
+        )
+        ON CONFLICT (vehicle_id) DO UPDATE SET
+            reported_at = EXCLUDED.reported_at,
+            longitude = EXCLUDED.longitude,
+            latitude = EXCLUDED.latitude,
+            position = EXCLUDED.position,
+            accuracy_meters = EXCLUDED.accuracy_meters,
+            speed_kmh = EXCLUDED.speed_kmh,
+            direction_degrees = EXCLUDED.direction_degrees,
+            satellite_count = EXCLUDED.satellite_count,
+            battery_percent = EXCLUDED.battery_percent,
+            remaining_range_km = EXCLUDED.remaining_range_km,
+            lock_status = EXCLUDED.lock_status,
+            ride_status = EXCLUDED.ride_status,
+            controller_status = EXCLUDED.controller_status,
+            online = EXCLUDED.online,
+            signal_strength = EXCLUDED.signal_strength,
+            fault_codes = EXCLUDED.fault_codes,
+            updated_at = now()
+        WHERE EXCLUDED.reported_at &gt;= vehicle_latest.reported_at
+    </insert>
+
+    <select id="countVehicles" resultType="long">
+        SELECT count(*) FROM vehicle v
+        <where>
+            1 = 1
+            <include refid="vehicleFilters"/>
+        </where>
+    </select>
+
+    <select id="findVehicles" resultType="cn.bike.platform.vehicle.VehicleMapper$VehicleRow">
+        SELECT <include refid="vehicleWithLatestColumns"/>
+        FROM vehicle v
+        LEFT JOIN vehicle_latest l ON l.vehicle_id = v.vehicle_id
+        <where>
+            1 = 1
+            <include refid="vehicleFilters"/>
+        </where>
+        ORDER BY v.vehicle_id LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="findVehicle" resultType="cn.bike.platform.vehicle.VehicleMapper$VehicleRow">
+        SELECT <include refid="vehicleWithLatestColumns"/>
+        FROM vehicle v
+        LEFT JOIN vehicle_latest l ON l.vehicle_id = v.vehicle_id
+        WHERE v.vehicle_id = #{vehicleId}
+    </select>
+
+    <select id="findTrajectory" resultType="cn.bike.platform.vehicle.VehicleMapper$TrajectoryRow">
+        SELECT reported_at, longitude, latitude, accuracy_meters, speed_kmh,
+               direction_degrees, battery_percent, lock_status, ride_status
+        FROM vehicle_position
+        WHERE vehicle_id = #{vehicleId}
+          AND reported_at &gt;= #{startTime}
+          AND reported_at &lt;= #{endTime}
+        ORDER BY reported_at
+        LIMIT #{limit}
+    </select>
+
+    <select id="findMapVehicles" resultType="cn.bike.platform.vehicle.VehicleMapper$VehicleRow">
+        SELECT <include refid="vehicleWithLatestColumns"/>
+        FROM vehicle_latest l
+        JOIN vehicle v ON v.vehicle_id = l.vehicle_id
+        WHERE l.position &amp;&amp; ST_MakeEnvelope(
+            #{minLongitude}, #{minLatitude}, #{maxLongitude}, #{maxLatitude}, 4326
+        )
+        <include refid="mapFilters"/>
+        ORDER BY l.vehicle_id LIMIT #{limit}
+    </select>
+
+    <select id="findMapClusters" resultType="cn.bike.platform.vehicle.VehicleMapper$ClusterRow">
+        SELECT avg(l.longitude) AS longitude, avg(l.latitude) AS latitude,
+               count(*) AS vehicle_count,
+               count(*) FILTER (WHERE l.battery_percent &lt; 20) AS low_battery_count,
+               count(*) FILTER (WHERE jsonb_array_length(l.fault_codes) &gt; 0) AS fault_count
+        FROM vehicle_latest l
+        JOIN vehicle v ON v.vehicle_id = l.vehicle_id
+        WHERE l.position &amp;&amp; ST_MakeEnvelope(
+            #{minLongitude}, #{minLatitude}, #{maxLongitude}, #{maxLatitude}, 4326
+        )
+        <include refid="mapFilters"/>
+        GROUP BY floor((l.longitude + 180) / #{gridSize}), floor((l.latitude + 90) / #{gridSize})
+        ORDER BY count(*) DESC LIMIT #{limit}
+    </select>
+</mapper>

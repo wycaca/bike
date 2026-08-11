@@ -5,7 +5,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,18 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 @Order(10)
 public class MockAdminInitializer implements ApplicationRunner {
 
-    private final JdbcClient jdbcClient;
+    private final AdminMapper mapper;
     private final PasswordEncoder passwordEncoder;
     private final String username;
     private final String password;
 
     public MockAdminInitializer(
-            JdbcClient jdbcClient,
+            AdminMapper mapper,
             PasswordEncoder passwordEncoder,
             @Value("${app.bootstrap-admin.username}") String username,
             @Value("${app.bootstrap-admin.password}") String password
     ) {
-        this.jdbcClient = jdbcClient;
+        this.mapper = mapper;
         this.passwordEncoder = passwordEncoder;
         this.username = username;
         this.password = password;
@@ -55,28 +54,11 @@ public class MockAdminInitializer implements ApplicationRunner {
             String orgId,
             String role
     ) {
-        jdbcClient.sql("""
-                        INSERT INTO app_user (
-                            user_id, username, password_hash, display_name, phone, org_id, role, status
-                        ) VALUES (
-                            :userId, :username, :passwordHash, :displayName, :phone, :orgId, :role, 'ACTIVE'
-                        )
-                        ON CONFLICT (username) DO NOTHING
-                        """)
-                .param("userId", userId).param("username", userName).param("passwordHash", passwordHash)
-                .param("displayName", displayName).param("phone", phone).param("orgId", orgId)
-                .param("role", role)
-                .update();
+        mapper.insertMockUser(userId, userName, passwordHash, displayName, phone, orgId, role);
     }
 
     /** 输入: 组织基础信息; 输出: 无, 组织编号存在时保持已有数据。 */
     private void insertOrganization(String id, String parentId, String name, String type, String cityCode) {
-        jdbcClient.sql("""
-                        INSERT INTO organization (org_id, parent_org_id, org_name, org_type, city_code, status)
-                        VALUES (:id, :parentId, :name, :type, :cityCode, 'ACTIVE')
-                        ON CONFLICT (org_id) DO NOTHING
-                        """)
-                .param("id", id).param("parentId", parentId).param("name", name)
-                .param("type", type).param("cityCode", cityCode).update();
+        mapper.insertMockOrganization(id, parentId, name, type, cityCode);
     }
 }

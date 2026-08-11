@@ -1,0 +1,469 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bike.platform.ops.OperationsMapper">
+
+    <sql id="taskColumns">
+        t.task_id, t.task_no, t.task_type, t.task_status AS status, t.priority, t.source_type,
+        t.title, t.description, t.vehicle_id, v.plate_number, t.city_code, t.area_code,
+        t.org_id, o.org_name, t.target_name, t.source_longitude, t.source_latitude,
+        t.battery_percent, t.assignee_id, assignee.display_name AS assignee_name,
+        t.created_by, creator.display_name AS created_by_name, t.rule_id, rule.rule_name,
+        t.batch_id, batch.batch_no, t.trigger_key, t.duplicate_count, t.due_at, t.claimed_at,
+        t.started_at, t.submitted_at, t.completed_at, t.result_note, t.exception_type,
+        t.exception_note, t.exception_at, t.version, t.created_at, t.updated_at
+    </sql>
+
+    <sql id="taskJoins">
+        FROM operations_task t
+        JOIN vehicle v ON v.vehicle_id = t.vehicle_id
+        JOIN organization o ON o.org_id = t.org_id
+        LEFT JOIN app_user assignee ON assignee.user_id = t.assignee_id
+        LEFT JOIN app_user creator ON creator.user_id = t.created_by
+        LEFT JOIN operations_task_rule rule ON rule.rule_id = t.rule_id
+        LEFT JOIN operations_task_batch batch ON batch.batch_id = t.batch_id
+    </sql>
+
+    <sql id="taskFilters">
+        WHERE t.city_code = #{cityCode}
+        <if test="status != null">AND t.task_status = #{status}</if>
+        <if test="type != null">AND t.task_type = #{type}</if>
+        <choose>
+            <when test="scope == 'MINE'">AND t.assignee_id = #{currentUserId}</when>
+            <when test="scope == 'UNASSIGNED'">AND t.task_status = 'OPEN' AND t.assignee_id IS NULL</when>
+        </choose>
+        <if test="keyword != null">
+            AND (t.task_no ILIKE #{keyword} OR t.vehicle_id ILIKE #{keyword} OR t.title ILIKE #{keyword})
+        </if>
+    </sql>
+
+    <select id="findTasks" resultType="cn.bike.platform.ops.OperationsModels$TaskItem">
+        SELECT <include refid="taskColumns"/>
+        <include refid="taskJoins"/>
+        <include refid="taskFilters"/>
+        ORDER BY CASE t.priority WHEN 'URGENT' THEN 1 WHEN 'HIGH' THEN 2
+                 WHEN 'NORMAL' THEN 3 ELSE 4 END,
+                 t.due_at NULLS LAST, t.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countTasks" resultType="long">
+        SELECT count(*) FROM operations_task t
+        <include refid="taskFilters"/>
+    </select>
+
+    <select id="summary" resultType="cn.bike.platform.ops.OperationsModels$TaskSummary">
+        SELECT count(*) FILTER (WHERE task_status = 'OPEN') AS open_count,
+               count(*) FILTER (WHERE task_status = 'CLAIMED') AS claimed_count,
+               count(*) FILTER (WHERE task_status = 'IN_PROGRESS') AS in_progress_count,
+               count(*) FILTER (WHERE task_status = 'PENDING_REVIEW') AS pending_review_count,
+               count(*) FILTER (WHERE task_status = 'EXCEPTION') AS exception_count,
+               count(*) FILTER (
+                   WHERE task_status IN ('OPEN', 'CLAIMED', 'IN_PROGRESS', 'PENDING_REVIEW', 'EXCEPTION')
+                     AND due_at &lt; now()
+               ) AS overdue_count,
+               count(*) FILTER (
+                   WHERE task_status = 'COMPLETED'
+                     AND completed_at &gt;= date_trunc('day', now() AT TIME ZONE 'Asia/Shanghai')
+                         AT TIME ZONE 'Asia/Shanghai'
+               ) AS completed_today_count,
+               count(*) FILTER (
+                   WHERE assignee_id = #{currentUserId}
+                     AND task_status IN ('CLAIMED', 'IN_PROGRESS', 'PENDING_REVIEW', 'EXCEPTION')
+               ) AS my_active_count
+        FROM operations_task WHERE city_code = #{cityCode}
+    </select>
+
+    <select id="findTask" resultType="cn.bike.platform.ops.OperationsModels$TaskItem">
+        SELECT <include refid="taskColumns"/>
+        <include refid="taskJoins"/>
+        WHERE t.task_id = #{taskId}
+    </select>
+
+    <select id="findTasksByIds" resultType="cn.bike.platform.ops.OperationsModels$TaskItem">
+        SELECT <include refid="taskColumns"/>
+        <include refid="taskJoins"/>
+        WHERE t.task_id IN
+        <foreach collection="taskIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </select>
+
+    <select id="findActiveTaskForVehicle" resultType="cn.bike.platform.ops.OperationsModels$TaskItem">
+        SELECT <include refid="taskColumns"/>
+        <include refid="taskJoins"/>
+        WHERE t.vehicle_id = #{vehicleId}
+          AND t.task_status IN ('OPEN', 'CLAIMED', 'IN_PROGRESS', 'PENDING_REVIEW', 'EXCEPTION')
+    </select>
+
+    <select id="findEvents" resultType="cn.bike.platform.ops.OperationsModels$TaskEvent">
+        SELECT event_id, event_type, from_status, to_status, actor_id, actor_name, note, created_at
+        FROM operations_task_event
+        WHERE task_id = #{taskId} ORDER BY created_at, event_id
+    </select>
+
+    <select id="findVehicleSnapshot" resultType="cn.bike.platform.ops.OperationsModels$VehicleSnapshot">
+        SELECT v.vehicle_id, v.operation_city_code AS city_code, v.operation_area_code AS area_code,
+               l.longitude, l.latitude, l.battery_percent
+        FROM vehicle v LEFT JOIN vehicle_latest l ON l.vehicle_id = v.vehicle_id
+        WHERE v.vehicle_id = #{vehicleId} AND v.lifecycle_status NOT IN ('RETIRED', 'IMPOUNDED')
+    </select>
+
+    <select id="findOrganization" resultType="cn.bike.platform.ops.OperationsModels$OrganizationSnapshot">
+        SELECT org_id, city_code, status = 'ACTIVE' AS active
+        FROM organization WHERE org_id = #{orgId}
+    </select>
+
+    <select id="findEligibleAssignee" resultType="cn.bike.platform.ops.OperationsModels$AssigneeOption">
+        SELECT u.user_id, u.display_name, u.phone, u.org_id, o.org_name
+        FROM app_user u JOIN organization o ON o.org_id = u.org_id
+        WHERE u.user_id = #{userId} AND u.role = 'OPERATOR' AND u.status = 'ACTIVE'
+          AND o.status = 'ACTIVE' AND (o.city_code IS NULL OR o.city_code = #{cityCode})
+    </select>
+
+    <select id="findAssignees" resultType="cn.bike.platform.ops.OperationsModels$AssigneeOption">
+        SELECT u.user_id, u.display_name, u.phone, u.org_id, o.org_name
+        FROM app_user u JOIN organization o ON o.org_id = u.org_id
+        WHERE u.role = 'OPERATOR' AND u.status = 'ACTIVE' AND o.status = 'ACTIVE'
+          AND (o.city_code IS NULL OR o.city_code = #{cityCode})
+        ORDER BY o.org_name, u.display_name
+    </select>
+
+    <insert id="insertTask">
+        INSERT INTO operations_task (
+            task_id, task_no, task_type, task_status, priority, source_type,
+            title, description, vehicle_id, city_code, area_code, org_id, target_name,
+            source_longitude, source_latitude, battery_percent, assignee_id, created_by,
+            rule_id, batch_id, trigger_key, due_at, claimed_at
+        ) VALUES (
+            #{taskId}, #{taskNo}, #{taskType}, #{taskStatus}, #{priority}, #{sourceType},
+            #{title}, #{description}, #{vehicleId}, #{cityCode}, #{areaCode}, #{orgId}, #{targetName},
+            #{longitude}, #{latitude}, #{batteryPercent}, #{assigneeId}, #{createdBy},
+            #{ruleId}, #{batchId}, #{triggerKey}, #{dueAt},
+            CASE WHEN CAST(#{assigneeId} AS VARCHAR) IS NULL THEN NULL ELSE now() END
+        ) ON CONFLICT DO NOTHING
+    </insert>
+
+    <insert id="insertBatch">
+        INSERT INTO operations_task_batch (
+            batch_id, batch_no, batch_name, city_code, org_id, task_type, requested_count, created_by
+        ) VALUES (
+            #{batchId}, #{batchNo}, #{batchName}, #{cityCode}, #{orgId}, #{taskType},
+            #{requestedCount}, #{createdBy}
+        )
+    </insert>
+
+    <update id="updateBatchCounts">
+        UPDATE operations_task_batch SET created_count = #{createdCount},
+            skipped_count = #{skippedCount} WHERE batch_id = #{batchId}
+    </update>
+
+    <update id="claim">
+        UPDATE operations_task SET task_status = 'CLAIMED', assignee_id = #{assigneeId},
+            claimed_at = now(), updated_at = now(), version = version + 1
+        WHERE task_id = #{taskId} AND task_status = 'OPEN' AND assignee_id IS NULL
+    </update>
+
+    <update id="assign">
+        UPDATE operations_task SET task_status = 'CLAIMED', assignee_id = #{assigneeId},
+            claimed_at = now(), updated_at = now(), version = version + 1
+        WHERE task_id = #{taskId} AND version = #{version} AND task_status IN ('OPEN', 'CLAIMED')
+    </update>
+
+    <update id="release">
+        UPDATE operations_task SET task_status = 'OPEN', assignee_id = NULL, claimed_at = NULL,
+            updated_at = now(), version = version + 1
+        WHERE task_id = #{taskId} AND version = #{version}
+          AND task_status = 'CLAIMED' AND assignee_id = #{assigneeId}
+    </update>
+
+    <update id="start">
+        UPDATE operations_task SET task_status = 'IN_PROGRESS', started_at = now(),
+            updated_at = now(), version = version + 1
+        WHERE task_id = #{taskId} AND version = #{version}
+          AND task_status = 'CLAIMED' AND assignee_id = #{assigneeId}
+    </update>
+
+    <update id="submitForReview">
+        UPDATE operations_task SET task_status = 'PENDING_REVIEW', result_note = #{resultNote},
+            submitted_at = now(), updated_at = now(), version = version + 1
+        WHERE task_id = #{taskId} AND version = #{version}
+          AND task_status = 'IN_PROGRESS' AND assignee_id = #{assigneeId}
+    </update>
+
+    <update id="approve">
+        UPDATE operations_task SET task_status = 'COMPLETED', completed_at = now(),
+            updated_at = now(), version = version + 1
+        WHERE task_id = #{taskId} AND version = #{version} AND task_status = 'PENDING_REVIEW'
+    </update>
+
+    <update id="reject">
+        UPDATE operations_task SET task_status = 'IN_PROGRESS', submitted_at = NULL,
+            updated_at = now(), version = version + 1
+        WHERE task_id = #{taskId} AND version = #{version} AND task_status = 'PENDING_REVIEW'
+    </update>
+
+    <update id="cancel">
+        UPDATE operations_task SET task_status = 'CANCELLED', result_note = #{reason},
+            completed_at = now(), updated_at = now(), version = version + 1
+        WHERE task_id = #{taskId} AND version = #{version}
+          AND task_status IN ('OPEN', 'CLAIMED', 'IN_PROGRESS', 'PENDING_REVIEW', 'EXCEPTION')
+    </update>
+
+    <update id="reportException">
+        UPDATE operations_task SET task_status = 'EXCEPTION', exception_type = #{type},
+            exception_note = #{note}, exception_from_status = task_status,
+            exception_at = now(), updated_at = now(), version = version + 1
+        WHERE task_id = #{taskId} AND version = #{version} AND assignee_id = #{assigneeId}
+          AND task_status IN ('CLAIMED', 'IN_PROGRESS')
+    </update>
+
+    <update id="resolveException">
+        UPDATE operations_task SET
+            task_status = CASE WHEN CAST(#{targetStatus} AS VARCHAR) IS NOT NULL THEN #{targetStatus}
+                WHEN exception_from_status = 'IN_PROGRESS' THEN 'IN_PROGRESS'
+                WHEN assignee_id IS NOT NULL THEN 'CLAIMED' ELSE 'OPEN' END,
+            result_note = CASE WHEN CAST(#{targetStatus} AS VARCHAR) IS NOT NULL THEN #{note} ELSE result_note END,
+            completed_at = CASE WHEN CAST(#{targetStatus} AS VARCHAR) IS NOT NULL THEN now() ELSE completed_at END,
+            exception_type = NULL, exception_note = NULL, exception_from_status = NULL,
+            exception_at = NULL, updated_at = now(), version = version + 1
+        WHERE task_id = #{taskId} AND version = #{version} AND task_status = 'EXCEPTION'
+    </update>
+
+    <update id="updateVehicleLifecycle">
+        UPDATE vehicle SET lifecycle_status = #{status}, updated_at = now()
+        WHERE vehicle_id = #{vehicleId} AND lifecycle_status NOT IN ('RETIRED', 'IMPOUNDED')
+    </update>
+
+    <select id="insertEvidence" resultType="long" affectData="true" flushCache="true">
+        INSERT INTO operations_task_evidence (
+            task_id, submission_no, result_note, arrival_longitude, arrival_latitude,
+            checklist, removed_battery_id, installed_battery_id, parts_used,
+            target_longitude, target_latitude, submitted_by, submitted_by_name
+        ) VALUES (
+            #{taskId}, (SELECT coalesce(max(submission_no), 0) + 1
+                        FROM operations_task_evidence WHERE task_id = #{taskId}),
+            #{resultNote}, #{arrivalLongitude}, #{arrivalLatitude}, CAST(#{checklist} AS jsonb),
+            #{removedBatteryId}, #{installedBatteryId}, CAST(#{partsUsed} AS jsonb),
+            #{targetLongitude}, #{targetLatitude}, #{submittedBy}, #{submittedByName}
+        ) RETURNING evidence_id
+    </select>
+
+    <update id="reviewLatestEvidence">
+        UPDATE operations_task_evidence SET review_status = #{status},
+            reviewed_by = #{reviewedBy}, reviewed_by_name = #{reviewedByName},
+            review_note = #{note}, reviewed_at = now()
+        WHERE evidence_id = (
+            SELECT evidence_id FROM operations_task_evidence
+            WHERE task_id = #{taskId} ORDER BY submission_no DESC LIMIT 1
+        ) AND review_status = 'PENDING'
+    </update>
+
+    <select id="insertAttachment" resultType="long" affectData="true" flushCache="true">
+        INSERT INTO operations_task_attachment (
+            task_id, purpose, original_name, stored_name, content_type,
+            size_bytes, sha256, storage_path, uploaded_by
+        ) VALUES (
+            #{taskId}, #{purpose}, #{originalName}, #{storedName}, #{contentType},
+            #{sizeBytes}, #{sha256}, #{storagePath}, #{uploadedBy}
+        ) RETURNING attachment_id
+    </select>
+
+    <select id="findAttachment" resultType="cn.bike.platform.ops.OperationsModels$StoredAttachment">
+        SELECT attachment_id, task_id, purpose, original_name, stored_name, content_type,
+               size_bytes, sha256, storage_path, uploaded_by, uploaded_at
+        FROM operations_task_attachment WHERE attachment_id = #{attachmentId}
+    </select>
+
+    <select id="findAttachments" resultType="cn.bike.platform.ops.OperationsModels$StoredAttachment">
+        SELECT attachment_id, task_id, purpose, original_name, stored_name, content_type,
+               size_bytes, sha256, storage_path, uploaded_by, uploaded_at
+        FROM operations_task_attachment WHERE attachment_id IN
+        <foreach collection="attachmentIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </select>
+
+    <insert id="linkEvidenceAttachments">
+        INSERT INTO operations_task_evidence_attachment (evidence_id, attachment_id, purpose)
+        SELECT #{evidenceId}, attachment_id, #{purpose} FROM operations_task_attachment
+        WHERE attachment_id IN
+        <foreach collection="attachmentIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </insert>
+
+    <select id="insertException" resultType="long" affectData="true" flushCache="true">
+        INSERT INTO operations_task_exception (
+            task_id, exception_type, note, reported_by, reported_by_name
+        ) VALUES (#{taskId}, #{type}, #{note}, #{reportedBy}, #{reportedByName})
+        RETURNING exception_id
+    </select>
+
+    <insert id="linkExceptionAttachments">
+        INSERT INTO operations_task_exception_attachment (exception_id, attachment_id)
+        SELECT #{exceptionId}, attachment_id FROM operations_task_attachment
+        WHERE attachment_id IN
+        <foreach collection="attachmentIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </insert>
+
+    <update id="resolveLatestException">
+        UPDATE operations_task_exception SET resolution_action = #{action},
+            resolution_note = #{note}, resolved_by = #{resolvedBy},
+            resolved_by_name = #{resolvedByName}, resolved_at = now()
+        WHERE exception_id = (
+            SELECT exception_id FROM operations_task_exception
+            WHERE task_id = #{taskId} AND resolved_at IS NULL
+            ORDER BY reported_at DESC LIMIT 1
+        )
+    </update>
+
+    <select id="upsertTrigger" resultType="int" affectData="true" flushCache="true">
+        INSERT INTO operations_task_trigger (
+            task_id, rule_id, trigger_key, first_triggered_at, last_triggered_at, last_payload
+        ) VALUES (
+            #{taskId}, #{ruleId}, #{triggerKey}, #{occurredAt}, #{occurredAt}, CAST(#{payload} AS jsonb)
+        ) ON CONFLICT (task_id, rule_id, trigger_key) DO UPDATE SET
+            active = true,
+            occurrence_count = operations_task_trigger.occurrence_count + 1,
+            last_triggered_at = GREATEST(
+                operations_task_trigger.last_triggered_at, EXCLUDED.last_triggered_at
+            ),
+            recovered_at = NULL,
+            last_payload = EXCLUDED.last_payload
+        RETURNING occurrence_count
+    </select>
+
+    <update id="incrementDuplicateCount">
+        UPDATE operations_task SET duplicate_count = duplicate_count + 1,
+            updated_at = now() WHERE task_id = #{taskId}
+    </update>
+
+    <update id="recoverTriggers">
+        UPDATE operations_task_trigger tr SET active = false, recovered_at = #{recoveredAt}
+        FROM operations_task task
+        WHERE tr.task_id = task.task_id AND tr.rule_id = #{ruleId}
+          AND task.vehicle_id = #{vehicleId} AND tr.active = true
+    </update>
+
+    <select id="findRuleTaskWithoutActiveTriggers" resultType="cn.bike.platform.ops.OperationsModels$TaskItem">
+        SELECT <include refid="taskColumns"/>
+        <include refid="taskJoins"/>
+        WHERE t.vehicle_id = #{vehicleId} AND t.source_type = 'RULE'
+          AND t.task_status IN ('OPEN', 'CLAIMED')
+          AND NOT EXISTS (
+              SELECT 1 FROM operations_task_trigger tr
+              WHERE tr.task_id = t.task_id AND tr.active = true
+          )
+        ORDER BY t.created_at DESC LIMIT 1
+    </select>
+
+    <select id="hasRecentRuleTask" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1 FROM operations_task
+            WHERE vehicle_id = #{vehicleId} AND rule_id = #{ruleId}
+              AND created_at &gt;= #{cutoff}
+        )
+    </select>
+
+    <select id="findAutomationVehicleStates" resultType="cn.bike.platform.ops.OperationsMapper$AutomationRow">
+        SELECT v.vehicle_id, v.operation_city_code AS city_code, v.operation_area_code AS area_code,
+               l.longitude, l.latitude, l.battery_percent, l.online,
+               l.controller_status, l.ride_status, l.fault_codes::text,
+               l.reported_at AS occurred_at
+        FROM vehicle v JOIN vehicle_latest l ON l.vehicle_id = v.vehicle_id
+        WHERE v.operation_city_code = #{cityCode}
+          AND v.lifecycle_status NOT IN ('RETIRED', 'IMPOUNDED')
+    </select>
+
+    <select id="hasGeoViolation" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1 FROM geofence f
+            WHERE f.city_code = #{cityCode} AND f.status = 'ACTIVE'
+              AND f.fence_type = 'NO_PARK' AND #{rideStatus} = 'IDLE'
+              AND ST_Covers(f.boundary, ST_SetSRID(ST_MakePoint(#{longitude}, #{latitude}), 4326))
+        ) OR (
+            EXISTS (
+                SELECT 1 FROM geofence f WHERE f.city_code = #{cityCode}
+                  AND f.status = 'ACTIVE' AND f.fence_type = 'OPERATION'
+            ) AND NOT EXISTS (
+                SELECT 1 FROM geofence f WHERE f.city_code = #{cityCode}
+                  AND f.status = 'ACTIVE' AND f.fence_type = 'OPERATION'
+                  AND ST_Covers(f.boundary, ST_SetSRID(ST_MakePoint(#{longitude}, #{latitude}), 4326))
+            )
+        )
+    </select>
+
+    <insert id="insertEvent">
+        INSERT INTO operations_task_event (
+            task_id, event_type, from_status, to_status, actor_id, actor_name, note
+        ) VALUES (
+            #{taskId}, #{eventType}, #{fromStatus}, #{toStatus}, #{actorId}, #{actorName}, #{note}
+        )
+    </insert>
+
+    <select id="findEvidence" resultType="cn.bike.platform.ops.OperationsMapper$EvidenceRow">
+        SELECT evidence_id, submission_no, result_note, arrival_longitude, arrival_latitude,
+               checklist::text, removed_battery_id, installed_battery_id, parts_used::text,
+               target_longitude, target_latitude, review_status, submitted_by, submitted_by_name,
+               submitted_at, reviewed_by_name, review_note, reviewed_at
+        FROM operations_task_evidence
+        WHERE task_id = #{taskId} ORDER BY submission_no DESC
+    </select>
+
+    <select id="findExceptions" resultType="cn.bike.platform.ops.OperationsMapper$ExceptionRow">
+        SELECT exception_id, exception_type, note, reported_by, reported_by_name, reported_at,
+               resolution_action, resolution_note, resolved_by_name, resolved_at
+        FROM operations_task_exception
+        WHERE task_id = #{taskId} ORDER BY reported_at DESC
+    </select>
+
+    <select id="findTriggers" resultType="cn.bike.platform.ops.OperationsModels$TaskTrigger">
+        SELECT tr.trigger_id, tr.rule_id, rule.rule_name, tr.trigger_key, tr.active,
+               tr.occurrence_count, tr.first_triggered_at, tr.last_triggered_at, tr.recovered_at
+        FROM operations_task_trigger tr
+        JOIN operations_task_rule rule ON rule.rule_id = tr.rule_id
+        WHERE tr.task_id = #{taskId} ORDER BY tr.first_triggered_at
+    </select>
+
+    <select id="findEvidenceAttachments" resultType="cn.bike.platform.ops.OperationsMapper$EvidenceAttachmentRow">
+        SELECT a.attachment_id, a.purpose, a.original_name, a.content_type, a.size_bytes, a.uploaded_at
+        FROM operations_task_attachment a
+        JOIN operations_task_evidence_attachment link ON link.attachment_id = a.attachment_id
+        WHERE link.evidence_id = #{evidenceId} ORDER BY a.uploaded_at
+    </select>
+
+    <select id="findExceptionAttachments" resultType="cn.bike.platform.ops.OperationsMapper$EvidenceAttachmentRow">
+        SELECT a.attachment_id, a.purpose, a.original_name, a.content_type, a.size_bytes, a.uploaded_at
+        FROM operations_task_attachment a
+        JOIN operations_task_exception_attachment link ON link.attachment_id = a.attachment_id
+        WHERE link.exception_id = #{exceptionId} ORDER BY a.uploaded_at
+    </select>
+
+    <insert id="insertMockTask">
+        INSERT INTO operations_task (
+            task_id, task_no, task_type, task_status, priority, title,
+            vehicle_id, city_code, area_code, org_id, target_name,
+            source_longitude, source_latitude, battery_percent,
+            assignee_id, created_by, due_at, claimed_at, started_at, completed_at, result_note
+        )
+        SELECT #{taskId}, #{taskNo}, #{taskType}, #{taskStatus}, #{priority}, #{title},
+               v.vehicle_id, v.operation_city_code, v.operation_area_code, #{orgId}, #{targetName},
+               latest.longitude, latest.latitude, latest.battery_percent,
+               #{assigneeId}, 'USR-ADMIN', #{dueAt},
+               CASE WHEN CAST(#{assigneeId} AS VARCHAR) IS NULL
+                    THEN NULL ELSE now() - interval '40 minutes' END,
+               CASE WHEN CAST(#{taskStatus} AS VARCHAR) IN ('IN_PROGRESS', 'COMPLETED')
+                    THEN now() - interval '25 minutes' ELSE NULL END,
+               CASE WHEN CAST(#{taskStatus} AS VARCHAR) = 'COMPLETED'
+                    THEN now() - interval '5 minutes' ELSE NULL END,
+               #{resultNote}
+        FROM vehicle v LEFT JOIN vehicle_latest latest ON latest.vehicle_id = v.vehicle_id
+        WHERE v.vehicle_id = #{vehicleId}
+        ON CONFLICT DO NOTHING
+    </insert>
+
+    <insert id="insertMockEvent">
+        INSERT INTO operations_task_event (
+            task_id, event_type, from_status, to_status, actor_id, actor_name, note
+        ) VALUES (#{taskId}, #{eventType}, #{fromStatus}, #{toStatus}, #{actorId}, #{actorName}, #{note})
+    </insert>
+
+    <update id="updateMockVehicleLifecycle">
+        UPDATE vehicle SET lifecycle_status = #{status} WHERE vehicle_id = #{vehicleId}
+    </update>
+</mapper>

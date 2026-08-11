@@ -4,7 +4,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,10 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Order(20)
 public class MockGeoInitializer implements ApplicationRunner {
 
-    private final JdbcClient jdbcClient;
+    private final GeoMapper mapper;
 
-    public MockGeoInitializer(JdbcClient jdbcClient) {
-        this.jdbcClient = jdbcClient;
+    public MockGeoInitializer(GeoMapper mapper) {
+        this.mapper = mapper;
     }
 
     /** 输入: Spring Boot 启动参数; 输出: 无, 幂等创建两城空间设施样例。 */
@@ -36,30 +35,12 @@ public class MockGeoInitializer implements ApplicationRunner {
     }
 
     private void insertFence(String id, String orgId, String name, String cityCode, String type, String wkt) {
-        jdbcClient.sql("""
-                        INSERT INTO geofence (
-                            fence_id, org_id, fence_name, city_code, fence_type, boundary, status, created_by
-                        ) VALUES (:id, :orgId, :name, :cityCode, :type, ST_GeomFromText(:wkt, 4326), 'ACTIVE', 'USR-ADMIN')
-                        ON CONFLICT (fence_id) DO NOTHING
-                        """)
-                .param("id", id).param("orgId", orgId).param("name", name)
-                .param("cityCode", cityCode).param("type", type).param("wkt", wkt).update();
+        mapper.insertMockFence(id, orgId, name, cityCode, type, wkt);
     }
 
     private void insertParkingPoint(
             String id, String orgId, String name, String cityCode, double longitude, double latitude
     ) {
-        jdbcClient.sql("""
-                        INSERT INTO parking_point (
-                            point_id, org_id, point_name, city_code, location,
-                            radius_meters, capacity, status, created_by
-                        ) VALUES (
-                            :id, :orgId, :name, :cityCode,
-                            ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326),
-                            300, 80, 'ACTIVE', 'USR-ADMIN'
-                        ) ON CONFLICT (point_id) DO NOTHING
-                        """)
-                .param("id", id).param("orgId", orgId).param("name", name).param("cityCode", cityCode)
-                .param("longitude", longitude).param("latitude", latitude).update();
+        mapper.insertMockParkingPoint(id, orgId, name, cityCode, longitude, latitude);
     }
 }

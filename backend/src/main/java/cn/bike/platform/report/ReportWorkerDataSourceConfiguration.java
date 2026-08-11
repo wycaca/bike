@@ -1,20 +1,24 @@
 package cn.bike.platform.report;
 
+import com.mybatisflex.core.mybatis.FlexConfiguration;
+import com.mybatisflex.spring.FlexSqlSessionFactoryBean;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 @Configuration(proxyBeanMethods = false)
 @Profile("report-worker")
 public class ReportWorkerDataSourceConfiguration {
 
-    /** 输入: 主库连接信息; 输出: 仅供任务领取和状态更新使用的小型读写连接池。 */
+    /** 输入: 主库连接信息; 输出: 仅供任务领取和状态更新使用的小型读写连接池. */
     @Bean(name = "dataSource", destroyMethod = "close")
     @Primary
     public HikariDataSource queueDataSource(
@@ -29,28 +33,16 @@ public class ReportWorkerDataSourceConfiguration {
         if (poolSize < 1) {
             throw new IllegalArgumentException("报表任务队列连接池至少为 1");
         }
-        var jdbcUrl = configuredUrl.isBlank()
-                ? "jdbc:postgresql://" + host + ":" + port + "/" + database
-                : configuredUrl;
-        var config = new HikariConfig();
-        config.setPoolName("ReportQueuePool");
-        config.setJdbcUrl(jdbcUrl);
-        config.setUsername(username);
-        config.setPassword(password);
-        config.setMaximumPoolSize(poolSize);
-        config.setMinimumIdle(0);
-        config.setConnectionTimeout(3_000);
+        var config = dataSourceConfig("ReportQueuePool", configuredUrl, host, port, database, username, password,
+                poolSize);
         config.addDataSourceProperty("ApplicationName", "bike-report-worker-queue");
         return new HikariDataSource(config);
     }
 
     /**
-     * 输入: 报表库连接信息、连接上限和 SQL 超时; 输出: 只读的报表查询连接池。
+     * 输入: 报表库连接信息、连接上限和 SQL 超时; 输出: 只读的报表查询连接池.
      *
-     * 步骤:
-     * 1. 未配置 REPORT_DB_URL 时，根据独立的 REPORT_DB_* 参数组装 JDBC 地址。
-     * 2. 连接池保持很小，并将连接标记为只读，防止报表查询误写业务数据。
-     * 3. 每条连接设置 statement_timeout，避免异常查询长期占用数据库资源。
+     * 独立连接池限制聚合查询并发和执行时间, 避免影响任务队列及在线业务.
      */
     @Bean(destroyMethod = "close")
     public HikariDataSource reportingDataSource(
@@ -64,30 +56,88 @@ public class ReportWorkerDataSourceConfiguration {
             @Value("${REPORT_STATEMENT_TIMEOUT_MS:120000}") long statementTimeoutMs
     ) {
         if (poolSize < 1 || statementTimeoutMs < 1_000) {
-            throw new IllegalArgumentException("报表连接池至少为 1，SQL 超时不得低于 1000 毫秒");
+            throw new IllegalArgumentException("报表连接池至少为 1, SQL 超时不得低于 1000 毫秒");
         }
-        var jdbcUrl = configuredUrl.isBlank()
-                ? "jdbc:postgresql://" + host + ":" + port + "/" + database
-                : configuredUrl;
-        var config = new HikariConfig();
-        config.setPoolName("ReportQueryPool");
-        config.setJdbcUrl(jdbcUrl);
-        config.setUsername(username);
-        config.setPassword(password);
-        config.setMaximumPoolSize(poolSize);
-        config.setMinimumIdle(0);
-        config.setConnectionTimeout(3_000);
+        var config = dataSourceConfig("ReportQueryPool", configuredUrl, host, port, database, username, password,
+                poolSize);
         config.setReadOnly(true);
         config.setConnectionInitSql("SET statement_timeout TO " + statementTimeoutMs);
         config.addDataSourceProperty("ApplicationName", "bike-report-worker-query");
         return new HikariDataSource(config);
     }
 
-    /** 输入: 独立报表数据源; 输出: 仅供收入聚合查询使用的 JdbcClient。 */
-    @Bean("reportingJdbcClient")
-    public JdbcClient reportingJdbcClient(
-            @Qualifier("reportingDataSource") HikariDataSource reportingDataSource
+    /** 输入: 任务队列数据源; 输出: Worker 业务 Mapper 使用的 MyBatis-Flex 会话工厂. */
+    @Bean(name = "sqlSessionFactory")
+    @Primary
+    public SqlSessionFactory queueSqlSessionFactory(
+            @Qualifier("dataSource") HikariDataSource dataSource
+    ) throws Exception {
+        return sqlSessionFactory(dataSource, "classpath*:/mapper/**/*.xml");
+    }
+
+    @Bean(name = "sqlSessionTemplate")
+    @Primary
+    public SqlSessionTemplate queueSqlSessionTemplate(
+            @Qualifier("sqlSessionFactory") SqlSessionFactory sqlSessionFactory
     ) {
-        return JdbcClient.create(reportingDataSource);
+        return new SqlSessionTemplate(sqlSessionFactory);
+    }
+
+    /** 输入: 独立报表数据源; 输出: 仅加载收入聚合 SQL 的 MyBatis-Flex 会话工厂. */
+    @Bean("reportingSqlSessionFactory")
+    public SqlSessionFactory reportingSqlSessionFactory(
+            @Qualifier("reportingDataSource") HikariDataSource dataSource
+    ) throws Exception {
+        return sqlSessionFactory(dataSource, "classpath*:/mapper/RevenueReportMapper.xml");
+    }
+
+    @Bean("reportingSqlSessionTemplate")
+    public SqlSessionTemplate reportingSqlSessionTemplate(
+            @Qualifier("reportingSqlSessionFactory") SqlSessionFactory sqlSessionFactory
+    ) {
+        return new SqlSessionTemplate(sqlSessionFactory);
+    }
+
+    @Bean
+    public RevenueReportMapper revenueReportMapper(
+            @Qualifier("reportingSqlSessionTemplate") SqlSessionTemplate sqlSessionTemplate
+    ) {
+        return sqlSessionTemplate.getMapper(RevenueReportMapper.class);
+    }
+
+    private SqlSessionFactory sqlSessionFactory(HikariDataSource dataSource, String mapperLocation) throws Exception {
+        var configuration = new FlexConfiguration();
+        configuration.setMapUnderscoreToCamelCase(true);
+        configuration.setArgNameBasedConstructorAutoMapping(true);
+
+        var factory = new FlexSqlSessionFactoryBean();
+        factory.setDataSource(dataSource);
+        factory.setConfiguration(configuration);
+        factory.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(mapperLocation));
+        return factory.getObject();
+    }
+
+    private HikariConfig dataSourceConfig(
+            String poolName,
+            String configuredUrl,
+            String host,
+            int port,
+            String database,
+            String username,
+            String password,
+            int poolSize
+    ) {
+        var jdbcUrl = configuredUrl.isBlank()
+                ? "jdbc:postgresql://" + host + ":" + port + "/" + database
+                : configuredUrl;
+        var config = new HikariConfig();
+        config.setPoolName(poolName);
+        config.setJdbcUrl(jdbcUrl);
+        config.setUsername(username);
+        config.setPassword(password);
+        config.setMaximumPoolSize(poolSize);
+        config.setMinimumIdle(0);
+        config.setConnectionTimeout(3_000);
+        return config;
     }
 }

@@ -74,3 +74,8 @@ logging:
   level:
     root: INFO
     cn.bike.platform: INFO
+
+mybatis-flex:
+  configuration:
+    map-underscore-to-camel-case: true
+    arg-name-based-constructor-auto-mapping: true
