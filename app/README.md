@@ -16,7 +16,7 @@
 docker compose --env-file .env.local up -d --build mobile-web
 ```
 
-浏览器访问 `http://localhost:8082`。安卓模拟器中的调试包会访问 `http://10.0.2.2:8082`。
+本机浏览器访问 `http://localhost:8082`，同一局域网内的手机访问 `http://192.168.50.204:8082`。安卓调试包默认连接该局域网地址。
 
 Mock 账号：管理员 `admin`，北京运维人员 `operator.bj`，上海运维人员 `operator.sh`；密码使用 `.env.local` 中的 `APP_ADMIN_PASSWORD`。
 
@@ -35,6 +35,12 @@ docker build --target artifact --output type=local,dest=app/android/app/build/ou
 ```
 
 该命令会运行 `testDebugUnitTest` 和 `assembleDebug`，并直接导出 `app/android/app/build/outputs/apk/debug/bike-operations-debug.apk`。构建产物不提交 Git。
+
+电脑局域网 IP 变化时，可以在构建时覆盖调试服务器地址：
+
+```powershell
+docker build --build-arg BIKE_DEBUG_WEB_APP_URL=http://新的局域网IP:8082 --target artifact --output type=local,dest=app/android/app/build/outputs/apk/debug app/android
+```
 
 发布包必须传入受控 HTTPS 地址：
 

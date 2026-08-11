@@ -23,7 +23,9 @@ android {
     buildTypes {
         debug {
             manifestPlaceholders["usesCleartextTraffic"] = "true"
-            buildConfigField("String", "WEB_APP_URL", "\"http://10.0.2.2:8082\"")
+            val webAppUrl = providers.gradleProperty("BIKE_DEBUG_WEB_APP_URL")
+                .orElse("http://192.168.50.204:8082")
+            buildConfigField("String", "WEB_APP_URL", "\"${webAppUrl.get()}\"")
         }
         release {
             isMinifyEnabled = false

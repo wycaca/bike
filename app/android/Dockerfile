@@ -5,7 +5,8 @@ COPY --from=gradle-runtime /opt/gradle /opt/gradle
 ENV PATH="/opt/gradle/bin:${PATH}"
 WORKDIR /workspace
 COPY . .
-RUN --mount=type=cache,target=/root/.gradle gradle --no-daemon testDebugUnitTest assembleDebug
+ARG BIKE_DEBUG_WEB_APP_URL=http://192.168.50.204:8082
+RUN --mount=type=cache,target=/root/.gradle gradle --no-daemon testDebugUnitTest assembleDebug -PBIKE_DEBUG_WEB_APP_URL=${BIKE_DEBUG_WEB_APP_URL}
 
 FROM scratch AS artifact
 COPY --from=builder /workspace/app/build/outputs/apk/debug/app-debug.apk /bike-operations-debug.apk

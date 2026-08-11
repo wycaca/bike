@@ -17,8 +17,8 @@ class TrustedOriginPolicyTest {
 
     @Test
     fun `permits the configured cleartext origin only in debug mode`() {
-        val debugPolicy = TrustedOriginPolicy("http://10.0.2.2:8082", true)
-        assertTrue(debugPolicy.isAllowed("http://10.0.2.2:8082/operator/pool"))
-        assertFalse(debugPolicy.isAllowed("http://10.0.2.2:8080/operator/pool"))
+        val debugPolicy = TrustedOriginPolicy("http://192.168.50.204:8082", true)
+        assertTrue(debugPolicy.isAllowed("http://192.168.50.204:8082/operator/pool"))
+        assertFalse(debugPolicy.isAllowed("http://192.168.50.204:8080/operator/pool"))
     }
 }
