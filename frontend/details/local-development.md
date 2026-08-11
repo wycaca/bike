@@ -40,6 +40,8 @@ docker compose ps
 前端容器使用 Nginx 提供静态文件, 并把 `/api` 和 `/actuator` 同源代理到 `backend:8080`. 前端容器不保存业务状态.
 `VITE_AMAP_KEY` 会在 Vite 构建阶段写入静态资源, 更换 Key 后必须带 `--build` 重新构建前端镜像;
 未配置 Key 时 Dockerfile 会直接终止构建, 避免生成只能显示空地图的镜像.
+Docker 构建上下文会排除 `frontend/.env.local`, Compose 构建只使用根目录 `.env.local`;
+仅重启容器不会更新已写入静态资源的 Key, 必须重新构建并强制替换前端容器.
 
 ## 高德地图配置
 
@@ -58,9 +60,9 @@ docker compose ps
 
 ## 已验证
 
-2026-08-10 已完成:
+2026-08-11 最近验证:
 
-- `npm test` 通过, 1 个测试文件和 1 个测试用例.
+- `npm test` 通过, 3 个测试文件和 11 个测试用例.
 - `npm run build` 通过.
 - 前端 Docker 镜像通过国内镜像站构建成功.
 - `http://localhost:8081/actuator/health` 返回 `UP`.
@@ -71,6 +73,4 @@ docker compose ps
 - 真实高德地图组件、中文车辆信息和轨迹折线已完成浏览器渲染验证.
 - 登录页, Redis 会话恢复, 登录后 CSRF 令牌轮换和退出入口已完成浏览器验证.
 - 运营看板, 空间设施地图, 围栏编辑抽屉, 组织用户表和审计日志均完成桌面视口验证.
-- 前端 Docker 构建当前通过 2 个测试文件, 3 个测试用例和 TypeScript 严格检查.
-
-内置浏览器自动化进程受 Windows 沙箱错误 `1385` 阻断时, 使用本机 Edge 无头模式完成页面渲染检查.
+- 新 Web JS Key 与安全密钥通过同源代理鉴权, 北京真实底图和 94 个当前视野车辆点位完成浏览器验证, 控制台无高德鉴权错误.
