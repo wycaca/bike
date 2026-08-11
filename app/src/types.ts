@@ -1,4 +1,5 @@
 export type UserRole = 'ADMIN' | 'OPERATOR'
+export type DataScope = 'ALL' | 'ORG_AND_CHILDREN' | 'ORG_ONLY'
 export type TaskType = 'BATTERY_SWAP' | 'REBALANCE' | 'REPAIR' | 'INSPECTION' | 'RETRIEVAL' | 'CLEANING'
 export type TaskStatus = 'OPEN' | 'CLAIMED' | 'IN_PROGRESS' | 'PENDING_REVIEW' | 'EXCEPTION' | 'COMPLETED' | 'CANCELLED'
 export type TaskPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT'
@@ -13,6 +14,7 @@ export interface CurrentUser {
   orgId: string
   orgName: string
   role: UserRole
+  dataScope: DataScope
 }
 
 export interface Task {

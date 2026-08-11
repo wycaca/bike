@@ -10,7 +10,7 @@ function user(role: UserRole): CurrentUser {
   return {
     userId: role === 'ADMIN' ? 'admin-1' : 'operator-1', username: role.toLowerCase(),
     displayName: role === 'ADMIN' ? '管理员' : '运维人员', orgId: 'ORG-BJ-001',
-    orgName: '北京运营中心', role,
+    orgName: '北京运营中心', role, dataScope: role === 'ADMIN' ? 'ALL' : 'ORG_ONLY',
   }
 }
 

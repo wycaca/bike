@@ -10,7 +10,7 @@ function setUser(role: UserRole) {
   auth.initialized = true
   auth.user = {
     userId: 'user-1', username: 'tester', displayName: '测试用户', orgId: 'ORG-BJ-001',
-    orgName: '北京运营中心', role,
+    orgName: '北京运营中心', role, dataScope: role === 'ADMIN' ? 'ALL' : 'ORG_ONLY',
   } satisfies CurrentUser
 }
 
