@@ -127,6 +127,7 @@
         ORDER BY o.org_name, u.display_name
     </select>
 
+    <!-- 活动任务唯一约束冲突时跳过当前车辆, 使批量建单可继续处理其他车辆. -->
     <insert id="insertTask">
         INSERT INTO operations_task (
             task_id, task_no, task_type, task_status, priority, source_type,
@@ -156,6 +157,7 @@
             skipped_count = #{skippedCount} WHERE batch_id = #{batchId}
     </update>
 
+    <!-- 以下状态迁移均在 WHERE 中校验前置状态、版本和执行人, 影响行数为 0 表示并发冲突. -->
     <update id="claim">
         UPDATE operations_task SET task_status = 'CLAIMED', assignee_id = #{assigneeId},
             claimed_at = now(), updated_at = now(), version = version + 1
@@ -216,6 +218,7 @@
           AND task_status IN ('CLAIMED', 'IN_PROGRESS')
     </update>
 
+    <!-- targetStatus 为空表示重开, 由 SQL 根据异常前状态和执行人恢复任务, 避免 Java 与数据库状态漂移. -->
     <update id="resolveException">
         UPDATE operations_task SET
             task_status = CASE WHEN CAST(#{targetStatus} AS VARCHAR) IS NOT NULL THEN #{targetStatus}
@@ -233,6 +236,7 @@
         WHERE vehicle_id = #{vehicleId} AND lifecycle_status NOT IN ('RETIRED', 'IMPOUNDED')
     </update>
 
+    <!-- 证据、附件和异常写入使用 DML RETURNING 获取数据库编号, 避免额外查询和并发错配. -->
     <select id="insertEvidence" resultType="long" affectData="true" flushCache="true">
         INSERT INTO operations_task_evidence (
             task_id, submission_no, result_note, arrival_longitude, arrival_latitude,
@@ -312,6 +316,7 @@
         )
     </update>
 
+    <!-- 触发去重键合并重复事件, GREATEST 防止乱序事件回退最后触发时间. -->
     <select id="upsertTrigger" resultType="int" affectData="true" flushCache="true">
         INSERT INTO operations_task_trigger (
             task_id, rule_id, trigger_key, first_triggered_at, last_triggered_at, last_payload
@@ -370,6 +375,7 @@
           AND v.lifecycle_status NOT IN ('RETIRED', 'IMPOUNDED')
     </select>
 
+    <!-- 城市未配置运营围栏时不判定越界, 避免把全部车辆误报为异常. -->
     <select id="hasGeoViolation" resultType="boolean">
         SELECT EXISTS (
             SELECT 1 FROM geofence f

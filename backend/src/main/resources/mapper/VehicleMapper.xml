@@ -53,6 +53,7 @@
             updated_at = now()
     </insert>
 
+    <!-- 遥测消息可能重复投递, 唯一键配合 ON CONFLICT 保证历史轨迹点幂等. -->
     <insert id="insertVehiclePosition">
         INSERT INTO vehicle_position (
             vehicle_id, reported_at, longitude, latitude, position, accuracy_meters,
@@ -70,6 +71,7 @@
         ON CONFLICT (vehicle_id, reported_at) DO NOTHING
     </insert>
 
+    <!-- 仅接受不早于当前快照的上报时间, 防止乱序消息回滚最新状态; 影响行数同时决定是否刷新 Redis. -->
     <insert id="upsertVehicleLatest">
         INSERT INTO vehicle_latest (
             vehicle_id, reported_at, longitude, latitude, position, accuracy_meters,
@@ -141,6 +143,7 @@
         LIMIT #{limit}
     </select>
 
+    <!-- 边界框运算符可以使用 PostGIS GiST 索引, 高缩放级别直接返回单车点. -->
     <select id="findMapVehicles" resultType="cn.bike.platform.vehicle.VehicleMapper$VehicleRow">
         SELECT <include refid="vehicleWithLatestColumns"/>
         FROM vehicle_latest l
@@ -152,6 +155,7 @@
         ORDER BY l.vehicle_id LIMIT #{limit}
     </select>
 
+    <!-- 低缩放级别按经纬网格聚合, 控制管理端一次渲染的地图点数量. -->
     <select id="findMapClusters" resultType="cn.bike.platform.vehicle.VehicleMapper$ClusterRow">
         SELECT avg(l.longitude) AS longitude, avg(l.latitude) AS latitude,
                count(*) AS vehicle_count,

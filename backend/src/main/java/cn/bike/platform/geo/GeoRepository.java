@@ -16,6 +16,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 地理域仓储, 负责空间查询参数和数据库行模型到领域对象的转换.
+ * 坐标关系由 Mapper 中的 PostGIS SQL 判断, 不在 Java 中重复实现几何算法.
+ */
 @Repository
 public class GeoRepository {
 

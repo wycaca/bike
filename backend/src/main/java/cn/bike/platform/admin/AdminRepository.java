@@ -12,6 +12,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 管理域仓储, 在服务层和 MyBatis Mapper 之间转换查询条件与领域对象.
+ * 用户名去重和状态约束依赖数据库约束及 Mapper SQL, 避免多实例下的内存判断竞态.
+ */
 @Repository
 public class AdminRepository {
 

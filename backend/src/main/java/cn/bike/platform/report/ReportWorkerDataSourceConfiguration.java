@@ -14,6 +14,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
+/**
+ * 报表 Worker 的双数据源 MyBatis-Flex 配置.
+ * 读写池只处理任务队列, 只读池只执行收入聚合, 避免长查询占用在线业务连接.
+ */
 @Configuration(proxyBeanMethods = false)
 @Profile("report-worker")
 public class ReportWorkerDataSourceConfiguration {
@@ -105,6 +109,7 @@ public class ReportWorkerDataSourceConfiguration {
         return sqlSessionTemplate.getMapper(RevenueReportMapper.class);
     }
 
+    // 两个数据源必须分别创建会话工厂, 否则 Mapper 可能被错误路由到任务队列连接池.
     private SqlSessionFactory sqlSessionFactory(HikariDataSource dataSource, String mapperLocation) throws Exception {
         var configuration = new FlexConfiguration();
         configuration.setMapUnderscoreToCamelCase(true);

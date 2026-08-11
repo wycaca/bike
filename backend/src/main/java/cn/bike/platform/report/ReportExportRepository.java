@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * 报表导出任务仓储, 将队列 SQL 结果转换为任务领域模型.
+ * 不在内存维护任务状态, 以数据库条件更新和返回行为准.
+ */
 @Repository
 public class ReportExportRepository {
 

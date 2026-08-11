@@ -8,6 +8,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 报表导出任务队列 Mapper, 负责创建、领取、重试、完成和过期状态迁移.
+ * 任务领取与状态条件在数据库原子执行, 支持多个 Worker 安全竞争.
+ */
 @Mapper
 public interface ReportExportMapper {
 

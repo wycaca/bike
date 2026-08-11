@@ -18,6 +18,10 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Random;
 
+/**
+ * Mock 环境的骑行订单初始化器, 为收入报表生成可复现的 120 天数据.
+ * 固定随机种子覆盖工作日、周末、高峰、退款和取消场景, 不用于生产数据迁移.
+ */
 @Profile("mock")
 @Component
 @Order(40)
@@ -76,6 +80,7 @@ public class MockRideOrderInitializer implements ApplicationRunner {
             }
         }
 
+        // 单批限制为 500 条, 控制 PostgreSQL 绑定参数数量和动态 SQL 长度.
         for (var from = 0; from < rows.size(); from += INSERT_BATCH_SIZE) {
             mapper.insertRideOrders(rows.subList(from, Math.min(from + INSERT_BATCH_SIZE, rows.size())));
         }

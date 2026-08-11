@@ -10,6 +10,7 @@
         created_at, started_at, completed_at, expires_at
     </sql>
 
+    <!-- INSERT RETURNING 在一次往返中创建并返回任务, affectData 用于声明该 select 会修改数据. -->
     <select id="create" resultType="cn.bike.platform.report.ReportExportModels$ExportJob"
             affectData="true" flushCache="true">
         INSERT INTO report_export_job (
@@ -34,6 +35,7 @@
         WHERE job_id = #{jobId} AND requested_by = #{requestedBy}
     </select>
 
+    <!-- SKIP LOCKED 让多个 Worker 跳过已锁任务并领取不同记录, 不发生串行等待. -->
     <select id="claimNext" resultType="cn.bike.platform.report.ReportExportModels$ExportJob"
             affectData="true" flushCache="true">
         WITH next_job AS (
@@ -69,6 +71,7 @@
         WHERE job_id = #{jobId} AND job_status = 'RUNNING'
     </update>
 
+    <!-- 超时任务未达到重试上限时重新排队, 达到上限后终止, 防止故障任务无限循环. -->
     <update id="recoverStale">
         UPDATE report_export_job
         SET job_status = CASE WHEN attempt_count >= 3 THEN 'FAILED' ELSE 'PENDING' END,
@@ -79,6 +82,7 @@
           AND started_at &lt; now() - (#{timeoutSeconds} * interval '1 second')
     </update>
 
+    <!-- 先更新过期状态并返回存储键, 调用方再删除文件, 避免删除仍可下载的文件. -->
     <select id="expireCompleted" resultType="string" affectData="true" flushCache="true">
         UPDATE report_export_job
         SET job_status = 'EXPIRED'

@@ -9,6 +9,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Mock 环境的组织和管理员基础数据初始化器.
+ * 初始化 SQL 可以重复执行, 避免开发环境重启产生重复基础数据.
+ */
 @Profile("mock")
 @Component
 @Order(10)

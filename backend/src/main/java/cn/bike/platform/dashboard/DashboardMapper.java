@@ -10,6 +10,10 @@ import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
+/**
+ * 仪表盘只读查询 Mapper, 集中维护车辆状态和异常报表的数据库统计口径.
+ * 聚合在数据库完成, 避免服务实例拉取明细后重复计算.
+ */
 @Mapper
 public interface DashboardMapper {
 

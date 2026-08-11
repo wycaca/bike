@@ -22,6 +22,10 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * 运维任务持久化 Mapper, 覆盖任务、证据、附件、异常和自动触发记录.
+ * 状态迁移条件、乐观锁和幂等去重在 SQL 内原子判断, 保证多实例并发结果一致.
+ */
 @Mapper
 public interface OperationsMapper {
 

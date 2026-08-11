@@ -8,6 +8,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Mock 骑行订单持久化 Mapper.
+ * 批量插入只服务开发数据初始化, 生产订单写入不复用该入口.
+ */
 @Mapper
 public interface MockRideOrderMapper {
 

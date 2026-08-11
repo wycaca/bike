@@ -11,6 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * Mock 环境的运维任务、证据和异常数据初始化器.
+ * 仅在基础车辆和组织数据就绪后执行, 并通过幂等写入保持测试数据可复现.
+ */
 @Profile("mock")
 @Component
 @Order(50)

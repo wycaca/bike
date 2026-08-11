@@ -7,6 +7,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 自动运维规则仓储, 负责请求字段规范化和 Mapper 调用.
+ * 更新结果保留影响行数, 由服务层统一转换为乐观锁冲突.
+ */
 @Repository
 public class OperationsRuleRepository {
 

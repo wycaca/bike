@@ -13,6 +13,10 @@ import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
+/**
+ * 管理域持久化 Mapper, 负责组织、用户和审计日志 SQL.
+ * SQL 返回数据库行模型, 查询条件整理和领域转换由 Repository 负责.
+ */
 @Mapper
 public interface AdminMapper {
 

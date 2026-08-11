@@ -9,6 +9,10 @@ import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
+/**
+ * 自动运维规则持久化 Mapper.
+ * 规则更新使用 version 条件完成乐观锁校验, 防止管理端并发编辑相互覆盖.
+ */
 @Mapper
 public interface OperationsRuleMapper {
 

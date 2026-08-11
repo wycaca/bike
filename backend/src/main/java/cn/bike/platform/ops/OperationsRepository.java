@@ -39,6 +39,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 运维任务仓储, 负责数据库行与任务详情、证据和异常领域模型的组装.
+ * 状态机不在内存中重放, Mapper 的影响行数直接表示并发更新是否成功.
+ */
 @Repository
 public class OperationsRepository {
 

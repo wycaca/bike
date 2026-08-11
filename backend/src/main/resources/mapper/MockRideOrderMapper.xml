@@ -14,6 +14,7 @@
         ORDER BY vehicle_id
     </select>
 
+    <!-- 使用单条多值 INSERT 降低 Mock 初始化往返次数, 批大小由初始化器限制. -->
     <insert id="insertRideOrders">
         INSERT INTO ride_order (
             order_id, vehicle_id, rider_id, city_code, area_code, started_at, ended_at,

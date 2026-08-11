@@ -7,6 +7,10 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Mock 环境的自动运维规则初始化器.
+ * 固定规则编号允许重复启动, 也便于遥测触发场景稳定复用.
+ */
 @Profile("mock")
 @Component
 @Order(20)

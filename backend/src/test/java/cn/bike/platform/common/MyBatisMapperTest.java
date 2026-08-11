@@ -13,6 +13,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * MyBatis-Flex Mapper XML 装载契约测试.
+ * 使用只提供元数据的 DataSource Mock 构建真实会话工厂, 不依赖运行中的数据库.
+ */
 class MyBatisMapperTest {
 
     @Test

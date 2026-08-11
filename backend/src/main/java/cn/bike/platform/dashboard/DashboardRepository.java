@@ -8,6 +8,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * 仪表盘查询仓储, 为服务层提供稳定的统计行模型.
+ * 该层不重新聚合数据, 统计口径以 Mapper SQL 为唯一来源.
+ */
 @Repository
 public class DashboardRepository {
 

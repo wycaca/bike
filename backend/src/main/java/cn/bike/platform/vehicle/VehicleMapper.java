@@ -13,6 +13,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * 车辆持久化 Mapper, 覆盖资产查询、最新状态、历史轨迹和地图聚合.
+ * PostGIS、TimescaleDB、轨迹幂等和乱序保护保留在 XML SQL 中, 避免 Java 层竞态.
+ */
 @Mapper
 public interface VehicleMapper {
 

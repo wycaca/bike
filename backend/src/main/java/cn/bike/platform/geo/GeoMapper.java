@@ -13,6 +13,10 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * 地理围栏和运营组织的持久化 Mapper.
+ * 空间相交、点面判断等计算交给 PostGIS, 保证索引可用并统一坐标判断口径.
+ */
 @Mapper
 public interface GeoMapper {
 

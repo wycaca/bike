@@ -7,6 +7,10 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Mock 环境的北京、上海运营围栏初始化器.
+ * 数据按固定编号幂等写入, 便于地图和运维规则在重复启动后保持一致.
+ */
 @Profile("mock")
 @Component
 @Order(20)

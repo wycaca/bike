@@ -10,6 +10,10 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 
+/**
+ * 收入报表仓储, 负责日期边界和数据库聚合结果的领域转换.
+ * 闭区间 LocalDate 按 Asia/Shanghai 转为半开 Instant 区间, 避免跨日重复统计.
+ */
 @Repository
 public class RevenueReportRepository {
 

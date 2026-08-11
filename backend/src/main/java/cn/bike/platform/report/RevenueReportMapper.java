@@ -8,6 +8,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * 收入报表聚合 Mapper, 维护订单收入、骑行次数和车辆运力的统一统计口径.
+ * 自然日按 Asia/Shanghai 切分, 空档日期由 SQL 日历序列补齐.
+ */
 public interface RevenueReportMapper {
 
     RawMetrics totals(

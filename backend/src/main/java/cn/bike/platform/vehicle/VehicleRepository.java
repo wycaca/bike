@@ -23,6 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 车辆域仓储, 负责查询参数、数据库行模型和车辆领域对象之间的转换.
+ * 遥测历史与最新状态由 Mapper 分别写入, 最新状态影响行数用于判断是否刷新缓存.
+ */
 @Repository
 public class VehicleRepository {
 
@@ -57,6 +61,7 @@ public class VehicleRepository {
                 location.satelliteCount(), state.batteryPercent(), state.remainingRangeKm(),
                 state.lockStatus().name(), state.rideStatus().name(), state.controllerStatus().name(),
                 state.online(), state.signalStrength(), faultCodesJson, rawPayload);
+        // 历史点始终尝试幂等写入; 只有较新的快照会返回成功并触发上层 Redis 更新.
         mapper.insertVehiclePosition(row);
         return mapper.upsertVehicleLatest(row) > 0;
     }
