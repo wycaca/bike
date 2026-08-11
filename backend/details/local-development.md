@@ -77,16 +77,14 @@ docker compose exec -T db psql -U bike -d bike -c "SELECT extname, extversion FR
 - 车辆分页, 详情和历史轨迹接口返回成功.
 - 抽查北京和上海扩容车辆均返回 60 个 GCJ-02 道路轨迹点, 未触发接口截断.
 - 模拟雅迪云事件通过 Kafka 消费后写入轨迹表, 并更新 PostgreSQL 最新状态和 Redis 缓存.
-- Flyway V2 已创建组织, 用户, 审计, 围栏和停车点表及 PostGIS 索引.
+- Flyway V2 已创建组织, 用户, 审计, 围栏和停车点表及 PostGIS 索引; V7 已增加用户数据范围、车辆组织归属和报表权限快照.
 - Redis 会话登录, 登录后 CSRF 令牌轮换, 角色路由和后端鉴权已完成联调.
 - 北京空间总览返回 2 个有效围栏和 2 个停车点; 围栏创建和停用已通过真实 PostGIS 写入验证.
 - 运营看板返回 100 辆北京车辆及区域指标, CSV 报表包含 UTF-8 BOM.
 - 异步收入报表在 Worker 停止时保持等待，恢复后继续生成；下载文件大小与任务元数据一致且不残留临时文件.
 - 报表 Worker 使用独立队列与只读查询连接池，Compose 限制为 1 CPU、512 MiB 和两个数据库连接.
-- 后端 `mvn verify` 当前通过 35 个测试, 覆盖组织环检测, 自停用保护, 空间归属, 围栏 WKT、收入指标、异步导出和 Mapper XML 装载.
+- 后端 `mvn verify` 当前通过 38 个测试, 覆盖组织环检测, 数据范围、自停用保护、空间归属、围栏 WKT、收入指标、异步导出和 Mapper XML 装载.
 - 读接口 10, 30 和 60 并发压测均为 0 错误, 吞吐平台约 690 RPS; 详细环境和结果见 `performance-test.md`.
 - 遥测写入 12,110 条最终全部落库, Kafka 单分区, 单消费者的持久化速度低于 1,211 RPS 的 HTTP 接收速度.
 
-2026-08-11 已完成 JDBC 到 MyBatis-Flex 1.11.8 的数据库访问层重构, `mvn -B verify` 和 5 个 XML Mapper 装载检查通过.
-
-本次验证环境未启动 PostgreSQL、Redis 和 Kafka, MyBatis-Flex 重构后的 Compose 接口冒烟尚未重跑. Docker 环境恢复后按本文件的基础检查和核心接口检查补做.
+2026-08-11 已完成 JDBC 到 MyBatis-Flex 1.11.8 的数据库访问层重构和组织数据权限. `mvn -B verify`、7 个 XML Mapper 装载、Flyway V7 和 Compose 受限账号接口冒烟均已通过.

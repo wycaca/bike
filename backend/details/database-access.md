@@ -16,8 +16,8 @@ MyBatis-Flex 支持原生 MyBatis 注解和 XML. 当前 SQL 包含较多 Postgre
 
 | 方式 | Mapper | 使用场景 |
 | --- | --- | --- |
-| 注解 SQL | `AdminMapper`、`DashboardMapper`、`GeoMapper`、`OperationsRuleMapper` | 语句固定、条件简单的管理、看板、地理和规则查询 |
-| XML SQL | `VehicleMapper`、`OperationsMapper`、`ReportExportMapper`、`RevenueReportMapper`、`MockRideOrderMapper` | 动态条件、空间查询、批量写入、`RETURNING`、任务锁和报表聚合 |
+| 注解 SQL | `AdminMapper`、`OperationsRuleMapper` | 语句固定、条件简单的管理和规则查询 |
+| XML SQL | `VehicleMapper`、`DashboardMapper`、`GeoMapper`、`OperationsMapper`、`ReportExportMapper`、`RevenueReportMapper`、`MockRideOrderMapper` | 动态条件、数据权限、空间查询、批量写入、`RETURNING`、任务锁和报表聚合 |
 
 `INSERT/UPDATE ... RETURNING` 在 XML 中声明为 `affectData="true"`, 让 MyBatis 正确处理会修改数据的查询型语句. `MockRideOrderMapper` 只用于 `mock` Profile 的开发数据初始化, 不是生产订单写入入口.
 
@@ -40,8 +40,8 @@ MyBatis-Flex 支持原生 MyBatis 注解和 XML. 当前 SQL 包含较多 Postgre
 
 ## 验证
 
-2026-08-11 执行 `mvn -B verify`, 35 个测试全部通过.
+2026-08-11 执行 `mvn -B verify`, 38 个测试全部通过.
 
-`MyBatisMapperTest` 使用真实 `FlexSqlSessionFactoryBean` 装载 5 个 XML Mapper, 检查 XML 语法、命名空间、结果类型和关键语句编号.
+`MyBatisMapperTest` 使用真实 `FlexSqlSessionFactoryBean` 装载 7 个 XML Mapper, 检查 XML 语法、命名空间、结果类型和关键语句编号.
 
-本次验证环境未启动 PostgreSQL、Redis 和 Kafka, 因此尚未重新执行 Compose 接口冒烟. Docker 环境恢复后应按 `local-development.md` 验证车辆、地图、轨迹、运维任务和报表接口.
+Compose 已重新构建并启动. Flyway V7、车辆组织回填、受限账号的车辆、地图、看板、收入、空间设施、运维任务、规则和审计接口均已完成冒烟验证.

@@ -31,6 +31,8 @@
 
 前端路由守卫只负责隐藏不可用入口，最终权限由 `SecurityFilterChain` 判定。
 
+以上角色权限还需叠加用户数据范围. 默认值为管理员全部组织、审计人员本组织及下级、运维人员仅本组织; 全量管理员可以按账号调整. 详细规则见 [数据权限范围](data-permissions.md).
+
 ## 登录与写请求
 
 1. 页面先调用 `GET /api/v1/auth/csrf`，令牌写入同源 Cookie。
@@ -82,6 +84,7 @@
 - `OperationsAutomationServiceTest`: 规则首次建单、活跃任务聚合和触发恢复自动关闭。
 - `OperationsRouteServiceTest`: 道路矩阵排序和路线里程、时长汇总。
 - `OperationsEvidenceStorageTest`: 真实图片落盘、SHA-256 和伪图片拒绝。
-- `MyBatisMapperTest`: 使用真实 MyBatis-Flex 会话工厂装载 5 个 XML Mapper, 校验 XML、命名空间、结果类型和关键语句编号。
+- `DataPermissionServiceTest`: 递归组织范围解析和越权写操作拒绝。
+- `MyBatisMapperTest`: 使用真实 MyBatis-Flex 会话工厂装载 7 个 XML Mapper, 校验 XML、命名空间、结果类型和关键语句编号。
 - Docker 构建执行全部 Maven/Vitest 测试与 TypeScript 检查。
 - 浏览器冒烟覆盖登录、看板、高德空间地图、运维任务中文展示、组织更新、CSRF 和审计落库。

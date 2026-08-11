@@ -63,6 +63,9 @@
 - 当前地图视野查询和低缩放级别聚合.
 - 雅迪云临时 Mock 协议, 请求校验, Kafka 生产和消费.
 - 北京和上海模拟车辆及轨迹数据.
+- Spring Security + Redis Session 登录、CSRF、角色权限和组织数据范围.
+- 围栏、停车点、看板、收入报表和持久化异步导出 Worker.
+- 运维任务、自动规则、批量建单、路线优化、作业凭证、验收和异常闭环.
 - Dockerfile 和根目录 Docker Compose 环境.
 
 当前接口:
@@ -74,7 +77,8 @@
 | `GET /api/v1/vehicles/{vehicleId}` | 已实现 | 查询车辆档案和最新状态. |
 | `GET /api/v1/vehicles/{vehicleId}/trajectory` | 已实现 | 查询指定时间范围的历史轨迹. |
 | `POST /api/v1/mock/yadea/events` | 已实现, 仅 Mock | 模拟雅迪云事件进入 Kafka. |
-| 登录和权限接口 | 未实现 | 桌面前端开发前需要补齐. |
+| 登录、用户、组织和审计接口 | 已实现 | Redis 会话、角色权限和组织数据范围. |
+| 围栏、看板、收入和运维任务接口 | 已实现 | 管理、分析和现场运维闭环. |
 
 模拟数据位于:
 
@@ -100,19 +104,17 @@
 
 地图和轨迹接口当前请求 GCJ-02, 后端从 WGS84 统一转换. 直接运行 Vite 时, 本地高德 Web JS Key 保存在 Git 忽略的 `frontend/.env.local`; Docker Compose 构建使用根目录 `.env.local` 中的 Web JS Key 和安全密钥. 本地 Web Service Key 同样可以保存在根目录 `.env.local`, 两类 Key 不得混用或写入生成数据. 车辆分布和历史轨迹均已接入高德 JS API 2.0. 未配置 Key 或 SDK 加载失败时保留坐标预览. 地图只在城市切换时重置中心, 用户拖动和缩放不会触发回到城市中心. 已使用本机 Edge 验证真实高德组件、中文车辆信息和道路轨迹折线渲染.
 
-登录和 RBAC 尚未实现. 后端提供会话和权限接口前, 前端只显示开发环境状态, 不实现伪登录.
+登录、Redis 会话、CSRF、角色路由、组织数据范围和用户配置页面已经联调. 数据范围支持 `ALL`、`ORG_AND_CHILDREN`、`ORG_ONLY`, 详细规则见 `backend/details/data-permissions.md`.
 
 ### 移动端
 
-架构和移动交互方案已确认, 尚未创建 H5 或 Android 工程.
-
-计划技术栈:
+移动管理和运维端已完成可运行 MVP:
 
 - H5: Vue 3 + TypeScript + Vite + Vant.
 - Android: Kotlin WebView 壳.
 - 地图: 高德地图 JS API 2.0.
 
-移动端是管理和运维端, 不是用户骑行 App. 当前暂缓开发. 原生壳后续只提供定位, 扫码, 拍照, 文件上传辅助, 网络状态和推送等 H5 无法稳定完成的能力.
+移动端是管理和运维端, 不是用户骑行 App. 已实现角色工作台、任务池、任务执行、路线、车辆查询以及定位、扫码、拍照 Bridge; Android Kotlin WebView 壳已建立. 数据权限由后端统一执行.
 
 ## 总体架构
 
@@ -124,9 +126,9 @@
 
 - `backend`: Spring Boot API 和 Kafka consumer.
 - `frontend`: Nginx 静态站点和后端同源代理.
-- `db`: PostgreSQL + TimescaleDB + PostGIS.
-- `redis`: Redis.
-- `kafka`: 单节点 KRaft Kafka.
+- `report-worker`: 独立异步报表进程.
+- `mobile-web`: 移动端 H5 Nginx 服务.
+- `db`、`redis`、`kafka`: 本地基础设施.
 
 当前 Compose 只用于开发和验证, 不是生产高可用部署.
 
@@ -234,7 +236,7 @@ docker compose down -v
 mvn -B verify
 ```
 
-当前后端有 35 个自动化测试, 覆盖核心服务行为和 MyBatis-Flex XML Mapper 装载. 数据库, Kafka 和 Redis 链路主要通过 Docker 环境做集成验证. 修改核心数据流时应补充最小必要测试.
+当前后端有 38 个自动化测试, 覆盖核心服务行为、数据范围和 7 个 MyBatis-Flex XML Mapper 装载. 数据库, Kafka 和 Redis 链路通过 Docker 环境做集成验证. 修改核心数据流时应补充最小必要测试.
 
 ### 后端性能回归
 
@@ -250,7 +252,7 @@ npm run build
 
 Docker Compose 前端地址为 `http://localhost:8081`. 前端 Nginx 将 `/api` 和 `/actuator` 同源代理到后端.
 
-当前内置浏览器自动化受 Windows 沙箱错误 `1385` 阻断. 浏览器连接恢复后需要补做地图点选, 城市切换, 详情抽屉和轨迹播放的点击流程验证.
+当前内置浏览器自动化可能受企业 Windows 策略限制. 命令测试出现 `spawn EPERM` 时按已确认的 `sandbox = "unelevated"` 配置或使用 Docker 构建, 不修改企业安全策略.
 
 ### 健康检查
 
@@ -281,7 +283,7 @@ curl.exe -fsS "http://localhost:8080/api/v1/vehicles/YD-BJ-000001/trajectory?sta
 2026-08-10 已验证:
 
 - Docker 镜像内 `mvn verify` 通过.
-- 5 个 Compose 服务正常运行, 前端地址为 `http://localhost:8081`.
+- 7 个 Compose 服务正常运行, 前端地址为 `http://localhost:8081`.
 - PostgreSQL 17.10, TimescaleDB 2.29.1, PostGIS 3.6.4, Redis 7.4.2 和 Java 21.0.11 运行正常.
 - 未加载压测数据时, 车辆分页返回北京和上海共 200 辆固定 Mock 车辆, 两个城市地图查询分别返回 100 个 GCJ-02 车辆点.
 - 固定 Mock 数据已完整载入 10,640 个轨迹点, 每辆车 25 至 60 点.
@@ -296,20 +298,21 @@ curl.exe -fsS "http://localhost:8080/api/v1/vehicles/YD-BJ-000001/trajectory?sta
 2026-08-11 已验证:
 
 - 数据库访问层已从 Spring JDBC 重构为 MyBatis-Flex 1.11.8, Java 源码不再直接使用 `JdbcClient`, `JdbcTemplate` 或 `ResultSet`.
-- `mvn -B verify` 通过 35 个测试, 其中 Mapper 装载测试使用真实 `FlexSqlSessionFactoryBean` 解析 5 个 XML Mapper.
-- 当前会话未启动 PostgreSQL、Redis 和 Kafka, MyBatis-Flex 重构后的 Compose 接口冒烟需要在 Docker 环境恢复后补做.
+- `mvn -B verify` 通过 38 个测试, Mapper 装载测试使用真实 `FlexSqlSessionFactoryBean` 解析 7 个 XML Mapper.
+- 前端 11 个 Vitest 和移动端 6 个 Vitest 通过, 两端生产构建成功.
+- Compose 全部服务启动成功, Flyway V7 已应用, 北京和上海车辆各归属 100 辆.
+- 北京 `ORG_ONLY` 运维账号只能看到北京车辆、地图、看板、收入、围栏、任务和规则数据, 上海数据为 0, 跨组织车辆详情返回 404.
+- 北京 `ORG_AND_CHILDREN` 审计账号只返回 `ORG-BJ` 日志, 临时测试账号已清理.
 
 ## 未来计划
 
 按当前优先级推进, 不提前拆分微服务:
 
-1. 后端补充登录, 退出, 当前用户, RBAC 和 Redis 会话, 前端随后接入登录和权限.
-2. 补充地图点选, 城市切换, 详情抽屉和轨迹播放的自动化交互回归.
-3. 申请生产高德 Key 和安全密钥, 配置域名白名单及同源安全代理.
-4. 根据业务确认实现电子围栏, 停车点和车辆告警.
-5. 实现换电, 维修和调度工单, 再设计调度算法.
-6. 取得雅迪正式 API 文档和测试账号后替换 Mock 接入边界.
-7. 桌面端核心流程稳定后创建移动 H5 和 Android WebView 壳.
+1. 补充地图点选, 城市切换, 详情抽屉和轨迹播放的自动化交互回归.
+2. 申请生产高德 Key 和安全密钥, 配置域名白名单及同源安全代理.
+3. 取得雅迪正式 API 文档和测试账号后替换 Mock 接入边界.
+4. 根据试点反馈补充告警通知、排班、库存和调度算法.
+5. 确认轨迹保留策略后实现冷热分层和归档任务.
 
 远程开锁, 关锁, 寻车, 断电和 OTA 在雅迪正式协议, 权限, 审计, 幂等和设备回执均确认前不得实现为真实控制功能.
 
@@ -335,6 +338,7 @@ curl.exe -fsS "http://localhost:8080/api/v1/vehicles/YD-BJ-000001/trajectory?sta
 
 - `backend/details/architecture.md`: 后端总体架构, 模块, 数据职责和部署演进.
 - `backend/details/database-access.md`: MyBatis-Flex Mapper、复杂 SQL、事务和报表双数据源.
+- `backend/details/data-permissions.md`: 角色默认数据范围、组织过滤资源和越权处理.
 - `backend/details/trajectory-and-map.md`: 轨迹存储, 坐标, 查询限制和地图聚合.
 - `backend/details/yadea-cloud-api.md`: 雅迪 Mock 接入, 正式联调资料和远程控制约束.
 - `backend/details/cost-control.md`: 后端实现中的成本控制和扩容触发条件.
