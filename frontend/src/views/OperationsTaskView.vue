@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
-  Check, CircleCheck, Files, Location, MoreFilled, Plus,
-  Refresh, Setting, UploadFilled, User, View,
+  Files, Location, Plus, Refresh, Setting, UploadFilled,
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { UploadRequestOptions } from 'element-plus'
@@ -18,20 +17,20 @@ import {
 } from '@/api/operations'
 import { errorMessage } from '@/api/http'
 import { getVehicles } from '@/api/vehicle'
+import OperationsTaskDetailDrawer from '@/components/operations/OperationsTaskDetailDrawer.vue'
+import OperationsTaskQueue from '@/components/operations/OperationsTaskQueue.vue'
 import { useAppStore } from '@/stores/app'
 import { useAuthStore } from '@/stores/auth'
 import type {
   OperationsAssignee, OperationsAttachment, OperationsBatchTaskRequest,
   OperationsCompletionRequest, OperationsExceptionType, OperationsRoutePlan,
   OperationsRule, OperationsRuleRequest, OperationsTask, OperationsTaskDetail,
-  OperationsTaskPriority, OperationsTaskRequest, OperationsTaskScope,
+  OperationsTaskRequest, OperationsTaskScope,
   OperationsTaskStatus, OperationsTaskSummary, OperationsTaskType,
 } from '@/types/operations'
 import type { VehicleListItem } from '@/types/vehicle'
 import {
-  auditTime, canOperateTask, exceptionTypeLabels, isTaskOverdue,
-  taskEventLabels, taskPriorityLabels, taskStatusLabels, taskTypeLabels,
-  triggerTypeLabels,
+  exceptionTypeLabels, taskPriorityLabels, taskTypeLabels, triggerTypeLabels,
 } from '@/utils/operations'
 
 const appStore = useAppStore()
@@ -65,14 +64,16 @@ const ruleEditVisible = ref(false)
 const routeVisible = ref(false)
 const selectedAssigneeId = ref('')
 
-const filters = reactive<{
+interface TaskFilters {
   scope: OperationsTaskScope
   status: '' | OperationsTaskStatus
   type: '' | OperationsTaskType
   keyword: string
   page: number
   pageSize: number
-}>({ scope: 'ALL', status: '', type: '', keyword: '', page: 1, pageSize: 20 })
+}
+
+const filters = reactive<TaskFilters>({ scope: 'ALL', status: '', type: '', keyword: '', page: 1, pageSize: 20 })
 
 const createForm = reactive<OperationsTaskRequest>({
   taskType: 'BATTERY_SWAP', priority: 'NORMAL', title: '', description: null,
@@ -109,17 +110,6 @@ const isAdmin = computed(() => currentRole.value === 'ADMIN')
 const defaultOrgId = computed(() => currentRole.value === 'OPERATOR'
   ? authStore.user?.orgId ?? ''
   : appStore.currentCity.orgId)
-const summaryItems = computed(() => [
-  { label: '待领取', value: summary.value.openCount, tone: 'open' },
-  { label: '已领取', value: summary.value.claimedCount, tone: 'claimed' },
-  { label: '执行中', value: summary.value.inProgressCount, tone: 'progress' },
-  { label: '待验收', value: summary.value.pendingReviewCount, tone: 'review' },
-  { label: '异常', value: summary.value.exceptionCount, tone: 'exception' },
-  { label: '已超时', value: summary.value.overdueCount, tone: 'overdue' },
-  { label: '今日完成', value: summary.value.completedTodayCount, tone: 'done' },
-  { label: '我的任务', value: summary.value.myActiveCount, tone: 'mine' },
-])
-const sourceLabels = { MANUAL: '人工', RULE: '规则', BATCH: '批量' } as const
 const completionCheckOptions = computed(() => ({
   BATTERY_SWAP: ['核对车辆编号', '检查电池仓与接头', '确认新电池锁定', '确认车辆恢复供电'],
   REBALANCE: ['核对车辆编号', '确认停车区域合规', '车辆摆放整齐', '未阻塞道路或出入口'],
@@ -503,22 +493,8 @@ async function submitAssignment() {
   })
 }
 
-function can(task: OperationsTask, action: Parameters<typeof canOperateTask>[3]) {
-  return canOperateTask(task, currentRole.value, currentUserId.value, action)
-}
-
-function routeSelectable(task: OperationsTask) {
-  return ['OPEN', 'CLAIMED', 'IN_PROGRESS'].includes(task.status)
-}
-
-function statusTag(status: OperationsTaskStatus) {
-  return ({ OPEN: 'info', CLAIMED: 'warning', IN_PROGRESS: 'primary', PENDING_REVIEW: 'warning',
-    EXCEPTION: 'danger', COMPLETED: 'success', CANCELLED: 'info' } as const)[status]
-}
-
-function priorityTag(priority: OperationsTaskPriority) {
-  return ({ LOW: 'info', NORMAL: 'info', HIGH: 'warning', URGENT: 'danger' } as const)[priority]
-}
+/** 输入: 队列组件产生的局部筛选条件; 输出: 合并到页面查询状态。 */
+function updateFilters(patch: Partial<TaskFilters>) { Object.assign(filters, patch) }
 
 function batteryText(value: number | null) { return value === null ? '--' : `${value}%` }
 function formatDistance(value: number) { return value >= 1000 ? `${(value / 1000).toFixed(1)} km` : `${value} m` }
@@ -545,74 +521,18 @@ onMounted(loadTasks)
       </div>
     </header>
 
-    <section class="summary-band" aria-label="任务汇总">
-      <div v-for="item in summaryItems" :key="item.label" :class="['summary-item', item.tone]">
-        <span>{{ item.label }}</span><strong>{{ item.value }}</strong>
-      </div>
-    </section>
-
-    <section class="task-workspace">
-      <div class="task-toolbar">
-        <el-radio-group v-model="filters.scope" @change="filters.page = 1; loadTasks()">
-          <el-radio-button value="ALL">全部</el-radio-button>
-          <el-radio-button value="UNASSIGNED">待领取</el-radio-button>
-          <el-radio-button value="MINE">我的任务</el-radio-button>
-        </el-radio-group>
-        <el-select v-model="filters.status" placeholder="全部状态" clearable @change="filters.page = 1; loadTasks()">
-          <el-option v-for="(label, value) in taskStatusLabels" :key="value" :label="label" :value="value" />
-        </el-select>
-        <el-select v-model="filters.type" placeholder="全部类型" clearable @change="filters.page = 1; loadTasks()">
-          <el-option v-for="(label, value) in taskTypeLabels" :key="value" :label="label" :value="value" />
-        </el-select>
-        <el-input v-model="filters.keyword" clearable placeholder="任务号 / 车辆 / 标题" @keyup.enter="filters.page = 1; loadTasks()" @clear="loadTasks" />
-        <el-button :icon="Location" :disabled="selectedRows.length < 2" :loading="actingTaskId === 'route'" @click="optimizeSelectedRoute">优化路线 ({{ selectedRows.length }})</el-button>
-      </div>
-
-      <el-table v-loading="loading" :data="pageData.items" height="100%" row-key="taskId" @selection-change="selectedRows = $event">
-        <el-table-column type="selection" width="44" :selectable="routeSelectable" />
-        <el-table-column label="优先级" width="76">
-          <template #default="{ row }"><el-tag :type="priorityTag(row.priority)" size="small">{{ taskPriorityLabels[row.priority as OperationsTaskPriority] }}</el-tag></template>
-        </el-table-column>
-        <el-table-column label="任务" min-width="230">
-          <template #default="{ row }">
-            <div class="task-main"><strong>{{ row.title }}</strong><span>{{ taskTypeLabels[row.taskType as OperationsTaskType] }} · {{ row.taskNo }} · {{ sourceLabels[row.sourceType as keyof typeof sourceLabels] }}</span></div>
-          </template>
-        </el-table-column>
-        <el-table-column label="车辆" min-width="145">
-          <template #default="{ row }"><div class="vehicle-cell"><strong>{{ row.vehicleId }}</strong><span>电量 {{ batteryText(row.batteryPercent) }}<template v-if="row.duplicateCount"> · 聚合 {{ row.duplicateCount }}</template></span></div></template>
-        </el-table-column>
-        <el-table-column label="状态" width="108">
-          <template #default="{ row }"><el-tag :type="statusTag(row.status)" effect="plain">{{ taskStatusLabels[row.status as OperationsTaskStatus] }}</el-tag></template>
-        </el-table-column>
-        <el-table-column label="领取人" min-width="120"><template #default="{ row }"><span :class="{ unassigned: !row.assigneeName }">{{ row.assigneeName ?? '尚未领取' }}</span></template></el-table-column>
-        <el-table-column label="要求完成" min-width="150"><template #default="{ row }"><span :class="{ 'overdue-text': isTaskOverdue(row) }">{{ auditTime(row.dueAt) }}</span></template></el-table-column>
-        <el-table-column label="操作" width="270" fixed="right">
-          <template #default="{ row }">
-            <div class="row-actions">
-              <el-button v-if="can(row, 'claim')" type="primary" size="small" @click="simpleAction(row, 'claim')">抢单</el-button>
-              <el-button v-if="can(row, 'start')" type="primary" size="small" @click="simpleAction(row, 'start')">开始</el-button>
-              <el-button v-if="can(row, 'complete')" type="success" size="small" :icon="Check" @click="openCompletion(row)">完工</el-button>
-              <el-button v-if="can(row, 'review')" type="success" size="small" :icon="CircleCheck" @click="reviewTask(row, 'APPROVE')">验收</el-button>
-              <el-button v-if="can(row, 'resolve')" type="warning" size="small" @click="resolveExceptionTask(row, 'REOPEN')">处理</el-button>
-              <el-button v-if="can(row, 'assign')" size="small" :icon="User" @click="openAssignment(row)">{{ row.assigneeId ? '改派' : '指派' }}</el-button>
-              <el-dropdown v-if="can(row, 'release') || can(row, 'exception') || can(row, 'review') || can(row, 'resolve') || can(row, 'cancel')" trigger="click">
-                <el-button :icon="MoreFilled" size="small" circle aria-label="更多操作" />
-                <template #dropdown><el-dropdown-menu>
-                  <el-dropdown-item v-if="can(row, 'release')" @click="simpleAction(row, 'release')">释放任务</el-dropdown-item>
-                  <el-dropdown-item v-if="can(row, 'exception')" @click="openException(row)">上报异常</el-dropdown-item>
-                  <el-dropdown-item v-if="can(row, 'review')" @click="reviewTask(row, 'REJECT')">退回返工</el-dropdown-item>
-                  <el-dropdown-item v-if="can(row, 'resolve')" @click="resolveExceptionTask(row, 'CLOSE')">关闭异常任务</el-dropdown-item>
-                  <el-dropdown-item v-if="can(row, 'cancel')" divided @click="cancelTask(row)">取消任务</el-dropdown-item>
-                </el-dropdown-menu></template>
-              </el-dropdown>
-              <el-tooltip content="任务详情"><el-button :icon="View" size="small" circle aria-label="任务详情" @click="openDetail(row.taskId)" /></el-tooltip>
-            </div>
-          </template>
-        </el-table-column>
-        <template #empty><el-empty description="当前条件下没有运维任务" :image-size="72" /></template>
-      </el-table>
-      <div class="task-pagination"><el-pagination v-model:current-page="filters.page" v-model:page-size="filters.pageSize" background layout="total, sizes, prev, pager, next" :total="pageData.total" :page-sizes="[10, 20, 50]" @change="loadTasks" /></div>
-    </section>
+    <OperationsTaskQueue
+      :summary="summary" :page-data="pageData" :filters="filters" :loading="loading"
+      :selected-count="selectedRows.length" :acting-task-id="actingTaskId"
+      :current-role="currentRole" :current-user-id="currentUserId"
+      @update-filters="updateFilters" @selection-change="selectedRows = $event" @load="loadTasks"
+      @optimize="optimizeSelectedRoute" @claim="simpleAction($event, 'claim')" @start="simpleAction($event, 'start')"
+      @complete="openCompletion" @review-approve="reviewTask($event, 'APPROVE')"
+      @resolve-reopen="resolveExceptionTask($event, 'REOPEN')" @assign="openAssignment"
+      @release="simpleAction($event, 'release')" @exception="openException"
+      @review-reject="reviewTask($event, 'REJECT')" @resolve-close="resolveExceptionTask($event, 'CLOSE')"
+      @cancel="cancelTask" @detail="openDetail"
+    />
 
     <el-dialog v-model="createVisible" title="新建运维任务" width="680px" destroy-on-close>
       <el-form label-position="top" class="task-form">
@@ -705,51 +625,18 @@ onMounted(loadTasks)
       <template v-if="routePlan"><el-alert v-if="routePlan.warning" :title="routePlan.warning" type="warning" :closable="false" show-icon /><div class="route-summary"><strong>{{ formatDistance(routePlan.totalDistanceMeters) }}</strong><span>预计 {{ formatDuration(routePlan.totalDurationSeconds) }} · {{ routePlan.provider === 'AMAP' ? '高德道路数据' : '本地估算' }}</span></div><el-table :data="routePlan.stops" max-height="430"><el-table-column prop="sequence" label="顺序" width="64" /><el-table-column prop="vehicleId" label="车辆" min-width="130" /><el-table-column prop="title" label="任务" min-width="180" /><el-table-column label="路段" width="160"><template #default="{ row }">{{ formatDistance(row.legDistanceMeters) }} · {{ formatDuration(row.legDurationSeconds) }}</template></el-table-column></el-table></template>
     </el-dialog>
 
-    <el-drawer v-model="detailVisible" title="任务详情" size="520px">
-      <template v-if="detail">
-        <div class="detail-head"><div><el-tag :type="priorityTag(detail.task.priority)" size="small">{{ taskPriorityLabels[detail.task.priority] }}</el-tag><h2>{{ detail.task.title }}</h2><p>{{ detail.task.taskNo }} · {{ sourceLabels[detail.task.sourceType] }}</p></div><el-tag :type="statusTag(detail.task.status)" effect="plain">{{ taskStatusLabels[detail.task.status] }}</el-tag></div>
-        <el-descriptions :column="2" border size="small">
-          <el-descriptions-item label="类型">{{ taskTypeLabels[detail.task.taskType] }}</el-descriptions-item><el-descriptions-item label="车辆">{{ detail.task.vehicleId }}</el-descriptions-item>
-          <el-descriptions-item label="领取人">{{ detail.task.assigneeName ?? '尚未领取' }}</el-descriptions-item><el-descriptions-item label="组织">{{ detail.task.orgName }}</el-descriptions-item>
-          <el-descriptions-item v-if="detail.task.ruleName" label="触发规则" :span="2">{{ detail.task.ruleName }} · 聚合 {{ detail.task.duplicateCount }} 次</el-descriptions-item>
-          <el-descriptions-item label="要求完成" :span="2">{{ auditTime(detail.task.dueAt) }}</el-descriptions-item><el-descriptions-item label="任务说明" :span="2">{{ detail.task.description ?? '--' }}</el-descriptions-item>
-        </el-descriptions>
-
-        <template v-if="detail.triggers.length"><h3 class="section-title">规则触发</h3><div class="record-row" v-for="trigger in detail.triggers" :key="trigger.triggerId"><el-tag :type="trigger.active ? 'danger' : 'success'" size="small">{{ trigger.active ? '触发中' : '已恢复' }}</el-tag><div><strong>{{ trigger.ruleName }}</strong><p>累计 {{ trigger.occurrenceCount }} 次 · 最近 {{ auditTime(trigger.lastTriggeredAt) }}</p></div></div></template>
-        <template v-if="detail.evidence.length"><h3 class="section-title">作业凭证</h3><div class="evidence-record" v-for="item in detail.evidence" :key="item.evidenceId"><div class="record-title"><strong>第 {{ item.submissionNo }} 次提交</strong><el-tag :type="item.reviewStatus === 'APPROVED' ? 'success' : item.reviewStatus === 'REJECTED' ? 'danger' : 'warning'" size="small">{{ item.reviewStatus === 'APPROVED' ? '已通过' : item.reviewStatus === 'REJECTED' ? '已退回' : '待验收' }}</el-tag></div><p>{{ item.resultNote }}</p><p>{{ item.submittedByName }} · {{ auditTime(item.submittedAt) }}</p><div class="attachment-links"><a v-for="file in item.attachments" :key="file.attachmentId" :href="file.downloadUrl" target="_blank">{{ file.purpose === 'BEFORE' ? '处理前' : '处理后' }}：{{ file.originalName }}</a></div></div></template>
-        <template v-if="detail.exceptions.length"><h3 class="section-title">异常闭环</h3><div class="evidence-record exception-record" v-for="item in detail.exceptions" :key="item.exceptionId"><div class="record-title"><strong>{{ exceptionTypeLabels[item.exceptionType] }}</strong><el-tag :type="item.resolvedAt ? 'success' : 'danger'" size="small">{{ item.resolvedAt ? '已处理' : '待处理' }}</el-tag></div><p>{{ item.note }}</p><p>{{ item.reportedByName }} · {{ auditTime(item.reportedAt) }}</p><p v-if="item.resolutionNote">处理结论：{{ item.resolutionNote }}</p><div class="attachment-links"><a v-for="file in item.attachments" :key="file.attachmentId" :href="file.downloadUrl" target="_blank">{{ file.originalName }}</a></div></div></template>
-
-        <h3 class="section-title">操作时间线</h3><el-timeline><el-timeline-item v-for="event in detail.events" :key="event.eventId" :timestamp="auditTime(event.createdAt)" placement="top"><strong>{{ taskEventLabels[event.eventType] }}</strong><p>{{ event.actorName }}<template v-if="event.note"> · {{ event.note }}</template></p></el-timeline-item></el-timeline>
-      </template>
-    </el-drawer>
+    <OperationsTaskDetailDrawer v-model:visible="detailVisible" :detail="detail" />
   </div>
 </template>
 
 <style scoped>
-.operations-page { display: grid; grid-template-rows: auto auto minmax(0, 1fr); background: #eef1ef; }
+.operations-page { display: grid; grid-template-rows: auto minmax(0, 1fr); background: #eef1ef; }
 .operations-heading { padding: 17px 20px 15px; background: #fff; border-bottom: 1px solid var(--line); }
-.heading-actions, .row-actions, .dialog-tools, .upload-row, .location-field { display: flex; align-items: center; gap: 8px; }
+.heading-actions, .dialog-tools, .upload-row, .location-field { display: flex; align-items: center; gap: 8px; }
 .heading-actions { flex-wrap: wrap; justify-content: flex-end; }
-.summary-band { display: grid; grid-template-columns: repeat(8, minmax(90px, 1fr)); background: #fff; border-bottom: 1px solid var(--line); }
-.summary-item { position: relative; display: flex; align-items: baseline; justify-content: space-between; min-height: 66px; padding: 15px 13px; border-right: 1px solid #e3e8e6; }
-.summary-item::before { position: absolute; inset: 0 auto 0 0; width: 3px; background: #83918b; content: ''; }
-.summary-item span { color: var(--muted); font-size: 12px; } .summary-item strong { color: #17231f; font-size: 23px; font-variant-numeric: tabular-nums; }
-.summary-item.claimed::before, .summary-item.review::before { background: #d3952c; } .summary-item.progress::before, .summary-item.mine::before { background: #2672b8; }
-.summary-item.exception::before, .summary-item.overdue::before { background: #c8463c; } .summary-item.done::before { background: #27805f; }
-.task-workspace { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; min-height: 0; margin: 14px 18px 18px; overflow: hidden; background: #fff; border: 1px solid var(--line); border-radius: 6px; }
-.task-toolbar { display: grid; grid-template-columns: auto 135px 145px minmax(180px, 1fr) auto; gap: 9px; padding: 11px 12px; border-bottom: 1px solid var(--line); }
-.task-main, .vehicle-cell { display: flex; flex-direction: column; gap: 3px; } .task-main strong, .vehicle-cell strong { overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
-.task-main span, .vehicle-cell span, .detail-head p, .el-timeline-item p, .evidence-record p, .record-row p { margin: 0; color: var(--muted); font-size: 11px; }
-.unassigned { color: #8a9490; } .overdue-text { color: #b52f28; font-weight: 600; } .row-actions { min-height: 32px; }
-.task-pagination { display: flex; justify-content: flex-end; padding: 10px 12px; border-top: 1px solid var(--line); }
 .task-form, .evidence-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; } .task-form .wide, .evidence-form .wide { grid-column: 1 / -1; }
 .task-form :deep(.el-select), .task-form :deep(.el-date-editor), .evidence-form :deep(.el-input-number) { width: 100%; }
 .full-width { width: 100%; } .dialog-tools { justify-content: flex-end; margin-bottom: 12px; }
-.check-grid { display: grid; grid-template-columns: 1fr 1fr; width: 100%; } .upload-row { flex-wrap: wrap; } .upload-row a, .attachment-links a { color: #1769a8; font-size: 12px; text-decoration: none; }
-.detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; } .detail-head h2 { margin: 8px 0 4px; font-size: 18px; letter-spacing: 0; }
-.section-title { margin: 22px 0 12px; font-size: 14px; letter-spacing: 0; } .record-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #edf0ef; }
-.evidence-record { padding: 11px 12px; border-left: 3px solid #27805f; background: #f6f8f7; margin-bottom: 9px; } .exception-record { border-left-color: #c8463c; }
-.record-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; } .attachment-links { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; }
+.check-grid { display: grid; grid-template-columns: 1fr 1fr; width: 100%; } .upload-row { flex-wrap: wrap; } .upload-row a { color: #1769a8; font-size: 12px; text-decoration: none; }
 .route-summary { display: flex; align-items: baseline; gap: 12px; padding: 16px 2px 12px; } .route-summary strong { font-size: 24px; } .route-summary span { color: var(--muted); font-size: 12px; }
-@media (max-width: 1280px) { .summary-band { grid-template-columns: repeat(4, 1fr); } .task-toolbar { grid-template-columns: auto 125px 130px minmax(160px, 1fr); } .task-toolbar > :last-child { grid-column: 4; } }
 </style>
