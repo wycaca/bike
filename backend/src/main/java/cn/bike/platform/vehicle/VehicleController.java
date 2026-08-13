@@ -8,13 +8,13 @@ import cn.bike.platform.vehicle.VehicleModels.PageData;
 import cn.bike.platform.vehicle.VehicleModels.VehicleDetail;
 import cn.bike.platform.vehicle.VehicleModels.VehicleListItem;
 import org.springframework.format.annotation.DateTimeFormat;
+import cn.bike.platform.security.PlatformPrincipal;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import cn.bike.platform.security.PlatformPrincipal;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.math.BigDecimal;
 import java.time.Instant;

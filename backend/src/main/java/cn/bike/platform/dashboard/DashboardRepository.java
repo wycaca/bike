@@ -4,6 +4,7 @@ import cn.bike.platform.dashboard.DashboardModels.AreaDistribution;
 import cn.bike.platform.dashboard.DashboardModels.DailyTrend;
 import cn.bike.platform.dashboard.DashboardModels.DashboardSummary;
 import cn.bike.platform.dashboard.DashboardModels.VehicleReportRow;
+import cn.bike.platform.security.DataPermission;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,22 +23,22 @@ public class DashboardRepository {
     }
 
     /** 输入: 城市代码; 输出: 车辆运营核心指标。 */
-    public DashboardSummary summary(String cityCode) {
-        return mapper.summary(cityCode);
+    public DashboardSummary summary(String cityCode, DataPermission permission) {
+        return mapper.summary(cityCode, permission);
     }
 
     /** 输入: 城市代码和天数; 输出: 按中国时区统计的每日遥测趋势。 */
-    public List<DailyTrend> trends(String cityCode, int days) {
-        return mapper.trends(cityCode, days);
+    public List<DailyTrend> trends(String cityCode, int days, DataPermission permission) {
+        return mapper.trends(cityCode, days, permission);
     }
 
     /** 输入: 城市代码; 输出: 各运营区域车辆状态分布。 */
-    public List<AreaDistribution> areaDistribution(String cityCode) {
-        return mapper.areaDistribution(cityCode);
+    public List<AreaDistribution> areaDistribution(String cityCode, DataPermission permission) {
+        return mapper.areaDistribution(cityCode, permission);
     }
 
     /** 输入: 城市代码; 输出: 用于 CSV 导出的车辆状态明细。 */
-    public List<VehicleReportRow> vehicleReport(String cityCode) {
-        return mapper.vehicleReport(cityCode);
+    public List<VehicleReportRow> vehicleReport(String cityCode, DataPermission permission) {
+        return mapper.vehicleReport(cityCode, permission);
     }
 }

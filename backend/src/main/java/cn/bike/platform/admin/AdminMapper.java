@@ -1,6 +1,7 @@
 package cn.bike.platform.admin;
 
 import cn.bike.platform.admin.AdminModels.AuditLog;
+import cn.bike.platform.admin.AdminModels.DataScope;
 import cn.bike.platform.admin.AdminModels.Organization;
 import cn.bike.platform.admin.AdminModels.PlatformUser;
 import cn.bike.platform.admin.AdminModels.RecordStatus;
@@ -25,6 +26,17 @@ public interface AdminMapper {
 
     @Select("SELECT * FROM organization WHERE org_id = #{orgId}")
     Organization findOrganization(@Param("orgId") String orgId);
+
+    @Select("""
+            WITH RECURSIVE org_tree AS (
+                SELECT org_id FROM organization WHERE org_id = #{orgId}
+                UNION ALL
+                SELECT child.org_id FROM organization child
+                JOIN org_tree parent ON child.parent_org_id = parent.org_id
+            )
+            SELECT org_id FROM org_tree
+            """)
+    List<String> findOrganizationTreeIds(@Param("orgId") String orgId);
 
     @Insert("""
             INSERT INTO organization (
@@ -56,7 +68,7 @@ public interface AdminMapper {
 
     @Select("""
             SELECT u.user_id, u.username, u.password_hash, u.display_name, u.org_id,
-                   o.org_name, o.city_code, u.role, u.status
+                   o.org_name, u.role, u.data_scope, u.status
             FROM app_user u JOIN organization o ON o.org_id = u.org_id
             WHERE lower(u.username) = lower(#{username}) AND o.status = 'ACTIVE'
             """)
@@ -88,9 +100,10 @@ public interface AdminMapper {
 
     @Insert("""
             INSERT INTO app_user (
-                user_id, username, password_hash, display_name, phone, org_id, role, status
+                user_id, username, password_hash, display_name, phone, org_id, role, data_scope, status
             ) VALUES (
-                #{userId}, #{username}, #{passwordHash}, #{displayName}, #{phone}, #{orgId}, #{role}, #{status}
+                #{userId}, #{username}, #{passwordHash}, #{displayName}, #{phone}, #{orgId}, #{role},
+                #{dataScope}, #{status}
             )
             """)
     int insertUser(
@@ -101,12 +114,14 @@ public interface AdminMapper {
             @Param("phone") String phone,
             @Param("orgId") String orgId,
             @Param("role") String role,
+            @Param("dataScope") String dataScope,
             @Param("status") String status
     );
 
     @Update("""
             UPDATE app_user SET username = #{username}, display_name = #{displayName},
-                phone = #{phone}, org_id = #{orgId}, role = #{role}, status = #{status}, updated_at = now()
+                phone = #{phone}, org_id = #{orgId}, role = #{role}, data_scope = #{dataScope},
+                status = #{status}, updated_at = now()
             WHERE user_id = #{userId}
             """)
     int updateUser(
@@ -116,6 +131,7 @@ public interface AdminMapper {
             @Param("phone") String phone,
             @Param("orgId") String orgId,
             @Param("role") String role,
+            @Param("dataScope") String dataScope,
             @Param("status") String status
     );
 
@@ -126,24 +142,39 @@ public interface AdminMapper {
     int updateLastLogin(@Param("username") String username);
 
     @Select("""
+            <script>
             SELECT * FROM audit_log
             WHERE (username ILIKE #{filter} OR resource_type ILIKE #{filter} OR request_path ILIKE #{filter})
               AND action ILIKE #{action}
+              AND (#{unrestricted} OR org_id IN
+                <foreach collection="orgIds" item="orgId" open="(" separator="," close=")">#{orgId}</foreach>)
             ORDER BY created_at DESC LIMIT #{limit} OFFSET #{offset}
+            </script>
             """)
     List<AuditLog> findAuditLogs(
             @Param("filter") String filter,
             @Param("action") String action,
+            @Param("unrestricted") boolean unrestricted,
+            @Param("orgIds") List<String> orgIds,
             @Param("limit") int limit,
             @Param("offset") int offset
     );
 
     @Select("""
+            <script>
             SELECT count(*) FROM audit_log
             WHERE (username ILIKE #{filter} OR resource_type ILIKE #{filter} OR request_path ILIKE #{filter})
               AND action ILIKE #{action}
+              AND (#{unrestricted} OR org_id IN
+                <foreach collection="orgIds" item="orgId" open="(" separator="," close=")">#{orgId}</foreach>)
+            </script>
             """)
-    long countAuditLogs(@Param("filter") String filter, @Param("action") String action);
+    long countAuditLogs(
+            @Param("filter") String filter,
+            @Param("action") String action,
+            @Param("unrestricted") boolean unrestricted,
+            @Param("orgIds") List<String> orgIds
+    );
 
     @Insert("""
             INSERT INTO audit_log (
@@ -171,9 +202,10 @@ public interface AdminMapper {
 
     @Insert("""
             INSERT INTO app_user (
-                user_id, username, password_hash, display_name, phone, org_id, role, status
+                user_id, username, password_hash, display_name, phone, org_id, role, data_scope, status
             ) VALUES (
-                #{userId}, #{username}, #{passwordHash}, #{displayName}, #{phone}, #{orgId}, #{role}, 'ACTIVE'
+                #{userId}, #{username}, #{passwordHash}, #{displayName}, #{phone}, #{orgId}, #{role},
+                #{dataScope}, 'ACTIVE'
             ) ON CONFLICT (username) DO NOTHING
             """)
     int insertMockUser(
@@ -183,7 +215,8 @@ public interface AdminMapper {
             @Param("displayName") String displayName,
             @Param("phone") String phone,
             @Param("orgId") String orgId,
-            @Param("role") String role
+            @Param("role") String role,
+            @Param("dataScope") String dataScope
     );
 
     @Insert("""
@@ -206,8 +239,8 @@ public interface AdminMapper {
             String displayName,
             String orgId,
             String orgName,
-            String cityCode,
             UserRole role,
+            DataScope dataScope,
             RecordStatus status
     ) {
     }

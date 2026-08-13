@@ -7,6 +7,7 @@ import type {
   OperationsExceptionType,
   OperationsTriggerType,
   Organization,
+  DataScope,
   UserRole,
 } from '@/types/operations'
 
@@ -14,6 +15,12 @@ export const roleLabels: Record<UserRole, string> = {
   ADMIN: '系统管理员',
   OPERATOR: '运营人员',
   AUDITOR: '审计人员',
+}
+
+export const dataScopeLabels: Record<DataScope, string> = {
+  ALL: '全部数据',
+  ORG_AND_CHILDREN: '本组织及下级',
+  ORG_ONLY: '仅本组织',
 }
 
 export const actionLabels: Record<string, string> = {

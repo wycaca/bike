@@ -8,6 +8,8 @@
                l.battery_percent, l.controller_status, l.reported_at
         FROM vehicle v LEFT JOIN vehicle_latest l ON l.vehicle_id = v.vehicle_id
         WHERE v.operation_city_code = #{cityCode}
+          AND (#{unrestricted} OR v.org_id IN
+            <foreach collection="orgIds" item="orgId" open="(" separator="," close=")">#{orgId}</foreach>)
         ORDER BY v.vehicle_id
     </select>
 </mapper>

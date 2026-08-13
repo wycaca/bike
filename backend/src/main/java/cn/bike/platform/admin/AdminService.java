@@ -8,7 +8,11 @@ import cn.bike.platform.admin.AdminModels.PlatformUser;
 import cn.bike.platform.admin.AdminModels.UserPage;
 import cn.bike.platform.admin.AdminModels.UserRequest;
 import cn.bike.platform.common.NotFoundException;
+import cn.bike.platform.common.ConflictException;
 import cn.bike.platform.security.PlatformPrincipal;
+import cn.bike.platform.security.DataPermissionService;
+import cn.bike.platform.admin.AdminModels.DataScope;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.session.FindByIndexNameSessionRepository;
@@ -24,39 +28,45 @@ public class AdminService {
 
     private final AdminRepository repository;
     private final PasswordEncoder passwordEncoder;
+    private final DataPermissionService dataPermissionService;
     private final FindByIndexNameSessionRepository<? extends Session> sessionRepository;
 
     public AdminService(
             AdminRepository repository,
             PasswordEncoder passwordEncoder,
+            DataPermissionService dataPermissionService,
             FindByIndexNameSessionRepository<? extends Session> sessionRepository
     ) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
+        this.dataPermissionService = dataPermissionService;
         this.sessionRepository = sessionRepository;
     }
 
     /** 输入: 无; 输出: 全部组织。 */
-    public List<Organization> findOrganizations() {
+    public List<Organization> findOrganizations(PlatformPrincipal operator) {
+        requireGlobalAdmin(operator);
         return repository.findOrganizations();
     }
 
     /** 输入: 组织请求; 输出: 新建组织。 */
     @Transactional
-    public Organization createOrganization(OrganizationRequest request) {
+    public Organization createOrganization(OrganizationRequest request, PlatformPrincipal operator) {
+        requireGlobalAdmin(operator);
         validateOrganization(null, request);
         var orgId = "ORG-" + UUID.randomUUID().toString().substring(0, 12);
         try {
             repository.insertOrganization(orgId, request);
         } catch (DuplicateKeyException exception) {
-            throw new IllegalArgumentException("同一上级组织下名称不能重复");
+            throw new ConflictException("同一上级组织下名称不能重复");
         }
         return repository.findOrganization(orgId).orElseThrow();
     }
 
     /** 输入: 组织编号和请求; 输出: 更新后的组织。 */
     @Transactional
-    public Organization updateOrganization(String orgId, OrganizationRequest request) {
+    public Organization updateOrganization(String orgId, OrganizationRequest request, PlatformPrincipal operator) {
+        requireGlobalAdmin(operator);
         validateOrganization(orgId, request);
         if (repository.updateOrganization(orgId, request) == 0) {
             throw new NotFoundException("组织不存在: " + orgId);
@@ -65,7 +75,8 @@ public class AdminService {
     }
 
     /** 输入: 分页和关键字; 输出: 用户分页。 */
-    public UserPage findUsers(int page, int pageSize, String keyword) {
+    public UserPage findUsers(int page, int pageSize, String keyword, PlatformPrincipal operator) {
+        requireGlobalAdmin(operator);
         validatePage(page, pageSize);
         return new UserPage(repository.findUsers(page, pageSize, keyword),
                 repository.countUsers(keyword), page, pageSize);
@@ -73,13 +84,14 @@ public class AdminService {
 
     /** 输入: 用户请求; 输出: 新建用户。 */
     @Transactional
-    public PlatformUser createUser(UserRequest request) {
+    public PlatformUser createUser(UserRequest request, PlatformPrincipal operator) {
+        requireGlobalAdmin(operator);
         validateUserRequest(request, true);
         var userId = "USR-" + UUID.randomUUID().toString().substring(0, 12);
         try {
             repository.insertUser(userId, request, passwordEncoder.encode(request.password()));
         } catch (DuplicateKeyException exception) {
-            throw new IllegalArgumentException("用户名已存在");
+            throw new ConflictException("用户名已存在");
         }
         return repository.findUser(userId).orElseThrow();
     }
@@ -87,6 +99,7 @@ public class AdminService {
     /** 输入: 用户编号和请求; 输出: 更新后的用户。 */
     @Transactional
     public PlatformUser updateUser(String userId, UserRequest request, PlatformPrincipal operator) {
+        requireGlobalAdmin(operator);
         validateUserRequest(request, false);
         if (operator.userId().equals(userId) && request.status() != AdminModels.RecordStatus.ACTIVE) {
             throw new IllegalArgumentException("不能停用当前登录账号");
@@ -98,7 +111,7 @@ public class AdminService {
                 throw new NotFoundException("用户不存在: " + userId);
             }
         } catch (DuplicateKeyException exception) {
-            throw new IllegalArgumentException("用户名已存在");
+            throw new ConflictException("用户名已存在");
         }
         var updated = repository.findUser(userId).orElseThrow();
         revokeSessions(previous.username());
@@ -109,7 +122,8 @@ public class AdminService {
     }
 
     /** 输入: 用户编号和新密码; 输出: 无。 */
-    public void resetPassword(String userId, PasswordResetRequest request) {
+    public void resetPassword(String userId, PasswordResetRequest request, PlatformPrincipal operator) {
+        requireGlobalAdmin(operator);
         var user = repository.findUser(userId)
                 .orElseThrow(() -> new NotFoundException("用户不存在: " + userId));
         if (repository.updatePassword(userId, passwordEncoder.encode(request.password())) == 0) {
@@ -119,10 +133,13 @@ public class AdminService {
     }
 
     /** 输入: 审计分页条件; 输出: 审计日志分页。 */
-    public AuditPage findAuditLogs(int page, int pageSize, String keyword, String action) {
+    public AuditPage findAuditLogs(
+            int page, int pageSize, String keyword, String action, PlatformPrincipal operator
+    ) {
         validatePage(page, pageSize);
-        return new AuditPage(repository.findAuditLogs(page, pageSize, keyword, action),
-                repository.countAuditLogs(keyword, action), page, pageSize);
+        var permission = dataPermissionService.resolve(operator);
+        return new AuditPage(repository.findAuditLogs(page, pageSize, keyword, action, permission),
+                repository.countAuditLogs(keyword, action, permission), page, pageSize);
     }
 
     private void validateOrganization(String orgId, OrganizationRequest request) {
@@ -155,6 +172,13 @@ public class AdminService {
     private void validatePage(int page, int pageSize) {
         if (page < 1 || pageSize < 1 || pageSize > 100) {
             throw new IllegalArgumentException("page 必须大于 0, pageSize 必须在 1 到 100 之间");
+        }
+    }
+
+    /** 输入: 管理端操作者; 输出: 无, 账号和组织维护仅允许全量数据管理员. */
+    private void requireGlobalAdmin(PlatformPrincipal operator) {
+        if (operator.role() != AdminModels.UserRole.ADMIN || operator.dataScope() != DataScope.ALL) {
+            throw new AccessDeniedException("只有全量数据管理员可以维护账号和组织");
         }
     }
 

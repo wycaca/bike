@@ -1,5 +1,9 @@
 package cn.bike.platform.admin;
 
+import cn.bike.platform.TestDataPermissions;
+import cn.bike.platform.admin.AdminModels.DataScope;
+import cn.bike.platform.admin.AdminModels.PasswordResetRequest;
+import cn.bike.platform.admin.AdminModels.PlatformUser;
 import cn.bike.platform.admin.AdminModels.RecordStatus;
 import cn.bike.platform.admin.AdminModels.UserRequest;
 import cn.bike.platform.admin.AdminModels.UserRole;
@@ -9,13 +13,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.Session;
 
-import java.util.Optional;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class AdminServiceTest {
@@ -24,14 +28,15 @@ class AdminServiceTest {
     void 管理员不能停用当前登录账号() {
         var repository = mock(AdminRepository.class);
         var passwordEncoder = mock(PasswordEncoder.class);
-        var service = new AdminService(repository, passwordEncoder, sessionRepository());
+        var service = new AdminService(
+                repository, passwordEncoder, TestDataPermissions.allService(), sessionRepository());
         var request = new UserRequest(
                 "admin", "系统管理员", "13800000000", "ORG-HQ",
-                UserRole.ADMIN, RecordStatus.DISABLED, null
+                UserRole.ADMIN, DataScope.ALL, RecordStatus.DISABLED, null
         );
         var principal = new PlatformPrincipal(
                 "USR-ADMIN", "admin", "encoded", "系统管理员", "ORG-HQ", "运营总部",
-                UserRole.ADMIN, true
+                UserRole.ADMIN, DataScope.ALL, true
         );
         when(repository.findOrganization("ORG-HQ"))
                 .thenReturn(Optional.of(new AdminModels.Organization(
@@ -49,7 +54,8 @@ class AdminServiceTest {
     @Test
     void 组织不能把自己的下级设为上级() {
         var repository = mock(AdminRepository.class);
-        var service = new AdminService(repository, mock(PasswordEncoder.class), sessionRepository());
+        var service = new AdminService(repository, mock(PasswordEncoder.class),
+                TestDataPermissions.allService(), sessionRepository());
         var request = new AdminModels.OrganizationRequest(
                 "ORG-TEAM", "运营总部", AdminModels.OrganizationType.COMPANY,
                 "", RecordStatus.ACTIVE
@@ -63,7 +69,7 @@ class AdminServiceTest {
                 "110000", RecordStatus.ACTIVE, null, null
         )));
 
-        assertThatThrownBy(() -> service.updateOrganization("ORG-HQ", request))
+        assertThatThrownBy(() -> service.updateOrganization("ORG-HQ", request, admin()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("不能是当前组织的下级");
     }
@@ -74,17 +80,23 @@ class AdminServiceTest {
         var repository = mock(AdminRepository.class);
         var passwordEncoder = mock(PasswordEncoder.class);
         var sessions = (FindByIndexNameSessionRepository<Session>) mock(FindByIndexNameSessionRepository.class);
-        var service = new AdminService(repository, passwordEncoder, sessions);
-        var user = new AdminModels.PlatformUser("USR-OP", "operator.bj", "北京运维", "13800000000",
-                "ORG-BJ", "北京运营中心", UserRole.OPERATOR, RecordStatus.ACTIVE, null, null);
+        var service = new AdminService(repository, passwordEncoder, TestDataPermissions.allService(), sessions);
+        var user = new PlatformUser("USR-OP", "operator.bj", "北京运维", "13800000000",
+                "ORG-BJ", "北京运营中心", UserRole.OPERATOR, DataScope.ORG_ONLY,
+                RecordStatus.ACTIVE, null, null);
         when(repository.findUser("USR-OP")).thenReturn(Optional.of(user));
-        when(passwordEncoder.encode("NewPassword123!")).thenReturn("new-encoded");
-        when(repository.updatePassword("USR-OP", "new-encoded")).thenReturn(1);
-        when(sessions.findByPrincipalName("operator.bj")).thenReturn(Map.of("SESSION-1", mock(Session.class)));
+        when(repository.updatePassword("USR-OP", "encoded-new")).thenReturn(1);
+        when(passwordEncoder.encode("new-password-123")).thenReturn("encoded-new");
+        when(sessions.findByPrincipalName("operator.bj")).thenReturn(Map.of("session-1", mock(Session.class)));
 
-        service.resetPassword("USR-OP", new AdminModels.PasswordResetRequest("NewPassword123!"));
+        service.resetPassword("USR-OP", new PasswordResetRequest("new-password-123"), admin());
 
-        verify(sessions).deleteById("SESSION-1");
+        verify(sessions).deleteById("session-1");
+    }
+
+    private PlatformPrincipal admin() {
+        return new PlatformPrincipal("USR-ADMIN", "admin", "encoded", "系统管理员",
+                "ORG-HQ", "运营总部", UserRole.ADMIN, DataScope.ALL, true);
     }
 
     @SuppressWarnings("unchecked")

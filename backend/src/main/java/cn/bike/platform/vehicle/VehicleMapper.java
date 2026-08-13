@@ -5,6 +5,7 @@ import cn.bike.platform.vehicle.VehicleModels.LifecycleStatus;
 import cn.bike.platform.vehicle.VehicleModels.LockStatus;
 import cn.bike.platform.vehicle.VehicleModels.RideStatus;
 import cn.bike.platform.vehicle.VehicleModels.VehicleAsset;
+import cn.bike.platform.security.DataPermission;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -29,18 +30,23 @@ public interface VehicleMapper {
     long countVehicles(
             @Param("keyword") String keyword,
             @Param("cityCode") String cityCode,
-            @Param("lifecycleStatus") String lifecycleStatus
+            @Param("lifecycleStatus") String lifecycleStatus,
+            @Param("permission") DataPermission permission
     );
 
     List<VehicleRow> findVehicles(
             @Param("keyword") String keyword,
             @Param("cityCode") String cityCode,
             @Param("lifecycleStatus") String lifecycleStatus,
+            @Param("permission") DataPermission permission,
             @Param("limit") int limit,
             @Param("offset") int offset
     );
 
-    VehicleRow findVehicle(@Param("vehicleId") String vehicleId);
+    VehicleRow findVehicle(
+            @Param("vehicleId") String vehicleId,
+            @Param("permission") DataPermission permission
+    );
 
     List<TrajectoryRow> findTrajectory(
             @Param("vehicleId") String vehicleId,
@@ -54,9 +60,9 @@ public interface VehicleMapper {
             @Param("minLatitude") BigDecimal minLatitude,
             @Param("maxLongitude") BigDecimal maxLongitude,
             @Param("maxLatitude") BigDecimal maxLatitude,
-            @Param("cityCode") String cityCode,
             @Param("online") Boolean online,
             @Param("lifecycleStatus") String lifecycleStatus,
+            @Param("permission") DataPermission permission,
             @Param("limit") int limit
     );
 
@@ -65,9 +71,9 @@ public interface VehicleMapper {
             @Param("minLatitude") BigDecimal minLatitude,
             @Param("maxLongitude") BigDecimal maxLongitude,
             @Param("maxLatitude") BigDecimal maxLatitude,
-            @Param("cityCode") String cityCode,
             @Param("online") Boolean online,
             @Param("lifecycleStatus") String lifecycleStatus,
+            @Param("permission") DataPermission permission,
             @Param("gridSize") BigDecimal gridSize,
             @Param("limit") int limit
     );
@@ -96,6 +102,7 @@ public interface VehicleMapper {
     record VehicleRow(
             String vehicleId,
             String companyId,
+            String orgId,
             String lockId,
             String controllerId,
             String plateNumber,

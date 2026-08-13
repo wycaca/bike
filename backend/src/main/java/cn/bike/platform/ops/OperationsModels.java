@@ -384,6 +384,7 @@ public final class OperationsModels {
 
     public record VehicleSnapshot(
             String vehicleId,
+            String orgId,
             String cityCode,
             String areaCode,
             BigDecimal longitude,
@@ -397,6 +398,7 @@ public final class OperationsModels {
 
     record AutomationVehicleState(
             String vehicleId,
+            String orgId,
             String cityCode,
             String areaCode,
             BigDecimal longitude,

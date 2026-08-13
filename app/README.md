@@ -59,3 +59,6 @@ app\android\gradlew.bat -p app\android assembleRelease -PBIKE_WEB_APP_URL=https:
 - `scanVehicleCode`：二维码和条码扫描。
 - WebChromeClient：相机拍照或相册选择，并交给 H5 上传作业凭证。
 - 仅配置的同源页面可以调用 Bridge；调试包允许本地 HTTP，发布包禁止明文流量。
+- H5 主页面无法加载时显示原生中文错误页, 区分断网、服务不可达、HTTP 异常和证书错误, 并允许重新连接.
+
+原生连接错误分类测试位于 `WebLoadErrorPolicyTest`. 当前开发机器未配置 Android SDK, Docker 也未缓存 Android 构建镜像, 因此本次只补充测试用例, 尚未执行 Android 单元测试和实机验证.

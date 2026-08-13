@@ -8,13 +8,14 @@ import { errorMessage } from '@/api/http'
 import { useAuthStore } from '@/stores/auth'
 import type {
   AuditLog,
+  DataScope,
   Organization,
   OrganizationType,
   PlatformUser,
   RecordStatus,
   UserRole,
 } from '@/types/operations'
-import { actionLabels, auditTime, organizationPath, roleLabels } from '@/utils/operations'
+import { actionLabels, auditTime, dataScopeLabels, organizationPath, roleLabels } from '@/utils/operations'
 
 const authStore = useAuthStore()
 const isAdmin = computed(() => authStore.hasRole('ADMIN'))
@@ -46,7 +47,8 @@ const orgForm = reactive({
 })
 const userForm = reactive({
   username: '', displayName: '', phone: '', orgId: '',
-  role: 'OPERATOR' as UserRole, status: 'ACTIVE' as RecordStatus, password: '',
+  role: 'OPERATOR' as UserRole, dataScope: 'ORG_ONLY' as DataScope,
+  status: 'ACTIVE' as RecordStatus, password: '',
 })
 
 const organizationTypeLabels: Record<OrganizationType, string> = {
@@ -123,9 +125,16 @@ function openUser(user?: PlatformUser) {
   userForm.phone = user?.phone ?? ''
   userForm.orgId = user?.orgId ?? organizations.value[0]?.orgId ?? ''
   userForm.role = user?.role ?? 'OPERATOR'
+  userForm.dataScope = user?.dataScope ?? defaultDataScope(userForm.role)
   userForm.status = user?.status ?? 'ACTIVE'
   userForm.password = ''
   userDialogVisible.value = true
+}
+
+/** 输入: 用户角色; 输出: 新建或切换角色时使用的数据范围默认值. */
+function defaultDataScope(role: UserRole): DataScope {
+  if (role === 'ADMIN') return 'ALL'
+  return role === 'AUDITOR' ? 'ORG_AND_CHILDREN' : 'ORG_ONLY'
 }
 
 /** 输入: 用户表单; 输出: 新建或更新用户。 */
@@ -214,6 +223,7 @@ onMounted(loadCurrentTab)
             <el-table-column prop="displayName" label="姓名" min-width="120" />
             <el-table-column prop="orgName" label="所属组织" min-width="160" />
             <el-table-column label="角色" width="110"><template #default="scope">{{ roleLabels[scope.row.role as UserRole] }}</template></el-table-column>
+            <el-table-column label="数据范围" width="130"><template #default="scope">{{ dataScopeLabels[scope.row.dataScope as DataScope] }}</template></el-table-column>
             <el-table-column prop="phone" label="手机号" width="130"><template #default="scope">{{ scope.row.phone || '--' }}</template></el-table-column>
             <el-table-column label="最近登录" min-width="170"><template #default="scope">{{ auditTime(scope.row.lastLoginAt) }}</template></el-table-column>
             <el-table-column label="状态" width="90"><template #default="scope"><el-tag :type="scope.row.status === 'ACTIVE' ? 'success' : 'info'">{{ scope.row.status === 'ACTIVE' ? '启用' : '停用' }}</el-tag></template></el-table-column>
@@ -259,7 +269,8 @@ onMounted(loadCurrentTab)
       <el-form label-position="top">
         <div class="form-columns"><el-form-item label="用户名"><el-input v-model="userForm.username" :disabled="Boolean(editingUserId)" /></el-form-item><el-form-item label="姓名"><el-input v-model="userForm.displayName" /></el-form-item></div>
         <el-form-item label="所属组织"><el-select v-model="userForm.orgId" filterable style="width: 100%"><el-option v-for="org in organizations.filter((item) => item.status === 'ACTIVE')" :key="org.orgId" :label="organizationPath(org.orgId, organizations)" :value="org.orgId" /></el-select></el-form-item>
-        <div class="form-columns"><el-form-item label="角色"><el-select v-model="userForm.role" style="width: 100%"><el-option v-for="(label, value) in roleLabels" :key="value" :label="label" :value="value" /></el-select></el-form-item><el-form-item label="手机号"><el-input v-model="userForm.phone" maxlength="11" /></el-form-item></div>
+        <div class="form-columns"><el-form-item label="角色"><el-select v-model="userForm.role" style="width: 100%" @change="userForm.dataScope = defaultDataScope(userForm.role)"><el-option v-for="(label, value) in roleLabels" :key="value" :label="label" :value="value" /></el-select></el-form-item><el-form-item label="数据范围"><el-select v-model="userForm.dataScope" style="width: 100%"><el-option v-for="(label, value) in dataScopeLabels" :key="value" :label="label" :value="value" /></el-select></el-form-item></div>
+        <el-form-item label="手机号"><el-input v-model="userForm.phone" maxlength="11" /></el-form-item>
         <el-form-item v-if="!editingUserId" label="初始密码"><el-input v-model="userForm.password" type="password" show-password /></el-form-item>
         <el-form-item label="状态"><el-switch v-model="userForm.status" active-value="ACTIVE" inactive-value="DISABLED" active-text="启用" inactive-text="停用" /></el-form-item>
       </el-form>

@@ -11,6 +11,8 @@
 - `report`: 骑行订单、日/月收入、车辆周转率、单位经济指标、持久化导出队列和 CSV Worker。
 - `ops`: 换电、调度、维修等现场任务，包含自动规则、去重、派单抢单、批量任务、道路路线、作业凭证、验收和异常闭环。
 
+代码包只按已有业务边界做两级归纳。`report` 下使用 `revenue` 和 `export`，`ops` 下使用 `attachment`、`route` 和 `rule`；工单核心与自动化流程继续保留在 `ops` 根包，避免为少量类继续拆分。
+
 业务代码仍保持模块化单体，不拆分仓库和重复车辆投影；部署时增加独立 `report-worker` 进程，隔离报表生成的 JVM、CPU 和内存。
 
 ## 权限矩阵
@@ -30,6 +32,8 @@
 | 审计日志 | 读 | 无 | 读 |
 
 前端路由守卫只负责隐藏不可用入口，最终权限由 `SecurityFilterChain` 判定。
+
+以上角色权限还需叠加用户数据范围. 默认值为管理员全部组织、审计人员本组织及下级、运维人员仅本组织; 全量管理员可以按账号调整. 详细规则见 [数据权限范围](data-permissions.md).
 
 ## 登录与写请求
 
@@ -82,6 +86,7 @@
 - `OperationsAutomationServiceTest`: 规则首次建单、活跃任务聚合和触发恢复自动关闭。
 - `OperationsRouteServiceTest`: 道路矩阵排序和路线里程、时长汇总。
 - `OperationsEvidenceStorageTest`: 真实图片落盘、SHA-256 和伪图片拒绝。
-- `MyBatisMapperTest`: 使用真实 MyBatis-Flex 会话工厂装载 5 个 XML Mapper, 校验 XML、命名空间、结果类型和关键语句编号。
+- `DataPermissionServiceTest`: 递归组织范围解析和越权写操作拒绝。
+- `MyBatisMapperTest`: 使用真实 MyBatis-Flex 会话工厂装载 7 个 XML Mapper, 校验 XML、命名空间、结果类型和关键语句编号。
 - Docker 构建执行全部 Maven/Vitest 测试与 TypeScript 检查。
 - 浏览器冒烟覆盖登录、看板、高德空间地图、运维任务中文展示、组织更新、CSRF 和审计落库。

@@ -2,6 +2,8 @@ package cn.bike.platform.dashboard;
 
 import cn.bike.platform.dashboard.DashboardModels.DashboardData;
 import org.springframework.stereotype.Service;
+import cn.bike.platform.security.DataPermissionService;
+import cn.bike.platform.security.PlatformPrincipal;
 
 import java.time.Instant;
 
@@ -9,16 +11,19 @@ import java.time.Instant;
 public class DashboardService {
 
     private final DashboardRepository repository;
+    private final DataPermissionService dataPermissionService;
 
-    public DashboardService(DashboardRepository repository) {
+    public DashboardService(DashboardRepository repository, DataPermissionService dataPermissionService) {
         this.repository = repository;
+        this.dataPermissionService = dataPermissionService;
     }
 
     /** 输入: 城市代码和趋势天数; 输出: 看板聚合数据。 */
-    public DashboardData dashboard(String cityCode, int days) {
+    public DashboardData dashboard(String cityCode, int days, PlatformPrincipal principal) {
         validate(cityCode, days);
-        return new DashboardData(repository.summary(cityCode), repository.trends(cityCode, days),
-                repository.areaDistribution(cityCode), Instant.now());
+        var permission = dataPermissionService.resolve(principal);
+        return new DashboardData(repository.summary(cityCode, permission), repository.trends(cityCode, days, permission),
+                repository.areaDistribution(cityCode, permission), Instant.now());
     }
 
     private void validate(String cityCode, int days) {

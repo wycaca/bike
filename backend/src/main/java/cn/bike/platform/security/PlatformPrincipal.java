@@ -1,6 +1,7 @@
 package cn.bike.platform.security;
 
 import cn.bike.platform.admin.AdminModels.UserRole;
+import cn.bike.platform.admin.AdminModels.DataScope;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,21 +18,13 @@ public record PlatformPrincipal(
         String displayName,
         String orgId,
         String orgName,
-        String cityCode,
         UserRole role,
+        DataScope dataScope,
         boolean enabled
 ) implements UserDetails, Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
-
-    /** 输入: 不含城市的旧调用参数; 输出: 兼容测试与系统级账号的用户主体。 */
-    public PlatformPrincipal(
-            String userId, String username, String password, String displayName,
-            String orgId, String orgName, UserRole role, boolean enabled
-    ) {
-        this(userId, username, password, displayName, orgId, orgName, null, role, enabled);
-    }
 
     /** 输入: 无; 输出: Spring Security 登录用户名。 */
     @Override

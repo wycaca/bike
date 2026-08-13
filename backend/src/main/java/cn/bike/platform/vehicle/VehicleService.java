@@ -1,6 +1,8 @@
 package cn.bike.platform.vehicle;
 
 import cn.bike.platform.common.NotFoundException;
+import cn.bike.platform.security.DataPermissionService;
+import cn.bike.platform.security.PlatformPrincipal;
 import cn.bike.platform.vehicle.VehicleModels.CoordinateSystem;
 import cn.bike.platform.vehicle.VehicleModels.LatestState;
 import cn.bike.platform.vehicle.VehicleModels.LifecycleStatus;
@@ -10,9 +12,6 @@ import cn.bike.platform.vehicle.VehicleModels.PageData;
 import cn.bike.platform.vehicle.VehicleModels.TrajectoryPoint;
 import cn.bike.platform.vehicle.VehicleModels.VehicleDetail;
 import cn.bike.platform.vehicle.VehicleModels.VehicleListItem;
-import cn.bike.platform.admin.AdminModels.UserRole;
-import cn.bike.platform.security.PlatformAccessPolicy;
-import cn.bike.platform.security.PlatformPrincipal;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -30,16 +29,16 @@ public class VehicleService {
 
     private final VehicleRepository repository;
     private final LatestVehicleCache latestVehicleCache;
-    private final PlatformAccessPolicy accessPolicy;
+    private final DataPermissionService dataPermissionService;
 
     public VehicleService(
             VehicleRepository repository,
             LatestVehicleCache latestVehicleCache,
-            PlatformAccessPolicy accessPolicy
+            DataPermissionService dataPermissionService
     ) {
         this.repository = repository;
         this.latestVehicleCache = latestVehicleCache;
-        this.accessPolicy = accessPolicy;
+        this.dataPermissionService = dataPermissionService;
     }
 
     public PageData<VehicleListItem> findVehicles(
@@ -53,21 +52,16 @@ public class VehicleService {
         if (page < 1 || pageSize < 1 || pageSize > 100) {
             throw new IllegalArgumentException("page 必须大于 0, pageSize 必须在 1 到 100 之间");
         }
-        var scopedCityCode = cityCode;
-        if (principal.role() == UserRole.OPERATOR) {
-            scopedCityCode = cityCode == null ? principal.cityCode() : cityCode;
-            accessPolicy.requireCity(principal, scopedCityCode);
-        }
-        return repository.findVehicles(page, pageSize, keyword, scopedCityCode, lifecycleStatus);
+        return repository.findVehicles(page, pageSize, keyword, cityCode, lifecycleStatus,
+                dataPermissionService.resolve(principal));
     }
 
     /**
      * 查询车辆详情时优先读取 Redis 最新状态, 缓存缺失时回退到 PostgreSQL 最新投影.
      */
     public VehicleDetail findVehicle(String vehicleId, PlatformPrincipal principal) {
-        var detail = repository.findVehicle(vehicleId)
+        var detail = repository.findVehicle(vehicleId, dataPermissionService.resolve(principal))
                 .orElseThrow(() -> new NotFoundException("车辆不存在: " + vehicleId));
-        accessPolicy.requireCity(principal, detail.asset().operationCityCode());
         var latestState = latestVehicleCache.get(vehicleId).orElse(detail.latestState());
         return new VehicleDetail(detail.asset(), latestState);
     }
@@ -88,9 +82,8 @@ public class VehicleService {
         if (Duration.between(startTime, endTime).toDays() > 31) {
             throw new IllegalArgumentException("单次轨迹查询不能超过 31 天");
         }
-        var vehicle = repository.findVehicle(vehicleId)
+        repository.findVehicle(vehicleId, dataPermissionService.resolve(principal))
                 .orElseThrow(() -> new NotFoundException("车辆不存在: " + vehicleId));
-        accessPolicy.requireCity(principal, vehicle.asset().operationCityCode());
         var points = repository.findTrajectory(vehicleId, startTime, endTime, TRAJECTORY_LIMIT);
         var truncated = points.size() == TRAJECTORY_LIMIT;
         if (truncated) {
@@ -120,14 +113,14 @@ public class VehicleService {
         var queryMax = CoordinateConverter.convert(
                 maxLongitude, maxLatitude, coordinateSystem, CoordinateSystem.WGS84);
         var clustered = zoom < CLUSTER_ZOOM_THRESHOLD;
-        var cityCode = principal.role() == UserRole.OPERATOR ? principal.cityCode() : null;
+        var permission = dataPermissionService.resolve(principal);
         var markers = clustered
                 ? repository.findMapClusters(
                         queryMin.longitude(), queryMin.latitude(), queryMax.longitude(), queryMax.latitude(),
-                        cityCode, online, lifecycleStatus, gridSizeForZoom(zoom), MAP_LIMIT)
+                        online, lifecycleStatus, gridSizeForZoom(zoom), MAP_LIMIT, permission)
                 : repository.findMapVehicles(
                         queryMin.longitude(), queryMin.latitude(), queryMax.longitude(), queryMax.latitude(),
-                        cityCode, online, lifecycleStatus, MAP_LIMIT);
+                        online, lifecycleStatus, MAP_LIMIT, permission);
         return new MapResult(
                 convertMarkers(markers, coordinateSystem), clustered, coordinateSystem.name());
     }

@@ -1,5 +1,6 @@
 package cn.bike.platform.ops;
 
+import cn.bike.platform.TestDataPermissions;
 import cn.bike.platform.ops.OperationsModels.AutomationVehicleState;
 import cn.bike.platform.ops.OperationsModels.TaskItem;
 import cn.bike.platform.ops.OperationsModels.TaskPriority;
@@ -9,6 +10,7 @@ import cn.bike.platform.ops.OperationsModels.TaskStatus;
 import cn.bike.platform.ops.OperationsModels.TaskType;
 import cn.bike.platform.ops.OperationsModels.TriggerType;
 import cn.bike.platform.ops.OperationsModels.VehicleSnapshot;
+import cn.bike.platform.ops.rule.OperationsRuleRepository;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -32,9 +34,10 @@ class OperationsAutomationServiceTest {
     void 低电量首次触发应自动创建任务() {
         var tasks = mock(OperationsRepository.class);
         var rules = mock(OperationsRuleRepository.class);
-        var service = new OperationsAutomationService(tasks, rules, JsonMapper.builder().build());
+        var service = new OperationsAutomationService(
+                tasks, rules, JsonMapper.builder().build(), TestDataPermissions.allService());
         var state = vehicleState(8);
-        when(tasks.findAutomationVehicleStates("110000")).thenReturn(List.of(state));
+        when(tasks.findAutomationVehicleStates("110000", TestDataPermissions.ALL)).thenReturn(List.of(state));
         when(rules.findEnabledRules("110000")).thenReturn(List.of(lowBatteryRule(true)));
         when(tasks.findActiveTaskForVehicle(state.vehicleId())).thenReturn(Optional.empty());
         when(tasks.findVehicleSnapshot(state.vehicleId())).thenReturn(Optional.of(vehicle()));
@@ -54,9 +57,10 @@ class OperationsAutomationServiceTest {
     void 同车已有活跃任务时应聚合触发而不是重复建单() {
         var tasks = mock(OperationsRepository.class);
         var rules = mock(OperationsRuleRepository.class);
-        var service = new OperationsAutomationService(tasks, rules, JsonMapper.builder().build());
+        var service = new OperationsAutomationService(
+                tasks, rules, JsonMapper.builder().build(), TestDataPermissions.allService());
         var state = vehicleState(5);
-        when(tasks.findAutomationVehicleStates("110000")).thenReturn(List.of(state));
+        when(tasks.findAutomationVehicleStates("110000", TestDataPermissions.ALL)).thenReturn(List.of(state));
         when(rules.findEnabledRules("110000")).thenReturn(List.of(lowBatteryRule(true)));
         when(tasks.findActiveTaskForVehicle(state.vehicleId())).thenReturn(Optional.of(task(TaskStatus.OPEN)));
         when(tasks.upsertTrigger(eq("TASK-1"), eq("RULE-LOW"), eq("LOW_BATTERY"), any(),
@@ -76,10 +80,11 @@ class OperationsAutomationServiceTest {
     void 触发条件恢复后应自动关闭未开工规则任务() {
         var tasks = mock(OperationsRepository.class);
         var rules = mock(OperationsRuleRepository.class);
-        var service = new OperationsAutomationService(tasks, rules, JsonMapper.builder().build());
+        var service = new OperationsAutomationService(
+                tasks, rules, JsonMapper.builder().build(), TestDataPermissions.allService());
         var state = vehicleState(80);
         var task = task(TaskStatus.OPEN);
-        when(tasks.findAutomationVehicleStates("110000")).thenReturn(List.of(state));
+        when(tasks.findAutomationVehicleStates("110000", TestDataPermissions.ALL)).thenReturn(List.of(state));
         when(rules.findEnabledRules("110000")).thenReturn(List.of(lowBatteryRule(true)));
         when(tasks.findRuleTaskWithoutActiveTriggers(state.vehicleId())).thenReturn(Optional.of(task));
         when(tasks.cancel(task.taskId(), task.version(), "监测状态已恢复，规则自动关闭任务")).thenReturn(1);
@@ -99,13 +104,13 @@ class OperationsAutomationServiceTest {
     }
 
     private AutomationVehicleState vehicleState(int battery) {
-        return new AutomationVehicleState("YD-BJ-000001", "110000", "110105",
+        return new AutomationVehicleState("YD-BJ-000001", "ORG-BJ", "110000", "110105",
                 new BigDecimal("116.400000"), new BigDecimal("39.900000"), battery,
                 true, "NORMAL", "IDLE", List.of(), Instant.parse("2026-08-11T01:00:00Z"));
     }
 
     private VehicleSnapshot vehicle() {
-        return new VehicleSnapshot("YD-BJ-000001", "110000", "110105",
+        return new VehicleSnapshot("YD-BJ-000001", "ORG-BJ", "110000", "110105",
                 new BigDecimal("116.400000"), new BigDecimal("39.900000"), 8);
     }
 

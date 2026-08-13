@@ -19,6 +19,7 @@ import cn.bike.platform.ops.OperationsModels.TaskType;
 import cn.bike.platform.security.PlatformPrincipal;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/v1/ops/tasks")
@@ -85,11 +87,13 @@ public class OperationsController {
 
     /** 输入: 新任务和当前用户; 输出: 创建后的任务详情。 */
     @PostMapping
-    public ApiResponse<TaskDetail> create(
+    public ResponseEntity<ApiResponse<TaskDetail>> create(
             @Valid @RequestBody CreateTaskRequest request,
             @AuthenticationPrincipal PlatformPrincipal principal
     ) {
-        return ApiResponse.ok(service.create(request, principal));
+        var created = service.create(request, principal);
+        return ResponseEntity.created(URI.create("/api/v1/ops/tasks/" + created.task().taskId()))
+                .body(ApiResponse.ok(created));
     }
 
     /** 输入: 批量任务模板、车辆列表和当前用户; 输出: 成功任务与逐车跳过原因。 */

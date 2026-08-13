@@ -1,6 +1,7 @@
 package cn.bike.platform.vehicle;
 
 import cn.bike.platform.telemetry.TelemetryModels.YadeaCloudEvent;
+import cn.bike.platform.security.DataPermission;
 import cn.bike.platform.vehicle.VehicleMapper.ClusterRow;
 import cn.bike.platform.vehicle.VehicleMapper.TelemetryWrite;
 import cn.bike.platform.vehicle.VehicleMapper.TrajectoryRow;
@@ -71,20 +72,21 @@ public class VehicleRepository {
             int pageSize,
             String keyword,
             String cityCode,
-            LifecycleStatus lifecycleStatus
+            LifecycleStatus lifecycleStatus,
+            DataPermission permission
     ) {
         var normalizedKeyword = fuzzyOrNull(keyword);
         var normalizedCityCode = trimmedOrNull(cityCode);
         var normalizedStatus = lifecycleStatus == null ? null : lifecycleStatus.name();
-        var total = mapper.countVehicles(normalizedKeyword, normalizedCityCode, normalizedStatus);
+        var total = mapper.countVehicles(normalizedKeyword, normalizedCityCode, normalizedStatus, permission);
         var items = mapper.findVehicles(normalizedKeyword, normalizedCityCode, normalizedStatus,
-                        pageSize, (page - 1) * pageSize)
+                        permission, pageSize, (page - 1) * pageSize)
                 .stream().map(this::mapVehicleListItem).toList();
         return new PageData<>(items, total, page, pageSize);
     }
 
-    public Optional<VehicleDetail> findVehicle(String vehicleId) {
-        return Optional.ofNullable(mapper.findVehicle(vehicleId))
+    public Optional<VehicleDetail> findVehicle(String vehicleId, DataPermission permission) {
+        return Optional.ofNullable(mapper.findVehicle(vehicleId, permission))
                 .map(row -> new VehicleDetail(mapVehicleAsset(row), mapLatestState(row)));
     }
 
@@ -103,14 +105,14 @@ public class VehicleRepository {
             BigDecimal minLatitude,
             BigDecimal maxLongitude,
             BigDecimal maxLatitude,
-            String cityCode,
             Boolean online,
             LifecycleStatus lifecycleStatus,
-            int limit
+            int limit,
+            DataPermission permission
     ) {
         var status = lifecycleStatus == null ? null : lifecycleStatus.name();
-        return mapper.findMapVehicles(minLongitude, minLatitude, maxLongitude, maxLatitude,
-                        cityCode, online, status, limit)
+        return mapper.findMapVehicles(minLongitude, minLatitude, maxLongitude, maxLatitude, online, status,
+                        permission, limit)
                 .stream().map(this::mapVehicleMarker).toList();
     }
 
@@ -119,15 +121,15 @@ public class VehicleRepository {
             BigDecimal minLatitude,
             BigDecimal maxLongitude,
             BigDecimal maxLatitude,
-            String cityCode,
             Boolean online,
             LifecycleStatus lifecycleStatus,
             BigDecimal gridSize,
-            int limit
+            int limit,
+            DataPermission permission
     ) {
         var status = lifecycleStatus == null ? null : lifecycleStatus.name();
         var rows = mapper.findMapClusters(
-                minLongitude, minLatitude, maxLongitude, maxLatitude, cityCode, online, status, gridSize, limit);
+                minLongitude, minLatitude, maxLongitude, maxLatitude, online, status, permission, gridSize, limit);
         var markers = new ArrayList<MapMarker>(rows.size());
         for (var index = 0; index < rows.size(); index++) {
             markers.add(mapClusterMarker(rows.get(index), index));
@@ -142,7 +144,7 @@ public class VehicleRepository {
 
     private VehicleAsset mapVehicleAsset(VehicleRow row) {
         return new VehicleAsset(
-                row.vehicleId(), row.companyId(), row.lockId(), row.controllerId(), row.plateNumber(),
+                row.vehicleId(), row.companyId(), row.orgId(), row.lockId(), row.controllerId(), row.plateNumber(),
                 row.filingCode(), row.model(), row.batchNo(), row.operationCityCode(),
                 row.operationAreaCode(), row.launchDate(), row.lifecycleStatus());
     }

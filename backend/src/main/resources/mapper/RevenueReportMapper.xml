@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="cn.bike.platform.report.RevenueReportMapper">
+<mapper namespace="cn.bike.platform.report.revenue.RevenueReportMapper">
 
     <!-- 自然日和自然月统一按 Asia/Shanghai 口径分桶, 避免 UTC 跨日导致报表错位. -->
     <sql id="calendarBucket">
@@ -20,8 +20,28 @@
         </choose>
     </sql>
 
+    <sql id="dataPermissionFilter">
+        <if test="!permission.unrestricted()">
+            AND v.org_id IN
+            <foreach collection="permission.orgIds" item="orgId" open="(" separator="," close=")">
+                #{orgId}
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="visibleOrderFilter">
+        <if test="!permission.unrestricted()">
+            AND vehicle_id IN (
+                SELECT v.vehicle_id FROM vehicle v WHERE v.org_id IN
+                <foreach collection="permission.orgIds" item="orgId" open="(" separator="," close=")">
+                    #{orgId}
+                </foreach>
+            )
+        </if>
+    </sql>
+
     <!-- 日历序列补齐零订单日期, 同时按每日在册车辆累计 vehicle-days. -->
-    <select id="totals" resultType="cn.bike.platform.report.RevenueReportModels$RawMetrics">
+    <select id="totals" resultType="cn.bike.platform.report.revenue.RevenueReportModels$RawMetrics">
         WITH calendar AS (
             SELECT day::date AS report_date
             FROM generate_series(CAST(#{fromDate} AS date), CAST(#{toDate} AS date), interval '1 day') day
@@ -31,6 +51,7 @@
               ON v.operation_city_code = #{cityCode}
              AND v.launch_date &lt;= c.report_date
              AND v.lifecycle_status IN ('OPERATING', 'DISPATCHING')
+             <include refid="dataPermissionFilter"/>
             GROUP BY c.report_date
         ), order_metrics AS (
             SELECT coalesce(sum(gross_amount) FILTER (WHERE order_status &lt;&gt; 'CANCELLED'), 0)
@@ -50,6 +71,7 @@
                        AS distance_meters
             FROM ride_order
             WHERE city_code = #{cityCode} AND started_at &gt;= #{fromInstant} AND started_at &lt; #{toInstant}
+            <include refid="visibleOrderFilter"/>
         )
         SELECT o.*, coalesce(sum(f.deployed_vehicles), 0) AS vehicle_days
         FROM order_metrics o CROSS JOIN fleet_daily f
@@ -58,7 +80,7 @@
     </select>
 
     <!-- 周期明细复用与合计相同的收入和运力口径, 仅改变日/月分组. -->
-    <select id="periods" resultType="cn.bike.platform.report.RevenueReportMapper$PeriodRow">
+    <select id="periods" resultType="cn.bike.platform.report.revenue.RevenueReportMapper$PeriodRow">
         WITH calendar AS (
             SELECT day::date AS report_date
             FROM generate_series(CAST(#{fromDate} AS date), CAST(#{toDate} AS date), interval '1 day') day
@@ -68,6 +90,7 @@
               ON v.operation_city_code = #{cityCode}
              AND v.launch_date &lt;= c.report_date
              AND v.lifecycle_status IN ('OPERATING', 'DISPATCHING')
+             <include refid="dataPermissionFilter"/>
             GROUP BY c.report_date
         ), periods AS (
             SELECT DISTINCT <include refid="calendarBucket"/> AS period_start FROM calendar c
@@ -95,6 +118,7 @@
                        AS distance_meters
             FROM ride_order
             WHERE city_code = #{cityCode} AND started_at &gt;= #{fromInstant} AND started_at &lt; #{toInstant}
+            <include refid="visibleOrderFilter"/>
             GROUP BY period_start
         )
         SELECT p.period_start, coalesce(o.gross_bookings, 0) AS gross_bookings,

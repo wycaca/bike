@@ -1,5 +1,7 @@
 package cn.bike.platform.geo;
 
+import cn.bike.platform.TestDataPermissions;
+import cn.bike.platform.admin.AdminModels.DataScope;
 import cn.bike.platform.admin.AdminModels.UserRole;
 import cn.bike.platform.geo.GeoModels.Coordinate;
 import cn.bike.platform.geo.GeoModels.FacilityStatus;
@@ -65,14 +67,14 @@ class GeoServiceTest {
     @Test
     void 应拒绝把设施挂到不负责当前城市的组织() {
         var repository = mock(GeoRepository.class);
-        var service = new GeoService(repository);
+        var service = new GeoService(repository, TestDataPermissions.allService());
         var request = new ParkingPointRequest(
                 "北京停车点", "110000", "ORG-SH", FacilityStatus.ACTIVE,
                 coordinate("116.40", "39.90"), new BigDecimal("300"), 80
         );
         var operator = new PlatformPrincipal(
                 "USR-ADMIN", "admin", "encoded", "系统管理员",
-                "ORG-HQ", "运营总部", UserRole.ADMIN, true
+                "ORG-HQ", "运营总部", UserRole.ADMIN, DataScope.ALL, true
         );
         when(repository.organizationSupportsCity("ORG-SH", "110000")).thenReturn(false);
 

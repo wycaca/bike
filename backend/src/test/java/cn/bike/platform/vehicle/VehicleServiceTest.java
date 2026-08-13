@@ -1,15 +1,15 @@
 package cn.bike.platform.vehicle;
 
-import cn.bike.platform.admin.AdminModels.UserRole;
-import cn.bike.platform.security.PlatformAccessPolicy;
-import cn.bike.platform.security.PlatformPrincipal;
+import cn.bike.platform.admin.AdminModels.DataScope;
+import cn.bike.platform.security.DataPermission;
+import cn.bike.platform.security.DataPermissionService;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.access.AccessDeniedException;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class VehicleServiceTest {
 
@@ -20,19 +20,16 @@ class VehicleServiceTest {
     }
 
     @Test
-    void 运维人员查询车辆时应强制使用所属城市() {
+    void 查询车辆时应把登录人的组织权限传给仓储() {
         var repository = mock(VehicleRepository.class);
-        var service = new VehicleService(repository, mock(LatestVehicleCache.class), new PlatformAccessPolicy());
+        var permissions = mock(DataPermissionService.class);
+        var permission = new DataPermission(DataScope.ORG_ONLY, "ORG-BJ", List.of("ORG-BJ"));
+        var principal = mock(cn.bike.platform.security.PlatformPrincipal.class);
+        when(permissions.resolve(principal)).thenReturn(permission);
+        var service = new VehicleService(repository, mock(LatestVehicleCache.class), permissions);
 
-        service.findVehicles(1, 20, null, null, null, operator());
+        service.findVehicles(1, 20, null, null, null, principal);
 
-        verify(repository).findVehicles(1, 20, null, "110000", null);
-        assertThatThrownBy(() -> service.findVehicles(1, 20, null, "310000", null, operator()))
-                .isInstanceOf(AccessDeniedException.class);
-    }
-
-    private PlatformPrincipal operator() {
-        return new PlatformPrincipal("USR-OP", "operator.bj", "encoded", "北京运维",
-                "ORG-BJ", "北京运营中心", "110000", UserRole.OPERATOR, true);
+        verify(repository).findVehicles(1, 20, null, null, null, permission);
     }
 }

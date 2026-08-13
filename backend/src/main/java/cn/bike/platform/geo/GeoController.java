@@ -7,9 +7,9 @@ import cn.bike.platform.geo.GeoModels.GeoOverview;
 import cn.bike.platform.geo.GeoModels.ParkingPoint;
 import cn.bike.platform.geo.GeoModels.ParkingPointRequest;
 import cn.bike.platform.security.PlatformPrincipal;
-import cn.bike.platform.security.PlatformAccessPolicy;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,16 +20,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
+
 @RestController
 @RequestMapping("/api/v1/geo")
 public class GeoController {
 
     private final GeoService service;
-    private final PlatformAccessPolicy accessPolicy;
 
-    public GeoController(GeoService service, PlatformAccessPolicy accessPolicy) {
+    public GeoController(GeoService service) {
         this.service = service;
-        this.accessPolicy = accessPolicy;
     }
 
     /** 输入: 城市代码; 输出: 空间设施与违规总览。 */
@@ -38,17 +38,18 @@ public class GeoController {
             @RequestParam String cityCode,
             @AuthenticationPrincipal PlatformPrincipal principal
     ) {
-        accessPolicy.requireCity(principal, cityCode);
-        return ApiResponse.ok(service.overview(cityCode));
+        return ApiResponse.ok(service.overview(cityCode, principal));
     }
 
     /** 输入: 围栏请求和当前用户; 输出: 新建围栏。 */
     @PostMapping("/fences")
-    public ApiResponse<Geofence> createFence(
+    public ResponseEntity<ApiResponse<Geofence>> createFence(
             @Valid @RequestBody GeofenceRequest request,
             @AuthenticationPrincipal PlatformPrincipal operator
     ) {
-        return ApiResponse.ok(service.createFence(request, operator));
+        var created = service.createFence(request, operator);
+        return ResponseEntity.created(URI.create("/api/v1/geo/fences/" + created.fenceId()))
+                .body(ApiResponse.ok(created));
     }
 
     /** 输入: 围栏编号、请求和当前用户; 输出: 更新后的围栏。 */
@@ -63,18 +64,23 @@ public class GeoController {
 
     /** 输入: 围栏编号; 输出: 空成功响应。 */
     @DeleteMapping("/fences/{fenceId}")
-    public ApiResponse<Void> disableFence(@PathVariable String fenceId) {
-        service.disableFence(fenceId);
+    public ApiResponse<Void> disableFence(
+            @PathVariable String fenceId,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        service.disableFence(fenceId, principal);
         return ApiResponse.ok(null);
     }
 
     /** 输入: 停车点请求和当前用户; 输出: 新建停车点。 */
     @PostMapping("/parking-points")
-    public ApiResponse<ParkingPoint> createParkingPoint(
+    public ResponseEntity<ApiResponse<ParkingPoint>> createParkingPoint(
             @Valid @RequestBody ParkingPointRequest request,
             @AuthenticationPrincipal PlatformPrincipal operator
     ) {
-        return ApiResponse.ok(service.createParkingPoint(request, operator));
+        var created = service.createParkingPoint(request, operator);
+        return ResponseEntity.created(URI.create("/api/v1/geo/parking-points/" + created.pointId()))
+                .body(ApiResponse.ok(created));
     }
 
     /** 输入: 停车点编号、请求和当前用户; 输出: 更新后的停车点。 */
@@ -89,8 +95,11 @@ public class GeoController {
 
     /** 输入: 停车点编号; 输出: 空成功响应。 */
     @DeleteMapping("/parking-points/{pointId}")
-    public ApiResponse<Void> disableParkingPoint(@PathVariable String pointId) {
-        service.disableParkingPoint(pointId);
+    public ApiResponse<Void> disableParkingPoint(
+            @PathVariable String pointId,
+            @AuthenticationPrincipal PlatformPrincipal principal
+    ) {
+        service.disableParkingPoint(pointId, principal);
         return ApiResponse.ok(null);
     }
 }
