@@ -94,6 +94,25 @@ export interface TaskDetail {
   triggers: Array<{ triggerId: number; ruleName: string; active: boolean; occurrenceCount: number; lastTriggeredAt: string }>
 }
 
+/**
+ * 任务完工请求。
+ * 输入: 现场定位、检查结果、作业数据和完工凭证附件编号。
+ * 输出: 作为 completeTask 的请求体，由后端生成待审核的任务凭证。
+ */
+export interface CompletionRequest {
+  resultNote: string
+  arrivalLongitude: number
+  arrivalLatitude: number
+  checklist: string[]
+  removedBatteryId: string | null
+  installedBatteryId: string | null
+  partsUsed: string[]
+  targetLongitude: number | null
+  targetLatitude: number | null
+  beforeAttachmentIds: number[]
+  afterAttachmentIds: number[]
+}
+
 export interface Attachment {
   attachmentId: number
   purpose: 'BEFORE' | 'AFTER' | 'EXCEPTION'

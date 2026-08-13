@@ -1,7 +1,7 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios'
 
 import type {
-  ApiResponse, Assignee, Attachment, BatchCreateResult, CityDefinition, CurrentUser, ExceptionType, MapQuery, MapResult,
+  ApiResponse, Assignee, Attachment, BatchCreateResult, CityDefinition, CompletionRequest, CurrentUser, ExceptionType, MapQuery, MapResult,
   RevenueReport, RoutePlan, TaskDetail, TaskPage, TaskPriority, TaskRule, TaskStatus, TaskSummary, TaskType, Vehicle,
 } from '@/types'
 
@@ -165,7 +165,8 @@ export async function uploadAttachment(taskId: string, purpose: 'BEFORE' | 'AFTE
   })).data.data
 }
 
-export async function completeTask(taskId: string, request: Record<string, unknown>) {
+/** 输入: 任务编号和结构化完工凭证; 输出: 提交后的任务详情。 */
+export async function completeTask(taskId: string, request: CompletionRequest) {
   return (await http.post<ApiResponse<TaskDetail>>(`/ops/tasks/${taskId}/complete`, request, { headers: await writeHeaders() })).data.data
 }
 
