@@ -238,7 +238,7 @@ docker compose down -v
 mvn -B verify
 ```
 
-当前后端有 38 个自动化测试, 覆盖核心服务行为、数据范围和 7 个 MyBatis-Flex XML Mapper 装载. 数据库, Kafka 和 Redis 链路通过 Docker 环境做集成验证. 修改核心数据流时应补充最小必要测试.
+当前后端有 45 个自动化测试, 覆盖核心服务行为、数据范围、HTTP 错误契约和 7 个 MyBatis-Flex XML Mapper 装载. 数据库, Kafka 和 Redis 链路通过 Docker 环境做集成验证. 修改核心数据流时应补充最小必要测试.
 
 ### 后端性能回归
 
@@ -311,6 +311,8 @@ curl.exe -fsS "http://localhost:8080/api/v1/vehicles/YD-BJ-000001/trajectory?sta
 - 合并远端 Android 局域网地址、移动端口、车辆地图和运营收益指标提交, 本地数据权限提交完整保留.
 - 增加 Android H5 首页连接错误分类、原生错误界面和重新连接逻辑, 并补充 4 个 JVM 单元测试用例.
 - 当前机器未配置 Android SDK 和虚拟机, Docker 未缓存 Android 构建镜像且镜像拉取未完成, 因此 Android 单元测试和实机验证尚未执行.
+- 后端统一补齐 MVC 参数、权限、上传、方法、媒体类型、接口不存在和未知异常响应; 创建资源返回 `201 + Location`, 队列接收返回 `202`.
+- 作业凭证的 Spring multipart 与业务上限统一为单文件 8 MB, 请求 10 MB; Docker 镜像内 45 个测试全部通过.
 
 ## 未来计划
 
@@ -347,6 +349,7 @@ curl.exe -fsS "http://localhost:8080/api/v1/vehicles/YD-BJ-000001/trajectory?sta
 - `backend/details/architecture.md`: 后端总体架构, 模块, 数据职责和部署演进.
 - `backend/details/database-access.md`: MyBatis-Flex Mapper、复杂 SQL、事务和报表双数据源.
 - `backend/details/data-permissions.md`: 角色默认数据范围、组织过滤资源和越权处理.
+- `backend/details/http-error-contract.md`: HTTP 状态、统一错误 JSON、上传限制和异常映射.
 - `backend/details/trajectory-and-map.md`: 轨迹存储, 坐标, 查询限制和地图聚合.
 - `backend/details/yadea-cloud-api.md`: 雅迪 Mock 接入, 正式联调资料和远程控制约束.
 - `backend/details/cost-control.md`: 后端实现中的成本控制和扩容触发条件.

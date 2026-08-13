@@ -8,6 +8,7 @@ import cn.bike.platform.admin.AdminModels.PlatformUser;
 import cn.bike.platform.admin.AdminModels.UserPage;
 import cn.bike.platform.admin.AdminModels.UserRequest;
 import cn.bike.platform.common.NotFoundException;
+import cn.bike.platform.common.ConflictException;
 import cn.bike.platform.security.PlatformPrincipal;
 import cn.bike.platform.security.DataPermissionService;
 import cn.bike.platform.admin.AdminModels.DataScope;
@@ -52,7 +53,7 @@ public class AdminService {
         try {
             repository.insertOrganization(orgId, request);
         } catch (DuplicateKeyException exception) {
-            throw new IllegalArgumentException("同一上级组织下名称不能重复");
+            throw new ConflictException("同一上级组织下名称不能重复");
         }
         return repository.findOrganization(orgId).orElseThrow();
     }
@@ -85,7 +86,7 @@ public class AdminService {
         try {
             repository.insertUser(userId, request, passwordEncoder.encode(request.password()));
         } catch (DuplicateKeyException exception) {
-            throw new IllegalArgumentException("用户名已存在");
+            throw new ConflictException("用户名已存在");
         }
         return repository.findUser(userId).orElseThrow();
     }
@@ -103,7 +104,7 @@ public class AdminService {
                 throw new NotFoundException("用户不存在: " + userId);
             }
         } catch (DuplicateKeyException exception) {
-            throw new IllegalArgumentException("用户名已存在");
+            throw new ConflictException("用户名已存在");
         }
         return repository.findUser(userId).orElseThrow();
     }

@@ -9,6 +9,7 @@ import cn.bike.platform.geo.GeoModels.ParkingPointRequest;
 import cn.bike.platform.security.PlatformPrincipal;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/v1/geo")
@@ -40,11 +43,13 @@ public class GeoController {
 
     /** 输入: 围栏请求和当前用户; 输出: 新建围栏。 */
     @PostMapping("/fences")
-    public ApiResponse<Geofence> createFence(
+    public ResponseEntity<ApiResponse<Geofence>> createFence(
             @Valid @RequestBody GeofenceRequest request,
             @AuthenticationPrincipal PlatformPrincipal operator
     ) {
-        return ApiResponse.ok(service.createFence(request, operator));
+        var created = service.createFence(request, operator);
+        return ResponseEntity.created(URI.create("/api/v1/geo/fences/" + created.fenceId()))
+                .body(ApiResponse.ok(created));
     }
 
     /** 输入: 围栏编号、请求和当前用户; 输出: 更新后的围栏。 */
@@ -69,11 +74,13 @@ public class GeoController {
 
     /** 输入: 停车点请求和当前用户; 输出: 新建停车点。 */
     @PostMapping("/parking-points")
-    public ApiResponse<ParkingPoint> createParkingPoint(
+    public ResponseEntity<ApiResponse<ParkingPoint>> createParkingPoint(
             @Valid @RequestBody ParkingPointRequest request,
             @AuthenticationPrincipal PlatformPrincipal operator
     ) {
-        return ApiResponse.ok(service.createParkingPoint(request, operator));
+        var created = service.createParkingPoint(request, operator);
+        return ResponseEntity.created(URI.create("/api/v1/geo/parking-points/" + created.pointId()))
+                .body(ApiResponse.ok(created));
     }
 
     /** 输入: 停车点编号、请求和当前用户; 输出: 更新后的停车点。 */

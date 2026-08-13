@@ -85,6 +85,8 @@ Redis 不是唯一持久化来源. Redis 数据丢失后必须可以从 PostgreS
 
 角色与组织数据范围的默认值、过滤资源和越权处理见 `data-permissions.md`.
 
+业务接口的成功状态、错误 JSON、上传限制和异常映射见 `http-error-contract.md`.
+
 ## 无状态要求
 
 - 服务实例不保存本地业务状态.

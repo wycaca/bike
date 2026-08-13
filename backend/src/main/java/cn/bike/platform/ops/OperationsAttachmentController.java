@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
+import java.net.URI;
 
 @RestController
 @Profile("!report-worker")
@@ -34,13 +35,15 @@ public class OperationsAttachmentController {
 
     /** 输入: 任务、用途和图片; 输出: 完工或异常请求可引用的附件编号。 */
     @PostMapping(value = "/tasks/{taskId}/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<AttachmentUploadResult> upload(
+    public ResponseEntity<ApiResponse<AttachmentUploadResult>> upload(
             @PathVariable String taskId,
             @RequestParam AttachmentPurpose purpose,
             @RequestParam MultipartFile file,
             @AuthenticationPrincipal PlatformPrincipal principal
     ) {
-        return ApiResponse.ok(service.upload(taskId, purpose, file, principal));
+        var created = service.upload(taskId, purpose, file, principal);
+        return ResponseEntity.created(URI.create(created.downloadUrl()))
+                .body(ApiResponse.ok(created));
     }
 
     /** 输入: 附件编号; 输出: 通过文件资源流发送的原始凭证，不整体读入 JVM 堆。 */

@@ -6,6 +6,7 @@ import cn.bike.platform.ops.OperationsModels.TaskRuleRequest;
 import cn.bike.platform.security.PlatformPrincipal;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/v1/ops/rules")
@@ -38,11 +40,13 @@ public class OperationsRuleController {
 
     /** 输入: 规则配置和管理员; 输出: 新建规则。 */
     @PostMapping
-    public ApiResponse<TaskRule> create(
+    public ResponseEntity<ApiResponse<TaskRule>> create(
             @Valid @RequestBody TaskRuleRequest request,
             @AuthenticationPrincipal PlatformPrincipal principal
     ) {
-        return ApiResponse.ok(service.create(request, principal));
+        var created = service.create(request, principal);
+        return ResponseEntity.created(URI.create("/api/v1/ops/rules/" + created.ruleId()))
+                .body(ApiResponse.ok(created));
     }
 
     /** 输入: 规则编号、版本和配置; 输出: 更新后的规则。 */

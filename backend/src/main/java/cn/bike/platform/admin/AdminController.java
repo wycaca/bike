@@ -11,6 +11,7 @@ import cn.bike.platform.common.ApiResponse;
 import cn.bike.platform.security.PlatformPrincipal;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -42,11 +44,13 @@ public class AdminController {
 
     /** 输入: 组织请求; 输出: 新建组织。 */
     @PostMapping("/organizations")
-    public ApiResponse<Organization> createOrganization(
+    public ResponseEntity<ApiResponse<Organization>> createOrganization(
             @Valid @RequestBody OrganizationRequest request,
             @AuthenticationPrincipal PlatformPrincipal operator
     ) {
-        return ApiResponse.ok(service.createOrganization(request, operator));
+        var created = service.createOrganization(request, operator);
+        return ResponseEntity.created(URI.create("/api/v1/admin/organizations/" + created.orgId()))
+                .body(ApiResponse.ok(created));
     }
 
     /** 输入: 组织编号和请求; 输出: 更新后的组织。 */
@@ -72,11 +76,13 @@ public class AdminController {
 
     /** 输入: 用户请求; 输出: 新建用户。 */
     @PostMapping("/users")
-    public ApiResponse<PlatformUser> createUser(
+    public ResponseEntity<ApiResponse<PlatformUser>> createUser(
             @Valid @RequestBody UserRequest request,
             @AuthenticationPrincipal PlatformPrincipal operator
     ) {
-        return ApiResponse.ok(service.createUser(request, operator));
+        var created = service.createUser(request, operator);
+        return ResponseEntity.created(URI.create("/api/v1/admin/users/" + created.userId()))
+                .body(ApiResponse.ok(created));
     }
 
     /** 输入: 用户编号、请求和当前操作者; 输出: 更新后的用户。 */

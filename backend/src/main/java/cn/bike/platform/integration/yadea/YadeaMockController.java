@@ -6,10 +6,12 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import tools.jackson.databind.json.JsonMapper;
 
 @Profile("mock")
@@ -35,6 +37,7 @@ public class YadeaMockController {
      * 模拟雅迪云推送单条车辆事件. 该接口只在 mock 环境存在, 不能作为正式雅迪协议使用.
      */
     @PostMapping("/events")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public ApiResponse<AcceptedEvent> acceptEvent(@Valid @RequestBody YadeaCloudEvent event) {
         kafkaTemplate.send(telemetryTopic, event.vehicleId(), jsonMapper.writeValueAsString(event));
         return ApiResponse.ok(new AcceptedEvent(event.eventId(), "QUEUED"));

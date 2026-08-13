@@ -44,6 +44,9 @@ server:
       charset: UTF-8
       enabled: true
       force: true
+    multipart:
+      max-file-size: 8MB
+      max-request-size: 10MB
 
 management:
   endpoints:
