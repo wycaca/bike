@@ -10,11 +10,6 @@ object WebLoadErrorPolicy {
 
     /** 输入: WebView 网络错误码; 输出: 可操作的中文错误提示. */
     fun fromNetworkError(errorCode: Int): WebLoadError = when (errorCode) {
-        WebViewClient.ERROR_INTERNET_DISCONNECTED -> WebLoadError(
-            "NETWORK_OFFLINE",
-            "当前设备未连接网络",
-            "请连接 Wi-Fi 或移动网络后重新连接."
-        )
         WebViewClient.ERROR_HOST_LOOKUP,
         WebViewClient.ERROR_CONNECT,
         WebViewClient.ERROR_TIMEOUT -> WebLoadError(
@@ -29,6 +24,13 @@ object WebLoadErrorPolicy {
             "网络可能不稳定, 请稍后重新连接."
         )
     }
+
+    /** 输入: 无; 输出: 系统确认无活动网络时的操作提示。 */
+    fun offlineError() = WebLoadError(
+        "NETWORK_OFFLINE",
+        "当前设备未连接网络",
+        "请连接 Wi-Fi 或移动网络后重新连接."
+    )
 
     /** 输入: 主页面 HTTP 状态码; 输出: 区分部署错误和服务异常的提示. */
     fun fromHttpStatus(statusCode: Int): WebLoadError = when {

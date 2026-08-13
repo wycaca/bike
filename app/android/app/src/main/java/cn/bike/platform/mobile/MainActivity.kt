@@ -10,6 +10,8 @@ import android.graphics.drawable.GradientDrawable
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.net.http.SslError
 import android.os.Bundle
@@ -154,7 +156,11 @@ class MainActivity : AppCompatActivity() {
             override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
                 if (!request.isForMainFrame) return
                 mainFrameLoadFailed = true
-                showConnectionError(WebLoadErrorPolicy.fromNetworkError(error.errorCode))
+                showConnectionError(if (isNetworkConnected()) {
+                    WebLoadErrorPolicy.fromNetworkError(error.errorCode)
+                } else {
+                    WebLoadErrorPolicy.offlineError()
+                })
             }
 
             override fun onReceivedHttpError(view: WebView, request: WebResourceRequest, response: WebResourceResponse) {
@@ -180,6 +186,13 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
         }
+    }
+
+    /** 输入: 无; 输出: 当前是否存在声明可访问互联网的活动网络。 */
+    private fun isNetworkConnected(): Boolean {
+        val manager = getSystemService(ConnectivityManager::class.java)
+        val capabilities = manager.getNetworkCapabilities(manager.activeNetwork) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
     /** 输入: 无; 输出: 不依赖 H5 的原生连接错误界面. */

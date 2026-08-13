@@ -41,11 +41,12 @@ class MyBatisMapperTest {
 
         var configuration = factory.getObject().getConfiguration();
 
-        assertThat(resources).hasSize(7);
+        assertThat(resources).hasSize(8);
         assertThat(configuration.hasStatement("cn.bike.platform.vehicle.VehicleMapper.findVehicles")).isTrue();
         assertThat(configuration.hasStatement("cn.bike.platform.ops.OperationsMapper.findTasks")).isTrue();
         assertThat(configuration.hasStatement("cn.bike.platform.report.revenue.RevenueReportMapper.totals")).isTrue();
         assertThat(configuration.hasStatement("cn.bike.platform.report.export.ReportExportMapper.claimNext")).isTrue();
+        assertThat(configuration.hasStatement("cn.bike.platform.report.VehicleStatusReportMapper.findRows")).isTrue();
         assertThat(configuration.hasStatement("cn.bike.platform.report.MockRideOrderMapper.insertRideOrders")).isTrue();
     }
 

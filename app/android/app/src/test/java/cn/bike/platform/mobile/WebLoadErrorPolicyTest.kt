@@ -8,7 +8,7 @@ class WebLoadErrorPolicyTest {
 
     @Test
     fun `断网应提示用户检查网络`() {
-        val error = WebLoadErrorPolicy.fromNetworkError(WebViewClient.ERROR_INTERNET_DISCONNECTED)
+        val error = WebLoadErrorPolicy.offlineError()
 
         assertEquals("NETWORK_OFFLINE", error.code)
         assertEquals("当前设备未连接网络", error.title)
