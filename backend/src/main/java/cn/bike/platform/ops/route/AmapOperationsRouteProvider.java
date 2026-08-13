@@ -6,6 +6,7 @@ import cn.bike.platform.vehicle.VehicleModels.CoordinateSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
@@ -34,6 +35,7 @@ public class AmapOperationsRouteProvider implements OperationsRouteProvider {
     private final int maxAttempts;
     private final long retryBackoffMs;
 
+    @Autowired
     public AmapOperationsRouteProvider(
             @Value("${app.amap.web-service-key:}") String webServiceKey,
             @Value("${app.amap.distance-api-url}") String distanceApiUrl,
