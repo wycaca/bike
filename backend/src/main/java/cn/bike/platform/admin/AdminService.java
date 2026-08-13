@@ -12,6 +12,7 @@ import cn.bike.platform.common.ConflictException;
 import cn.bike.platform.security.PlatformPrincipal;
 import cn.bike.platform.security.DataPermissionService;
 import cn.bike.platform.admin.AdminModels.DataScope;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@Profile("!report-worker")
 public class AdminService {
 
     private final AdminRepository repository;

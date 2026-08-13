@@ -10,6 +10,7 @@ import cn.bike.platform.admin.AdminModels.UserRequest;
 import cn.bike.platform.common.ApiResponse;
 import cn.bike.platform.security.PlatformPrincipal;
 import jakarta.validation.Valid;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.net.URI;
 
 @RestController
+@Profile("!report-worker")
 @RequestMapping("/api/v1/admin")
 public class AdminController {
 
