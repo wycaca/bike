@@ -1,21 +1,28 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+import axios from 'axios'
 
 import * as authApi from '@/api/auth'
+import { errorMessage } from '@/api/http'
 import type { CurrentUser, UserRole } from '@/types/operations'
 import { hasCapability, type Capability } from '@/utils/permissions'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<CurrentUser | null>(null)
   const initialized = ref(false)
+  const restoreError = ref('')
   const authenticated = computed(() => user.value !== null)
 
   /** 输入: 无; 输出: 当前用户, 未登录时为 null。 */
   async function restore(): Promise<CurrentUser | null> {
+    restoreError.value = ''
     try {
       user.value = await authApi.getCurrentUser()
-    } catch {
+    } catch (cause) {
       user.value = null
+      if (!axios.isAxiosError(cause) || cause.response?.status !== 401) {
+        restoreError.value = errorMessage(cause)
+      }
     } finally {
       initialized.value = true
     }
@@ -26,6 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function signIn(username: string, password: string): Promise<CurrentUser> {
     user.value = await authApi.login(username, password)
     initialized.value = true
+    restoreError.value = ''
     return user.value
   }
 
@@ -39,6 +47,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  /** 输入: 无; 输出: 立即清理本地会话状态，不发起网络请求。 */
+  function clearSession(): void {
+    user.value = null
+    initialized.value = true
+    restoreError.value = ''
+  }
+
   /** 输入: 允许角色; 输出: 当前用户是否拥有其中任意角色。 */
   function hasRole(...roles: UserRole[]): boolean {
     return user.value !== null && roles.includes(user.value.role)
@@ -49,5 +64,5 @@ export const useAuthStore = defineStore('auth', () => {
     return hasCapability(user.value?.role, capability, user.value?.dataScope)
   }
 
-  return { user, initialized, authenticated, restore, signIn, signOut, hasRole, can }
+  return { user, initialized, restoreError, authenticated, restore, signIn, signOut, clearSession, hasRole, can }
 })

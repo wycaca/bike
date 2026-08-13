@@ -10,7 +10,7 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const loading = ref(false)
-const error = ref('')
+const error = ref(route.query.reason === 'expired' ? '登录状态已过期，请重新登录' : '')
 const form = reactive({ username: 'admin', password: '' })
 
 /** 输入: 登录表单; 输出: 成功进入目标页面，失败显示错误。 */
@@ -40,8 +40,8 @@ async function submit() {
       <h1>骑巡</h1>
       <p>共享电单车运营管理平台</p>
       <dl>
-        <div><dt>200</dt><dd>试点车辆</dd></div>
-        <div><dt>2</dt><dd>运营城市</dd></div>
+        <div><dt>资产</dt><dd>车辆全生命周期</dd></div>
+        <div><dt>多城</dt><dd>动态运营范围</dd></div>
         <div><dt>实时</dt><dd>位置与状态</dd></div>
       </dl>
     </section>

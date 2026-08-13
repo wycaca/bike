@@ -144,6 +144,12 @@ async function initialize() {
   }
 }
 
+/** 输入: 用户重试动作; 输出: 清除错误并重新加载高德地图。 */
+async function retryMap(): Promise<void> {
+  mapError.value = ''
+  await initialize()
+}
+
 /** 输入: 降级预览点击位置; 输出: 换算后的经纬度。 */
 function previewClick(event: MouseEvent) {
   if (!props.drawing) return
@@ -194,7 +200,9 @@ onBeforeUnmount(() => { map?.destroy(); map = null })
         :style="{ left: `${point.position.left}%`, top: `${point.position.top}%` }"
       ><LocationFilled /></span>
       <div class="preview-city"><strong>{{ city.name }}</strong><small>空间设施预览</small></div>
-      <el-alert v-if="mapError" class="geo-map-error" :title="mapError" type="error" :closable="false" />
+      <el-alert v-if="mapError" class="geo-map-error" :title="mapError" type="error" :closable="false">
+        <el-button size="small" @click.stop="retryMap">重试地图</el-button>
+      </el-alert>
     </div>
     <div v-if="drawing" class="drawing-hint">点击地图选取位置</div>
   </div>

@@ -20,6 +20,7 @@ export function createAppRouter(history: RouterHistory = createWebHistory()) {
       { path: '/login', component: LoginView, meta: { title: '登录' } },
       { path: '/unsupported-role', component: () => import('@/views/UnsupportedRoleView.vue'), meta: { role: 'AUDITOR', title: '请使用桌面端' } },
       { path: '/city-unavailable', component: () => import('@/views/CityUnavailableView.vue'), meta: { roles: ['ADMIN', 'OPERATOR'], skipCity: true, title: '城市不可用' } },
+      { path: '/service-unavailable', component: () => import('@/views/ServiceUnavailableView.vue'), meta: { serviceError: true, skipCity: true, title: '服务不可用' } },
       {
         path: '/', component: RoleShell,
         children: [
@@ -33,7 +34,7 @@ export function createAppRouter(history: RouterHistory = createWebHistory()) {
           { path: 'profile', component: () => import('@/views/ProfileView.vue'), meta: { roles: ['ADMIN', 'OPERATOR'], title: '我的' } },
         ],
       },
-      { path: '/:pathMatch(.*)*', redirect: '/' },
+      { path: '/:pathMatch(.*)*', component: () => import('@/views/NotFoundView.vue'), meta: { skipCity: true, title: '页面不存在' } },
     ],
   })
 
@@ -41,6 +42,8 @@ export function createAppRouter(history: RouterHistory = createWebHistory()) {
     const auth = useAuthStore()
     const app = useAppStore()
     if (!auth.initialized) await auth.bootstrap()
+    if (to.meta.serviceError) return true
+    if (auth.restoreError) return { path: '/service-unavailable', query: { redirect: to.fullPath } }
     if (!auth.user && to.path === '/login') {
       app.resetCities()
       return true

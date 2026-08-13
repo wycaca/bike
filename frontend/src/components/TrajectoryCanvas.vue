@@ -108,6 +108,12 @@ async function initializeAmap() {
   }
 }
 
+/** 输入: 用户重试动作; 输出: 清除错误并重新加载高德地图。 */
+async function retryAmap(): Promise<void> {
+  mapError.value = ''
+  await initializeAmap()
+}
+
 watch(
   () => props.points,
   async () => {
@@ -171,7 +177,9 @@ onBeforeUnmount(() => {
         type="error"
         show-icon
         :closable="false"
-      />
+      >
+        <el-button size="small" @click="retryAmap">重试地图</el-button>
+      </el-alert>
     </div>
 
     <div class="coordinate-badge">

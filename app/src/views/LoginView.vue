@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { showFailToast } from 'vant'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import { errorText } from '@/api'
 import { roleHome } from '@/router'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
 const loading = ref(false)
 const form = reactive({ username: '', password: '' })
+
+if (route.query.reason === 'expired') showFailToast('登录状态已过期，请重新登录')
 
 /** 输入: 登录表单; 输出: 按后端角色进入管理员或运维人员首页。 */
 async function submit() {

@@ -101,6 +101,12 @@ async function initializeMap() {
   }
 }
 
+/** 输入: 用户重试动作; 输出: 清除错误并重新加载高德地图。 */
+async function retryMap(): Promise<void> {
+  error.value = ''
+  await initializeMap()
+}
+
 watch(() => props.markers, renderMarkers, { deep: true })
 watch(() => props.center, (center) => map?.setZoomAndCenter(props.zoom, center))
 
@@ -117,6 +123,7 @@ onBeforeUnmount(() => {
     <div v-if="error" class="mobile-map-error">
       <van-icon name="warning-o" />
       <span>{{ error }}</span>
+      <button type="button" @click="retryMap">重试</button>
     </div>
     <div v-if="loading" class="mobile-map-loading">
       <van-loading size="18" />
@@ -140,6 +147,7 @@ onBeforeUnmount(() => {
 .mobile-map-loading, .mobile-map-error { position: absolute; z-index: 5; display: flex; align-items: center; gap: 7px; padding: 8px 10px; background: rgb(255 255 255 / 94%); font-size: 12px; }
 .mobile-map-loading { top: 10px; right: 10px; }
 .mobile-map-error { right: 12px; bottom: 12px; left: 12px; color: var(--danger); }
+.mobile-map-error span { flex: 1; }.mobile-map-error button { color: var(--brand); border: 0; background: transparent; font-weight: 600; }
 
 :global(.mobile-map-marker) {
   display: grid;

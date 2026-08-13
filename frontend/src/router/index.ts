@@ -21,6 +21,12 @@ const router = createRouter({
       meta: { skipCity: true },
     },
     {
+      path: '/service-unavailable',
+      name: 'service-unavailable',
+      component: () => import('@/views/ServiceUnavailableView.vue'),
+      meta: { serviceError: true, skipCity: true },
+    },
+    {
       path: '/',
       component: AppLayout,
       children: [
@@ -73,6 +79,12 @@ const router = createRouter({
         },
       ],
     },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/NotFoundView.vue'),
+      meta: { skipCity: true },
+    },
   ],
 })
 
@@ -80,6 +92,10 @@ router.beforeEach(async (to) => {
   const authStore = useAuthStore()
   const appStore = useAppStore()
   if (!authStore.initialized) await authStore.restore()
+  if (to.meta.serviceError) return true
+  if (authStore.restoreError) {
+    return { name: 'service-unavailable', query: { redirect: to.fullPath } }
+  }
   if (to.meta.public) {
     if (!authStore.authenticated) appStore.resetCities()
     return authStore.authenticated ? '/dashboard' : true
