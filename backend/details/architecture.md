@@ -32,8 +32,8 @@
 - 雅迪云事件接入.
 - 登录, 用户, 组织、角色权限和可配置数据范围.
 - 电子围栏, 停车点和空间违规.
-- 运营看板和车辆状态 CSV 报表.
-- 日/月收入与独立进程异步报表导出.
+- 运营看板、车辆状态和日/月收入报表.
+- 持久化报表任务与独立进程异步 CSV 导出.
 - 换电、调度、维修等运维任务，支持管理员派单、运维抢单和处理时间线.
 - 写操作审计日志.
 
@@ -57,7 +57,6 @@
 | `POST /api/v1/auth/login` | 登录并创建 Redis 会话. |
 | `GET /api/v1/auth/me` | 查询当前用户和角色. |
 | `GET /api/v1/dashboard` | 查询城市运营指标, 趋势和区域分布. |
-| `GET /api/v1/reports/vehicle-status.csv` | 导出 UTF-8 车辆状态报表. |
 | `GET /api/v1/reports/revenue` | 查询有界的日/月收入汇总. |
 | `POST /api/v1/reports/exports` | 创建持久化异步报表任务. |
 | `GET /api/v1/reports/exports/{jobId}` | 查询本人报表任务状态. |
@@ -67,6 +66,10 @@
 | `GET/POST/PUT /api/v1/admin/organizations` | 维护组织架构. |
 | `GET/POST/PUT /api/v1/admin/users` | 维护平台用户和密码. |
 | `GET /api/v1/admin/audit-logs` | 分页检索审计日志. |
+| `GET /api/v1/cities` | 查询当前用户可访问的启用运营城市. |
+| `GET/POST/PUT /api/v1/admin/cities` | 维护运营城市、负责组织和地图边界. |
+| `POST /api/v1/admin/vehicles` | 单条新增车辆资产. |
+| `POST /api/v1/admin/vehicles/batch` | 批量新增车辆并返回逐行跳过原因. |
 | `GET/POST /api/v1/ops/tasks` | 查询或创建换电、调度、维修等运维任务. |
 | `POST /api/v1/ops/tasks/{taskId}/claim` | 运维人员原子抢单. |
 | `PUT /api/v1/ops/tasks/{taskId}/assignment` | 管理员指派或改派运维人员. |
