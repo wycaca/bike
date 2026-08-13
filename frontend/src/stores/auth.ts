@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 
 import * as authApi from '@/api/auth'
 import type { CurrentUser, UserRole } from '@/types/operations'
+import { hasCapability, type Capability } from '@/utils/permissions'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<CurrentUser | null>(null)
@@ -43,5 +44,10 @@ export const useAuthStore = defineStore('auth', () => {
     return user.value !== null && roles.includes(user.value.role)
   }
 
-  return { user, initialized, authenticated, restore, signIn, signOut, hasRole }
+  /** 输入: 平台能力; 输出: 当前用户是否拥有该能力。 */
+  function can(capability: Capability): boolean {
+    return hasCapability(user.value?.role, capability)
+  }
+
+  return { user, initialized, authenticated, restore, signIn, signOut, hasRole, can }
 })

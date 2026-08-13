@@ -46,7 +46,7 @@ async function handleAccountCommand(command: string) {
           <el-icon><DataAnalysis /></el-icon>
           <span>运营看板</span>
         </el-menu-item>
-        <el-menu-item index="/reports/revenue">
+        <el-menu-item v-if="authStore.can('REPORT_READ')" index="/reports/revenue">
           <el-icon><DataLine /></el-icon>
           <span>收入报表</span>
         </el-menu-item>
@@ -58,15 +58,15 @@ async function handleAccountCommand(command: string) {
           <el-icon><List /></el-icon>
           <span>车辆资产</span>
         </el-menu-item>
-        <el-menu-item v-if="authStore.hasRole('ADMIN', 'OPERATOR')" index="/geo">
+        <el-menu-item v-if="authStore.can('GEO_READ')" index="/geo">
           <el-icon><Operation /></el-icon>
           <span>围栏与停车点</span>
         </el-menu-item>
-        <el-menu-item v-if="authStore.hasRole('ADMIN', 'OPERATOR', 'AUDITOR')" index="/operations">
+        <el-menu-item v-if="authStore.can('OPS_READ')" index="/operations">
           <el-icon><Tickets /></el-icon>
           <span>运维任务</span>
         </el-menu-item>
-        <el-menu-item v-if="authStore.hasRole('ADMIN', 'AUDITOR')" index="/admin">
+        <el-menu-item v-if="authStore.can('ADMIN_READ')" index="/admin">
           <el-icon><Document /></el-icon>
           <span>组织与审计</span>
         </el-menu-item>

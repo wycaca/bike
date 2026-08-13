@@ -7,10 +7,12 @@ import { getDashboard } from '@/api/dashboard'
 import { errorMessage } from '@/api/http'
 import { createVehicleStatusExport, downloadReportExport, getReportExport } from '@/api/report'
 import { useAppStore } from '@/stores/app'
+import { useAuthStore } from '@/stores/auth'
 import type { DashboardData } from '@/types/operations'
 import { CITIES, cityName, formatTime } from '@/utils/vehicle'
 
 const appStore = useAppStore()
+const authStore = useAuthStore()
 const days = ref(7)
 const data = ref<DashboardData | null>(null)
 const loading = ref(false)
@@ -88,7 +90,7 @@ onBeforeUnmount(() => { exportCancelled = true })
             <el-option label="近 14 天" :value="14" />
             <el-option label="近 30 天" :value="30" />
           </el-select>
-          <el-tooltip content="导出车辆状态 CSV">
+          <el-tooltip v-if="authStore.can('REPORT_READ')" content="导出车辆状态 CSV">
             <el-button :icon="Download" :loading="exporting" @click="exportReport">导出报表</el-button>
           </el-tooltip>
           <el-button :icon="Refresh" circle aria-label="刷新" @click="loadDashboard" />

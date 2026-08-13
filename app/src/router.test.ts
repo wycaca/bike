@@ -30,4 +30,11 @@ describe('角色路由守卫', () => {
     await router.push('/operator/work')
     expect(router.currentRoute.value.path).toBe('/admin/overview')
   })
+
+  it('审计人员进入移动端时显示桌面端提示页', async () => {
+    setUser('AUDITOR')
+    const router = createAppRouter(createMemoryHistory())
+    await router.push('/')
+    expect(router.currentRoute.value.path).toBe('/unsupported-role')
+  })
 })

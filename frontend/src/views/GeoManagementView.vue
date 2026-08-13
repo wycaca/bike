@@ -7,10 +7,13 @@ import { disableFence, disableParkingPoint, getGeoOverview, saveFence, saveParki
 import { errorMessage } from '@/api/http'
 import GeoFacilityMap from '@/components/GeoFacilityMap.vue'
 import { useAppStore } from '@/stores/app'
+import { useAuthStore } from '@/stores/auth'
 import type { Coordinate, FenceType, Geofence, GeoOverview, ParkingPoint } from '@/types/operations'
 import { CITIES, formatTime } from '@/utils/vehicle'
 
 const appStore = useAppStore()
+const authStore = useAuthStore()
+const canWrite = computed(() => authStore.can('GEO_WRITE'))
 const overview = ref<GeoOverview>({ fences: [], parkingPoints: [], violations: [] })
 const loading = ref(false)
 const saving = ref(false)
@@ -168,8 +171,8 @@ onMounted(loadOverview)
           <el-radio-group v-model="appStore.cityCode">
             <el-radio-button v-for="item in CITIES" :key="item.code" :value="item.code">{{ item.name }}</el-radio-button>
           </el-radio-group>
-          <el-button type="primary" :icon="Plus" @click="openFence()">新建围栏</el-button>
-          <el-button :icon="Plus" @click="openParking()">新建停车点</el-button>
+          <el-button v-if="canWrite" type="primary" :icon="Plus" @click="openFence()">新建围栏</el-button>
+          <el-button v-if="canWrite" :icon="Plus" @click="openParking()">新建停车点</el-button>
           <el-button :icon="Refresh" circle aria-label="刷新" :loading="loading" @click="loadOverview" />
         </div>
       </div>
@@ -195,7 +198,7 @@ onMounted(loadOverview)
               <article v-for="fence in overview.fences" :key="fence.fenceId">
                 <div class="facility-icon fence">围</div>
                 <div><strong>{{ fence.fenceName }}</strong><span>{{ fenceTypeLabels[fence.fenceType] }} · {{ Math.round(fence.areaSquareMeters / 10000) }} 公顷</span></div>
-                <div class="facility-tools">
+                <div v-if="canWrite" class="facility-tools">
                   <el-button :icon="Edit" text circle aria-label="编辑围栏" @click="openFence(fence)" />
                   <el-button :icon="Delete" text circle aria-label="停用围栏" @click="removeFacility('fence', fence.fenceId, fence.fenceName)" />
                 </div>
@@ -203,7 +206,7 @@ onMounted(loadOverview)
               <article v-for="point in overview.parkingPoints" :key="point.pointId">
                 <div class="facility-icon parking">停</div>
                 <div><strong>{{ point.pointName }}</strong><span>{{ point.vehicleCount }} 辆 / 容量 {{ point.capacity }} · 半径 {{ point.radiusMeters }}m</span></div>
-                <div class="facility-tools">
+                <div v-if="canWrite" class="facility-tools">
                   <el-button :icon="Edit" text circle aria-label="编辑停车点" @click="openParking(point)" />
                   <el-button :icon="Delete" text circle aria-label="停用停车点" @click="removeFacility('parking', point.pointId, point.pointName)" />
                 </div>

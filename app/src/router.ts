@@ -7,7 +7,9 @@ const LoginView = () => import('@/views/LoginView.vue')
 const RoleShell = () => import('@/components/RoleShell.vue')
 
 export function roleHome(role: UserRole) {
-  return role === 'ADMIN' ? '/admin/overview' : '/operator/pool'
+  if (role === 'ADMIN') return '/admin/overview'
+  if (role === 'OPERATOR') return '/operator/pool'
+  return '/unsupported-role'
 }
 
 export function createAppRouter(history: RouterHistory = createWebHistory()) {
@@ -15,6 +17,7 @@ export function createAppRouter(history: RouterHistory = createWebHistory()) {
     history,
     routes: [
       { path: '/login', component: LoginView, meta: { title: '登录' } },
+      { path: '/unsupported-role', component: () => import('@/views/UnsupportedRoleView.vue'), meta: { role: 'AUDITOR', title: '请使用桌面端' } },
       {
         path: '/', component: RoleShell,
         children: [

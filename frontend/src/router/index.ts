@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import AppLayout from '@/layouts/AppLayout.vue'
 import { useAuthStore } from '@/stores/auth'
-import type { UserRole } from '@/types/operations'
+import type { Capability } from '@/utils/permissions'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -27,6 +27,7 @@ const router = createRouter({
           path: 'reports/revenue',
           name: 'revenue-report',
           component: () => import('@/views/RevenueReportView.vue'),
+          meta: { capability: 'REPORT_READ' },
         },
         { path: 'map', name: 'map', component: () => import('@/views/MapView.vue') },
         {
@@ -43,19 +44,19 @@ const router = createRouter({
           path: 'geo',
           name: 'geo',
           component: () => import('@/views/GeoManagementView.vue'),
-          meta: { roles: ['ADMIN', 'OPERATOR'] },
+          meta: { capability: 'GEO_READ' },
         },
         {
           path: 'operations',
           name: 'operations',
           component: () => import('@/views/OperationsTaskView.vue'),
-          meta: { roles: ['ADMIN', 'OPERATOR', 'AUDITOR'] },
+          meta: { capability: 'OPS_READ' },
         },
         {
           path: 'admin',
           name: 'admin',
           component: () => import('@/views/AdminView.vue'),
-          meta: { roles: ['ADMIN', 'AUDITOR'] },
+          meta: { capability: 'ADMIN_READ' },
         },
       ],
     },
@@ -69,8 +70,8 @@ router.beforeEach(async (to) => {
   if (!authStore.authenticated) {
     return { path: '/login', query: { redirect: to.fullPath } }
   }
-  const roles = to.meta.roles as UserRole[] | undefined
-  if (roles && !authStore.hasRole(...roles)) return '/dashboard'
+  const capability = to.meta.capability as Capability | undefined
+  if (capability && !authStore.can(capability)) return '/dashboard'
   return true
 })
 
