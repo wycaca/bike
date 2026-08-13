@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import AppLayout from '@/layouts/AppLayout.vue'
+import { useAppStore } from '@/stores/app'
 import { useAuthStore } from '@/stores/auth'
 import type { Capability } from '@/utils/permissions'
 
@@ -12,6 +13,12 @@ const router = createRouter({
       name: 'login',
       component: () => import('@/views/LoginView.vue'),
       meta: { public: true },
+    },
+    {
+      path: '/city-unavailable',
+      name: 'city-unavailable',
+      component: () => import('@/views/CityUnavailableView.vue'),
+      meta: { skipCity: true },
     },
     {
       path: '/',
@@ -65,10 +72,22 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const authStore = useAuthStore()
+  const appStore = useAppStore()
   if (!authStore.initialized) await authStore.restore()
-  if (to.meta.public) return authStore.authenticated ? '/dashboard' : true
+  if (to.meta.public) {
+    if (!authStore.authenticated) appStore.resetCities()
+    return authStore.authenticated ? '/dashboard' : true
+  }
   if (!authStore.authenticated) {
+    appStore.resetCities()
     return { path: '/login', query: { redirect: to.fullPath } }
+  }
+  if (!to.meta.skipCity) {
+    try {
+      await appStore.ensureCities()
+    } catch {
+      return { name: 'city-unavailable', query: { redirect: to.fullPath } }
+    }
   }
   const capability = to.meta.capability as Capability | undefined
   if (capability && !authStore.can(capability)) return '/dashboard'

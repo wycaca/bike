@@ -9,7 +9,7 @@ import GeoFacilityMap from '@/components/GeoFacilityMap.vue'
 import { useAppStore } from '@/stores/app'
 import { useAuthStore } from '@/stores/auth'
 import type { Coordinate, FenceType, Geofence, GeoOverview, ParkingPoint } from '@/types/operations'
-import { CITIES, formatTime } from '@/utils/vehicle'
+import { formatTime } from '@/utils/vehicle'
 
 const appStore = useAppStore()
 const authStore = useAuthStore()
@@ -25,11 +25,11 @@ const editorVisible = ref(false)
 const draftBoundary = ref<Coordinate[]>([])
 const draftLocation = ref<Coordinate | null>(null)
 
-const fenceForm = reactive({ fenceName: '', fenceType: 'OPERATION' as FenceType, orgId: 'ORG-BJ' })
-const parkingForm = reactive({ pointName: '', orgId: 'ORG-BJ', radiusMeters: 300, capacity: 80 })
-const city = computed(() => CITIES.find((item) => item.code === appStore.cityCode) ?? CITIES[0]!)
+const fenceForm = reactive({ fenceName: '', fenceType: 'OPERATION' as FenceType, orgId: '' })
+const parkingForm = reactive({ pointName: '', orgId: '', radiusMeters: 300, capacity: 80 })
+const city = computed(() => appStore.currentCity)
 const drawing = computed(() => editorVisible.value && editor.value !== null)
-const cityOrgId = computed(() => appStore.cityCode === '110000' ? 'ORG-BJ' : 'ORG-SH')
+const cityOrgId = computed(() => appStore.currentCity.orgId)
 
 const fenceTypeLabels: Record<FenceType, string> = {
   OPERATION: '运营区域', NO_RIDE: '禁骑区域', NO_PARK: '禁停区域',
@@ -169,7 +169,7 @@ onMounted(loadOverview)
         <div><h1>围栏与停车点</h1><p>维护空间规则并查看实时违规车辆</p></div>
         <div class="geo-actions">
           <el-radio-group v-model="appStore.cityCode">
-            <el-radio-button v-for="item in CITIES" :key="item.code" :value="item.code">{{ item.name }}</el-radio-button>
+            <el-radio-button v-for="item in appStore.cities" :key="item.code" :value="item.code">{{ item.name }}</el-radio-button>
           </el-radio-group>
           <el-button v-if="canWrite" type="primary" :icon="Plus" @click="openFence()">新建围栏</el-button>
           <el-button v-if="canWrite" :icon="Plus" @click="openParking()">新建停车点</el-button>

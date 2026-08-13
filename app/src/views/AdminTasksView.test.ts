@@ -2,6 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 
 import * as api from '@/api'
+import { seedTestCity } from '@/test/city'
 import type { Task } from '@/types'
 import AdminTasksView from '@/views/AdminTasksView.vue'
 
@@ -22,6 +23,7 @@ describe('管理员派单点击流程', () => {
   it('选择运维人员后提交派单', async () => {
     const pinia = createPinia()
     setActivePinia(pinia)
+    seedTestCity()
     vi.mocked(api.getTasks).mockResolvedValue({ items: [task], total: 1, page: 1, pageSize: 100 })
     vi.mocked(api.getAssignees).mockResolvedValue([{ userId: 'operator-9', displayName: '王师傅', phone: null, orgId: 'ORG-BJ-001', orgName: '北京运营中心' }])
     vi.mocked(api.assignTask).mockResolvedValue({ task: { ...task, status: 'CLAIMED', assigneeId: 'operator-9', assigneeName: '王师傅' }, events: [], evidence: [], exceptions: [], triggers: [] })

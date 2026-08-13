@@ -7,6 +7,15 @@ export type ExceptionType = 'VEHICLE_NOT_FOUND' | 'ACCESS_BLOCKED' | 'SAFETY_RIS
 
 export interface ApiResponse<T> { code: number; message: string; data: T }
 
+export interface CityDefinition {
+  code: string
+  name: string
+  orgId: string
+  orgName: string
+  center: [number, number]
+  bounds: [number, number, number, number]
+}
+
 export interface CurrentUser {
   userId: string
   username: string

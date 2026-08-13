@@ -1,5 +1,4 @@
 import type {
-  CityDefinition,
   ControllerStatus,
   LatestState,
   LifecycleStatus,
@@ -8,21 +7,7 @@ import type {
   RideStatus,
   TrajectoryPoint,
 } from '@/types/vehicle'
-
-export const CITIES: CityDefinition[] = [
-  {
-    code: '110000',
-    name: '北京',
-    center: [116.4074, 39.9042],
-    bounds: [116.2, 39.8, 116.6, 40.1],
-  },
-  {
-    code: '310000',
-    name: '上海',
-    center: [121.4737, 31.2304],
-    bounds: [121.3, 31.1, 121.7, 31.4],
-  },
-]
+import type { CityDefinition } from '@/types/vehicle'
 
 export const lifecycleLabels: Record<LifecycleStatus, string> = {
   PENDING: '待投放',
@@ -50,10 +35,6 @@ export const controllerLabels: Record<ControllerStatus, string> = {
   NORMAL: '控制器正常',
   FAULT: '控制器故障',
   OFFLINE: '控制器离线',
-}
-
-export function cityName(code: string): string {
-  return CITIES.find((city) => city.code === code)?.name ?? code
 }
 
 export function formatTime(value?: string | null): string {

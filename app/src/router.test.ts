@@ -3,9 +3,11 @@ import { createMemoryHistory } from 'vue-router'
 
 import { createAppRouter } from '@/router'
 import { useAuthStore } from '@/stores/auth'
+import { seedTestCity } from '@/test/city'
 import type { CurrentUser, UserRole } from '@/types'
 
 function setUser(role: UserRole) {
+  seedTestCity()
   const auth = useAuthStore()
   auth.initialized = true
   auth.user = {

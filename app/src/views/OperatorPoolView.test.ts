@@ -2,6 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 
 import * as api from '@/api'
+import { seedTestCity } from '@/test/city'
 import type { Task } from '@/types'
 import OperatorPoolView from '@/views/OperatorPoolView.vue'
 
@@ -21,6 +22,7 @@ describe('运维任务池点击流程', () => {
   it('点击抢单后调用后端并从任务池移除', async () => {
     const pinia = createPinia()
     setActivePinia(pinia)
+    seedTestCity()
     vi.mocked(api.getTasks).mockResolvedValue({ items: [openTask], total: 1, page: 1, pageSize: 100 })
     vi.mocked(api.taskAction).mockResolvedValue({ task: { ...openTask, status: 'CLAIMED' }, events: [], evidence: [], exceptions: [], triggers: [] })
     const wrapper = mount(OperatorPoolView, { global: { plugins: [pinia] } })

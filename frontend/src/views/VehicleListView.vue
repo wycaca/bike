@@ -8,13 +8,7 @@ import VehicleConditionTag from '@/components/VehicleConditionTag.vue'
 import VehicleDetailDrawer from '@/components/VehicleDetailDrawer.vue'
 import { useAppStore } from '@/stores/app'
 import type { LifecycleStatus, VehicleListItem } from '@/types/vehicle'
-import {
-  CITIES,
-  cityName,
-  formatTime,
-  lifecycleLabels,
-  rideLabels,
-} from '@/utils/vehicle'
+import { formatTime, lifecycleLabels, rideLabels } from '@/utils/vehicle'
 
 const appStore = useAppStore()
 const items = ref<VehicleListItem[]>([])
@@ -115,7 +109,7 @@ onBeforeUnmount(() => requestController?.abort())
         @clear="search"
       />
       <el-select v-model="appStore.cityCode" aria-label="运营城市" style="width: 112px">
-        <el-option v-for="city in CITIES" :key="city.code" :label="city.name" :value="city.code" />
+        <el-option v-for="city in appStore.cities" :key="city.code" :label="city.name" :value="city.code" />
       </el-select>
       <el-select
         v-model="lifecycleStatus"
@@ -160,7 +154,7 @@ onBeforeUnmount(() => requestController?.abort())
           <template #default="scope">{{ scope.row.plateNumber || '--' }}</template>
         </el-table-column>
         <el-table-column label="城市" width="86">
-          <template #default="scope">{{ cityName(scope.row.operationCityCode) }}</template>
+          <template #default="scope">{{ appStore.cityNameFor(scope.row.operationCityCode) }}</template>
         </el-table-column>
         <el-table-column label="当前状态" width="100">
           <template #default="scope">

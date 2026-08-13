@@ -14,11 +14,14 @@ import {
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import { useAppStore } from '@/stores/app'
 import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
 const router = useRouter()
+const appStore = useAppStore()
 const authStore = useAuthStore()
+const environmentLabel = computed(() => appStore.cities.map((city) => city.name).join(' / '))
 const activeMenu = computed(() => {
   if (route.path.startsWith('/vehicles')) return '/vehicles'
   if (route.path.startsWith('/reports')) return '/reports/revenue'
@@ -79,7 +82,7 @@ async function handleAccountCommand(command: string) {
       <header class="app-header">
         <div>
           <div class="app-title">共享电单车运营中心</div>
-          <div class="environment-label">北京 / 上海试点</div>
+          <div class="environment-label">{{ environmentLabel }}运营</div>
         </div>
         <div class="header-actions">
           <el-icon class="header-status"><Bicycle /></el-icon>

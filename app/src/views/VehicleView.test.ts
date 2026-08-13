@@ -2,6 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 
 import * as api from '@/api'
+import { seedTestCity } from '@/test/city'
 import type { MapMarker, Vehicle } from '@/types'
 import VehicleView from '@/views/VehicleView.vue'
 
@@ -37,6 +38,7 @@ const vehicle: Vehicle = {
 describe('车辆地图与列表切换', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
+    seedTestCity()
     vi.clearAllMocks()
     vi.mocked(api.getMapVehicles).mockResolvedValue({ markers: [marker], clustered: false, coordinateSystem: 'GCJ02' })
     vi.mocked(api.getVehicles).mockResolvedValue([vehicle])

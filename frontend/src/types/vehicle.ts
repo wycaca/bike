@@ -134,8 +134,10 @@ export interface TrajectoryResult {
 }
 
 export interface CityDefinition {
-  code: '110000' | '310000'
+  code: string
   name: string
+  orgId: string
+  orgName: string
   center: [number, number]
   bounds: [number, number, number, number]
 }

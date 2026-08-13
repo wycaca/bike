@@ -5,9 +5,9 @@ import { useRouter } from 'vue-router'
 
 import { errorMessage } from '@/api/http'
 import { getVehicle } from '@/api/vehicle'
+import { useAppStore } from '@/stores/app'
 import type { VehicleDetail } from '@/types/vehicle'
 import {
-  cityName,
   controllerLabels,
   formatTime,
   lifecycleLabels,
@@ -26,6 +26,7 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
+const appStore = useAppStore()
 const detail = ref<VehicleDetail | null>(null)
 const loading = ref(false)
 const error = ref('')
@@ -142,7 +143,7 @@ onBeforeUnmount(() => controller?.abort())
         <h2 class="section-title">车辆档案</h2>
         <el-descriptions :column="1" size="small" border>
           <el-descriptions-item label="运营城市">
-            {{ cityName(detail.asset.operationCityCode) }}
+            {{ appStore.cityNameFor(detail.asset.operationCityCode) }}
           </el-descriptions-item>
           <el-descriptions-item label="车辆型号">{{ detail.asset.model }}</el-descriptions-item>
           <el-descriptions-item label="智能锁编号">{{ detail.asset.lockId }}</el-descriptions-item>

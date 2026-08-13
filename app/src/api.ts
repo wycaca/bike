@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 import type {
-  ApiResponse, Assignee, Attachment, BatchCreateResult, CurrentUser, ExceptionType, MapQuery, MapResult,
+  ApiResponse, Assignee, Attachment, BatchCreateResult, CityDefinition, CurrentUser, ExceptionType, MapQuery, MapResult,
   RevenueReport, RoutePlan, TaskDetail, TaskPage, TaskPriority, TaskRule, TaskStatus, TaskSummary, TaskType, Vehicle,
 } from '@/types'
 
@@ -43,6 +43,32 @@ export async function login(username: string, password: string) {
 
 export async function currentUser() {
   return (await http.get<ApiResponse<CurrentUser>>('/auth/me')).data.data
+}
+
+interface CityResponse {
+  cityCode: string
+  cityName: string
+  orgId: string
+  orgName: string
+  centerLongitude: number
+  centerLatitude: number
+  minLongitude: number
+  minLatitude: number
+  maxLongitude: number
+  maxLatitude: number
+}
+
+/** 输入: 当前登录会话; 输出: 用户数据权限内的启用城市与地图参数。 */
+export async function getCities(): Promise<CityDefinition[]> {
+  const response = await http.get<ApiResponse<CityResponse[]>>('/cities')
+  return response.data.data.map((city) => ({
+    code: city.cityCode,
+    name: city.cityName,
+    orgId: city.orgId,
+    orgName: city.orgName,
+    center: [city.centerLongitude, city.centerLatitude],
+    bounds: [city.minLongitude, city.minLatitude, city.maxLongitude, city.maxLatitude],
+  }))
 }
 
 export async function logout() {

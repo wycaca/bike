@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, type RouterHistory } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth'
+import { useAppStore } from '@/stores/app'
 import type { UserRole } from '@/types'
 
 const LoginView = () => import('@/views/LoginView.vue')
@@ -18,6 +19,7 @@ export function createAppRouter(history: RouterHistory = createWebHistory()) {
     routes: [
       { path: '/login', component: LoginView, meta: { title: '登录' } },
       { path: '/unsupported-role', component: () => import('@/views/UnsupportedRoleView.vue'), meta: { role: 'AUDITOR', title: '请使用桌面端' } },
+      { path: '/city-unavailable', component: () => import('@/views/CityUnavailableView.vue'), meta: { roles: ['ADMIN', 'OPERATOR'], skipCity: true, title: '城市不可用' } },
       {
         path: '/', component: RoleShell,
         children: [
@@ -37,14 +39,29 @@ export function createAppRouter(history: RouterHistory = createWebHistory()) {
 
   router.beforeEach(async (to) => {
     const auth = useAuthStore()
+    const app = useAppStore()
     if (!auth.initialized) await auth.bootstrap()
-    if (!auth.user && to.path !== '/login') return '/login'
+    if (!auth.user && to.path === '/login') {
+      app.resetCities()
+      return true
+    }
+    if (!auth.user && to.path !== '/login') {
+      app.resetCities()
+      return '/login'
+    }
     if (auth.user && to.path === '/login') return roleHome(auth.user.role)
     if (to.path === '/' && auth.user) return roleHome(auth.user.role)
     const required = to.meta.role as UserRole | undefined
     const allowed = to.meta.roles as UserRole[] | undefined
     if (auth.user && ((required && required !== auth.user.role) || (allowed && !allowed.includes(auth.user.role)))) {
       return roleHome(auth.user.role)
+    }
+    if (auth.user && auth.user.role !== 'AUDITOR' && !to.meta.skipCity) {
+      try {
+        await app.ensureCities()
+      } catch {
+        return { path: '/city-unavailable', query: { redirect: to.fullPath } }
+      }
     }
     return true
   })

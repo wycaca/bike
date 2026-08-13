@@ -9,7 +9,7 @@ import { createVehicleStatusExport, downloadReportExport, getReportExport } from
 import { useAppStore } from '@/stores/app'
 import { useAuthStore } from '@/stores/auth'
 import type { DashboardData } from '@/types/operations'
-import { CITIES, cityName, formatTime } from '@/utils/vehicle'
+import { formatTime } from '@/utils/vehicle'
 
 const appStore = useAppStore()
 const authStore = useAuthStore()
@@ -77,11 +77,11 @@ onBeforeUnmount(() => { exportCancelled = true })
       <div class="page-heading">
         <div>
           <h1>运营看板</h1>
-          <p>{{ cityName(appStore.cityCode) }}车辆状态、遥测活跃度与区域分布</p>
+          <p>{{ appStore.cityName }}车辆状态、遥测活跃度与区域分布</p>
         </div>
         <div class="dashboard-actions">
           <el-radio-group v-model="appStore.cityCode">
-            <el-radio-button v-for="city in CITIES" :key="city.code" :value="city.code">
+            <el-radio-button v-for="city in appStore.cities" :key="city.code" :value="city.code">
               {{ city.name }}
             </el-radio-button>
           </el-radio-group>

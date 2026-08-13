@@ -33,7 +33,6 @@ import {
   taskEventLabels, taskPriorityLabels, taskStatusLabels, taskTypeLabels,
   triggerTypeLabels,
 } from '@/utils/operations'
-import { CITIES } from '@/utils/vehicle'
 
 const appStore = useAppStore()
 const authStore = useAuthStore()
@@ -77,11 +76,11 @@ const filters = reactive<{
 
 const createForm = reactive<OperationsTaskRequest>({
   taskType: 'BATTERY_SWAP', priority: 'NORMAL', title: '', description: null,
-  vehicleId: '', orgId: 'ORG-BJ', targetName: null, dueAt: null, assigneeId: null,
+  vehicleId: '', orgId: '', targetName: null, dueAt: null, assigneeId: null,
 })
 const batchForm = reactive<OperationsBatchTaskRequest>({
   batchName: '', taskType: 'REBALANCE', priority: 'NORMAL', title: '', description: null,
-  vehicleIds: [], orgId: 'ORG-BJ', targetName: null, dueAt: null, assigneeId: null,
+  vehicleIds: [], orgId: '', targetName: null, dueAt: null, assigneeId: null,
 })
 const completionForm = reactive<OperationsCompletionRequest>({
   resultNote: '', arrivalLongitude: 0, arrivalLatitude: 0, checklist: [],
@@ -97,7 +96,7 @@ const exceptionForm = reactive<{ exceptionType: OperationsExceptionType; note: s
 const exceptionFiles = ref<OperationsAttachment[]>([])
 const partsText = ref('')
 const ruleForm = reactive<OperationsRuleRequest>({
-  ruleName: '', cityCode: '110000', orgId: 'ORG-BJ', triggerType: 'LOW_BATTERY',
+  ruleName: '', cityCode: '', orgId: '', triggerType: 'LOW_BATTERY',
   thresholdValue: 15, taskType: 'BATTERY_SWAP', priority: 'URGENT',
   titleTemplate: '车辆{vehicleId}低电量', descriptionTemplate: '当前电量{batteryPercent}%，请尽快换电',
   dueMinutes: 60, cooldownMinutes: 30, autoClose: true, enabled: true,
@@ -109,7 +108,7 @@ const canWrite = computed(() => currentRole.value !== 'AUDITOR')
 const isAdmin = computed(() => currentRole.value === 'ADMIN')
 const defaultOrgId = computed(() => currentRole.value === 'OPERATOR'
   ? authStore.user?.orgId ?? ''
-  : appStore.cityCode === '110000' ? 'ORG-BJ' : 'ORG-SH')
+  : appStore.currentCity.orgId)
 const summaryItems = computed(() => [
   { label: '待领取', value: summary.value.openCount, tone: 'open' },
   { label: '已领取', value: summary.value.claimedCount, tone: 'claimed' },
@@ -536,7 +535,7 @@ onMounted(loadTasks)
         <div><h1>运维任务</h1><p>换电、调度、维修与现场作业队列</p></div>
         <div class="heading-actions">
           <el-radio-group v-model="appStore.cityCode">
-            <el-radio-button v-for="city in CITIES" :key="city.code" :value="city.code">{{ city.name }}</el-radio-button>
+            <el-radio-button v-for="city in appStore.cities" :key="city.code" :value="city.code">{{ city.name }}</el-radio-button>
           </el-radio-group>
           <el-tooltip v-if="isAdmin" content="自动任务规则"><el-button :icon="Setting" circle @click="openRules" /></el-tooltip>
           <el-button v-if="canWrite" :icon="Files" @click="openBatch">批量任务</el-button>

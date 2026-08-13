@@ -9,7 +9,6 @@ import VehicleMap from '@/components/VehicleMap.vue'
 import { useAppStore } from '@/stores/app'
 import type { CityDefinition, CoordinateSystem, LifecycleStatus, MapMarker } from '@/types/vehicle'
 import {
-  CITIES,
   formatTime,
   lifecycleLabels,
   markerCondition,
@@ -28,14 +27,12 @@ const drawerVisible = ref(false)
 const coordinateSystem = ref<CoordinateSystem>('GCJ02')
 const clustered = ref(false)
 const lastUpdated = ref<Date | null>(null)
-const currentBounds = ref<CityDefinition['bounds']>([116.2, 39.8, 116.6, 40.1])
+const currentBounds = ref<CityDefinition['bounds']>([...appStore.currentCity.bounds])
 let requestController: AbortController | null = null
 let refreshTimer: number | null = null
 let queryTimer: number | null = null
 
-const city = computed(
-  () => CITIES.find((item) => item.code === appStore.cityCode) ?? CITIES[0]!,
-)
+const city = computed(() => appStore.currentCity)
 const totalVehicles = computed(() =>
   markers.value.reduce((total, marker) => total + marker.vehicleCount, 0),
 )
@@ -101,10 +98,10 @@ function selectVehicle(vehicleId: string) {
   drawerVisible.value = true
 }
 
-function changeCity(code: '110000' | '310000') {
-  appStore.cityCode = code
-  const nextCity = CITIES.find((item) => item.code === code) ?? CITIES[0]!
-  currentBounds.value = [...nextCity.bounds]
+function changeCity(code: string | number | boolean | undefined) {
+  if (typeof code !== 'string') return
+  appStore.changeCity(code)
+  currentBounds.value = [...appStore.currentCity.bounds]
   selectedVehicleId.value = null
   scheduleLoad()
 }
@@ -157,7 +154,7 @@ onBeforeUnmount(() => {
 
     <div class="toolbar-band map-toolbar">
       <el-radio-group :model-value="appStore.cityCode" @change="changeCity">
-        <el-radio-button v-for="item in CITIES" :key="item.code" :value="item.code">
+        <el-radio-button v-for="item in appStore.cities" :key="item.code" :value="item.code">
           {{ item.name }}
         </el-radio-button>
       </el-radio-group>

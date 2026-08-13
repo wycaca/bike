@@ -11,11 +11,6 @@ import type { MapMarker, Vehicle } from '@/types'
 type ViewMode = 'map' | 'list'
 type OnlineFilter = 'all' | 'online' | 'offline'
 
-const cityDefinitions = {
-  '110000': { center: [116.4074, 39.9042] as [number, number], bounds: [116.2, 39.8, 116.6, 40.1] as [number, number, number, number] },
-  '310000': { center: [121.4737, 31.2304] as [number, number], bounds: [121.3, 31.1, 121.7, 31.4] as [number, number, number, number] },
-}
-
 const app = useAppStore()
 const viewMode = ref<ViewMode>('map')
 const keyword = ref('')
@@ -25,13 +20,13 @@ const loading = ref(false)
 const mapLoading = ref(false)
 const onlineFilter = ref<OnlineFilter>('all')
 const zoom = ref(12)
-const bounds = ref<[number, number, number, number]>([...cityDefinitions['110000'].bounds])
+const bounds = ref<[number, number, number, number]>([...app.currentCity.bounds])
 const selectedMarker = ref<MapMarker | null>(null)
 const detailVisible = ref(false)
 let mapController: AbortController | null = null
 let viewportTimer: number | null = null
 
-const city = computed(() => cityDefinitions[app.cityCode as keyof typeof cityDefinitions] ?? cityDefinitions['110000'])
+const city = computed(() => app.currentCity)
 const vehicleCount = computed(() => markers.value.reduce((total, marker) => total + marker.vehicleCount, 0))
 const abnormalCount = computed(() => markers.value.reduce((total, marker) => total + marker.faultCount + marker.lowBatteryCount, 0))
 

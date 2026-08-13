@@ -2,6 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 
 import * as api from '@/api'
+import { seedTestCity } from '@/test/city'
 import type { RevenueValues, TaskSummary } from '@/types'
 import AdminOverviewView from '@/views/AdminOverviewView.vue'
 
@@ -27,6 +28,7 @@ describe('管理员经营总览', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-08-11T09:00:00+08:00'))
     setActivePinia(createPinia())
+    seedTestCity()
     vi.mocked(api.getRevenueReport).mockResolvedValue({
       cityCode: '110000', granularity: 'DAY',
       summary: { fromDate: '2026-08-01', toDate: '2026-08-10', values: { ...revenueValues, netRevenue: 10580 } },

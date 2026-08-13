@@ -8,7 +8,7 @@ import { errorMessage } from '@/api/http'
 import { useAppStore } from '@/stores/app'
 import type { ReportExportJob, RevenueGranularity, RevenueReport, RevenueValues } from '@/types/operations'
 import { formatMoney, formatNumber, isExportTerminal, periodLabel, trendHeight } from '@/utils/report'
-import { CITIES, cityName, formatTime } from '@/utils/vehicle'
+import { formatTime } from '@/utils/vehicle'
 
 const appStore = useAppStore()
 const granularity = ref<RevenueGranularity>('DAY')
@@ -137,7 +137,7 @@ onBeforeUnmount(() => window.clearTimeout(exportPollTimer))
       <div class="page-heading">
         <div>
           <h1>收入与经营报表</h1>
-          <p>{{ cityName(appStore.cityCode) }}骑行收入、车辆周转与单位经济指标</p>
+          <p>{{ appStore.cityName }}骑行收入、车辆周转与单位经济指标</p>
         </div>
         <el-button :icon="Refresh" circle aria-label="刷新" @click="loadReport" />
       </div>
@@ -145,7 +145,7 @@ onBeforeUnmount(() => window.clearTimeout(exportPollTimer))
 
     <div class="report-toolbar">
       <el-radio-group v-model="appStore.cityCode">
-        <el-radio-button v-for="city in CITIES" :key="city.code" :value="city.code">
+        <el-radio-button v-for="city in appStore.cities" :key="city.code" :value="city.code">
           {{ city.name }}
         </el-radio-button>
       </el-radio-group>
