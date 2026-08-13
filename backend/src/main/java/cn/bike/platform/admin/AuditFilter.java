@@ -8,12 +8,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.Map;
 
 public class AuditFilter extends OncePerRequestFilter {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AuditFilter.class);
 
     private final AdminRepository repository;
     private final JsonMapper jsonMapper;
@@ -65,9 +69,18 @@ public class AuditFilter extends OncePerRequestFilter {
                     request.getMethod(), request.getRequestURI(), clientIp(request),
                     response.getStatus(), durationMs,
                     jsonMapper.writeValueAsString(Map.of("query", request.getQueryString() == null ? "" : request.getQueryString())));
-        } catch (RuntimeException ignored) {
-            // 审计写入故障不能覆盖原业务响应, 生产环境由日志和指标单独告警。
+        } catch (RuntimeException exception) {
+            // 审计故障不能覆盖原业务响应；记录不含请求正文的定位字段，避免日志泄露密码或业务敏感数据。
+            LOG.error("审计日志写入失败 method={} path={} status={} principal={} errorType={}",
+                    request.getMethod(), request.getRequestURI(), response.getStatus(),
+                    auditPrincipalName(), exception.getClass().getSimpleName(), exception);
         }
+    }
+
+    /** 输入: 当前安全上下文; 输出: 用于故障日志定位的用户名，不存在时为 anonymous。 */
+    private String auditPrincipalName() {
+        var principal = platformPrincipal(SecurityContextHolder.getContext().getAuthentication());
+        return principal == null ? "anonymous" : principal.username();
     }
 
     private PlatformPrincipal platformPrincipal(Authentication authentication) {
