@@ -66,6 +66,7 @@
 - Spring Security + Redis Session 登录、CSRF、角色权限和组织数据范围.
 - 围栏、停车点、看板、收入报表和持久化异步导出 Worker.
 - 运维任务、自动规则、批量建单、路线优化、作业凭证、验收和异常闭环.
+- 后端 `report` 已按 `revenue/export` 归纳, `ops` 已按 `attachment/route/rule` 归纳, 工单核心和自动化保留在 `ops` 根包.
 - Dockerfile 和根目录 Docker Compose 环境.
 
 当前接口:

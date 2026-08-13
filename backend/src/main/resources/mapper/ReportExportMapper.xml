@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="cn.bike.platform.report.ReportExportMapper">
+<mapper namespace="cn.bike.platform.report.export.ReportExportMapper">
 
     <sql id="jobColumns">
         job_id, report_type, job_status AS status, requested_by, requested_org_id,
@@ -12,7 +12,7 @@
     </sql>
 
     <!-- INSERT RETURNING 在一次往返中创建并返回任务, affectData 用于声明该 select 会修改数据. -->
-    <select id="create" resultType="cn.bike.platform.report.ReportExportModels$ExportJob"
+    <select id="create" resultType="cn.bike.platform.report.export.ReportExportModels$ExportJob"
             affectData="true" flushCache="true">
         INSERT INTO report_export_job (
             job_id, report_type, job_status, requested_by, requested_org_id,
@@ -32,14 +32,14 @@
         WHERE requested_by = #{requestedBy} AND job_status IN ('PENDING', 'RUNNING')
     </select>
 
-    <select id="findOwned" resultType="cn.bike.platform.report.ReportExportModels$ExportJob">
+    <select id="findOwned" resultType="cn.bike.platform.report.export.ReportExportModels$ExportJob">
         SELECT <include refid="jobColumns"/>
         FROM report_export_job
         WHERE job_id = #{jobId} AND requested_by = #{requestedBy}
     </select>
 
     <!-- SKIP LOCKED 让多个 Worker 跳过已锁任务并领取不同记录, 不发生串行等待. -->
-    <select id="claimNext" resultType="cn.bike.platform.report.ReportExportModels$ExportJob"
+    <select id="claimNext" resultType="cn.bike.platform.report.export.ReportExportModels$ExportJob"
             affectData="true" flushCache="true">
         WITH next_job AS (
             SELECT job_id

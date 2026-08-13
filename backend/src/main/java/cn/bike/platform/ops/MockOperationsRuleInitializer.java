@@ -1,5 +1,6 @@
 package cn.bike.platform.ops;
 
+import cn.bike.platform.ops.rule.OperationsRuleMapper;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;

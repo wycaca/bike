@@ -9,6 +9,7 @@ import cn.bike.platform.ops.OperationsModels.TaskRule;
 import cn.bike.platform.ops.OperationsModels.TaskSourceType;
 import cn.bike.platform.ops.OperationsModels.TaskStatus;
 import cn.bike.platform.ops.OperationsModels.TriggerType;
+import cn.bike.platform.ops.rule.OperationsRuleRepository;
 import cn.bike.platform.security.DataPermissionService;
 import cn.bike.platform.security.DataPermission;
 import cn.bike.platform.security.PlatformPrincipal;

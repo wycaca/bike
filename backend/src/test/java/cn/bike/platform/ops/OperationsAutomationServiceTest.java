@@ -10,6 +10,7 @@ import cn.bike.platform.ops.OperationsModels.TaskStatus;
 import cn.bike.platform.ops.OperationsModels.TaskType;
 import cn.bike.platform.ops.OperationsModels.TriggerType;
 import cn.bike.platform.ops.OperationsModels.VehicleSnapshot;
+import cn.bike.platform.ops.rule.OperationsRuleRepository;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
 

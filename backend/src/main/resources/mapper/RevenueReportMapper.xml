@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="cn.bike.platform.report.RevenueReportMapper">
+<mapper namespace="cn.bike.platform.report.revenue.RevenueReportMapper">
 
     <!-- 自然日和自然月统一按 Asia/Shanghai 口径分桶, 避免 UTC 跨日导致报表错位. -->
     <sql id="calendarBucket">
@@ -41,7 +41,7 @@
     </sql>
 
     <!-- 日历序列补齐零订单日期, 同时按每日在册车辆累计 vehicle-days. -->
-    <select id="totals" resultType="cn.bike.platform.report.RevenueReportModels$RawMetrics">
+    <select id="totals" resultType="cn.bike.platform.report.revenue.RevenueReportModels$RawMetrics">
         WITH calendar AS (
             SELECT day::date AS report_date
             FROM generate_series(CAST(#{fromDate} AS date), CAST(#{toDate} AS date), interval '1 day') day
@@ -80,7 +80,7 @@
     </select>
 
     <!-- 周期明细复用与合计相同的收入和运力口径, 仅改变日/月分组. -->
-    <select id="periods" resultType="cn.bike.platform.report.RevenueReportMapper$PeriodRow">
+    <select id="periods" resultType="cn.bike.platform.report.revenue.RevenueReportMapper$PeriodRow">
         WITH calendar AS (
             SELECT day::date AS report_date
             FROM generate_series(CAST(#{fromDate} AS date), CAST(#{toDate} AS date), interval '1 day') day
