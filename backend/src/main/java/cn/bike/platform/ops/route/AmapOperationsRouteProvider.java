@@ -6,13 +6,18 @@ import cn.bike.platform.vehicle.VehicleModels.CoordinateSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 import tools.jackson.databind.JsonNode;
 
 import java.math.BigDecimal;
 import java.net.URI;
+import java.net.http.HttpClient;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,16 +31,37 @@ public class AmapOperationsRouteProvider implements OperationsRouteProvider {
     private final String webServiceKey;
     private final String distanceApiUrl;
     private final String drivingApiUrl;
+    private final int maxAttempts;
+    private final long retryBackoffMs;
 
     public AmapOperationsRouteProvider(
             @Value("${app.amap.web-service-key:}") String webServiceKey,
             @Value("${app.amap.distance-api-url}") String distanceApiUrl,
-            @Value("${app.amap.driving-api-url}") String drivingApiUrl
+            @Value("${app.amap.driving-api-url}") String drivingApiUrl,
+            @Value("${app.amap.connect-timeout-ms:2000}") long connectTimeoutMs,
+            @Value("${app.amap.read-timeout-ms:4000}") long readTimeoutMs,
+            @Value("${app.amap.max-attempts:3}") int maxAttempts,
+            @Value("${app.amap.retry-backoff-ms:200}") long retryBackoffMs
     ) {
-        this.restClient = RestClient.create();
+        this(createRestClient(connectTimeoutMs, readTimeoutMs), webServiceKey, distanceApiUrl,
+                drivingApiUrl, maxAttempts, retryBackoffMs);
+    }
+
+    /** 输入: 可替换 HTTP 客户端及高德配置; 输出: 便于隔离测试的路线提供器。 */
+    AmapOperationsRouteProvider(
+            RestClient restClient,
+            String webServiceKey,
+            String distanceApiUrl,
+            String drivingApiUrl,
+            int maxAttempts,
+            long retryBackoffMs
+    ) {
+        this.restClient = restClient;
         this.webServiceKey = webServiceKey == null ? "" : webServiceKey.trim();
         this.distanceApiUrl = distanceApiUrl;
         this.drivingApiUrl = drivingApiUrl;
+        this.maxAttempts = Math.max(1, maxAttempts);
+        this.retryBackoffMs = Math.max(0, retryBackoffMs);
     }
 
     /** 输入: WGS84 点位; 输出: 优先使用高德道路距离、失败时使用本地估算的矩阵。 */
@@ -114,12 +140,60 @@ public class AmapOperationsRouteProvider implements OperationsRouteProvider {
         }
     }
 
-    private JsonNode get(URI uri) {
-        var response = restClient.get().uri(uri).retrieve().body(JsonNode.class);
-        if (response == null) {
-            throw new IllegalStateException("高德接口返回空响应");
+    /** 输入: 高德 URI; 输出: JSON 响应，仅对网络、限流和 5xx 执行有限重试。 */
+    JsonNode get(URI uri) {
+        RuntimeException lastException = null;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                var response = restClient.get().uri(uri).retrieve().body(JsonNode.class);
+                if (response == null) {
+                    throw new IllegalStateException("高德接口返回空响应");
+                }
+                return response;
+            } catch (RuntimeException exception) {
+                lastException = exception;
+                if (!retryable(exception) || attempt == maxAttempts) {
+                    throw exception;
+                }
+                LOGGER.warn("高德请求失败，准备第 {}/{} 次尝试: {} {} ({})",
+                        attempt + 1, maxAttempts, uri.getHost(), uri.getPath(), exception.getClass().getSimpleName());
+                pauseBeforeRetry(attempt);
+            }
         }
-        return response;
+        throw lastException == null ? new IllegalStateException("高德请求失败") : lastException;
+    }
+
+    /** 输入: 请求异常; 输出: 是否属于可安全重试的临时故障。 */
+    private boolean retryable(RuntimeException exception) {
+        if (exception instanceof ResourceAccessException) {
+            return true;
+        }
+        if (exception instanceof RestClientResponseException responseException) {
+            return responseException.getStatusCode().value() == 429
+                    || responseException.getStatusCode().is5xxServerError();
+        }
+        return false;
+    }
+
+    /** 输入: 已失败次数; 输出: 无，按线性退避短暂等待并保留线程中断状态。 */
+    private void pauseBeforeRetry(int failedAttempts) {
+        try {
+            Thread.sleep(retryBackoffMs * failedAttempts);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("高德请求重试被中断", exception);
+        }
+    }
+
+    /** 输入: 连接和读取超时毫秒数; 输出: 使用 JDK HttpClient 的 RestClient。 */
+    private static RestClient createRestClient(long connectTimeoutMs, long readTimeoutMs) {
+        var httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofMillis(Math.max(1, connectTimeoutMs)))
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+        var requestFactory = new JdkClientHttpRequestFactory(httpClient);
+        requestFactory.setReadTimeout(Duration.ofMillis(Math.max(1, readTimeoutMs)));
+        return RestClient.builder().requestFactory(requestFactory).build();
     }
 
     private void requireSuccess(JsonNode response) {

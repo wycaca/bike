@@ -74,6 +74,10 @@ app:
     web-service-key: ${AMAP_WEB_SERVICE_KEY:}
     distance-api-url: ${AMAP_DISTANCE_API_URL:https://restapi.amap.com/v3/distance}
     driving-api-url: ${AMAP_DRIVING_API_URL:https://restapi.amap.com/v3/direction/driving}
+    connect-timeout-ms: ${AMAP_CONNECT_TIMEOUT_MS:2000}
+    read-timeout-ms: ${AMAP_READ_TIMEOUT_MS:4000}
+    max-attempts: ${AMAP_MAX_ATTEMPTS:3}
+    retry-backoff-ms: ${AMAP_RETRY_BACKOFF_MS:200}
 
 logging:
   level:
