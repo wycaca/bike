@@ -114,7 +114,9 @@
 - Android: Kotlin WebView 壳.
 - 地图: 高德地图 JS API 2.0.
 
-移动端是管理和运维端, 不是用户骑行 App. 已实现角色工作台、任务池、任务执行、路线、车辆查询以及定位、扫码、拍照 Bridge; Android Kotlin WebView 壳已建立. 数据权限由后端统一执行.
+移动端是管理和运维端, 不是用户骑行 App. 已实现角色工作台、任务池、任务执行、路线、车辆地图与查询、运营收益指标以及定位、扫码、拍照 Bridge; Android Kotlin WebView 壳已建立. 数据权限由后端统一执行.
+
+Android 原生层已增加 H5 首页连接错误页, 区分断网、服务不可达、HTTP 异常和证书错误, 支持用户重新连接, 不再显示 WebView 默认错误页面. 当前开发机器没有 Android SDK 或虚拟机, Android 单元测试与实机交互需要在具备 Android 环境的机器补做.
 
 ## 总体架构
 
@@ -303,6 +305,12 @@ curl.exe -fsS "http://localhost:8080/api/v1/vehicles/YD-BJ-000001/trajectory?sta
 - Compose 全部服务启动成功, Flyway V7 已应用, 北京和上海车辆各归属 100 辆.
 - 北京 `ORG_ONLY` 运维账号只能看到北京车辆、地图、看板、收入、围栏、任务和规则数据, 上海数据为 0, 跨组织车辆详情返回 404.
 - 北京 `ORG_AND_CHILDREN` 审计账号只返回 `ORG-BJ` 日志, 临时测试账号已清理.
+
+2026-08-13 已同步:
+
+- 合并远端 Android 局域网地址、移动端口、车辆地图和运营收益指标提交, 本地数据权限提交完整保留.
+- 增加 Android H5 首页连接错误分类、原生错误界面和重新连接逻辑, 并补充 4 个 JVM 单元测试用例.
+- 当前机器未配置 Android SDK 和虚拟机, Docker 未缓存 Android 构建镜像且镜像拉取未完成, 因此 Android 单元测试和实机验证尚未执行.
 
 ## 未来计划
 

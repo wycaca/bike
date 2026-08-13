@@ -2,22 +2,36 @@ package cn.bike.platform.mobile
 
 import android.Manifest
 import android.app.Activity
+import android.content.res.ColorStateList
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.net.Uri
+import android.net.http.SslError
 import android.os.Bundle
 import android.os.Handler
 import android.provider.MediaStore
+import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
 import android.webkit.CookieManager
+import android.webkit.SslErrorHandler
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -30,7 +44,13 @@ import java.io.File
 
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
+    private lateinit var connectionErrorView: View
+    private lateinit var errorTitleView: TextView
+    private lateinit var errorMessageView: TextView
+    private lateinit var errorCodeView: TextView
+    private lateinit var retryButton: Button
     private val originPolicy by lazy { TrustedOriginPolicy(BuildConfig.WEB_APP_URL, BuildConfig.DEBUG) }
+    private var mainFrameLoadFailed = false
     private var pendingLocationCallback: String? = null
     private var pendingScanCallback: String? = null
     private var pendingFileCallback: ValueCallback<Array<Uri>>? = null
@@ -80,7 +100,12 @@ class MainActivity : AppCompatActivity() {
     @Suppress("SetJavaScriptEnabled")
     private fun configureWebView() {
         webView = WebView(this)
-        setContentView(webView)
+        connectionErrorView = createConnectionErrorView()
+        setContentView(FrameLayout(this).apply {
+            setBackgroundColor(Color.WHITE)
+            addView(webView, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+            addView(connectionErrorView, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+        })
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
         CookieManager.getInstance().setAcceptCookie(true)
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, false)
@@ -102,6 +127,35 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(Intent.ACTION_VIEW, request.url))
                 return true
             }
+
+            override fun onPageStarted(view: WebView, url: String, favicon: android.graphics.Bitmap?) {
+                if (originPolicy.isAllowed(url)) mainFrameLoadFailed = false
+            }
+
+            override fun onPageFinished(view: WebView, url: String) {
+                if (originPolicy.isAllowed(url) && !mainFrameLoadFailed) showWebContent()
+            }
+
+            override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
+                if (!request.isForMainFrame) return
+                mainFrameLoadFailed = true
+                showConnectionError(WebLoadErrorPolicy.fromNetworkError(error.errorCode))
+            }
+
+            override fun onReceivedHttpError(view: WebView, request: WebResourceRequest, response: WebResourceResponse) {
+                if (!request.isForMainFrame) return
+                mainFrameLoadFailed = true
+                showConnectionError(WebLoadErrorPolicy.fromHttpStatus(response.statusCode))
+            }
+
+            override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
+                handler.cancel()
+                // 只把受信任首页的证书错误升级为全屏错误, 外部子资源失败交给 H5 自身降级处理.
+                if (originPolicy.isAllowed(error.url)) {
+                    mainFrameLoadFailed = true
+                    showConnectionError(WebLoadErrorPolicy.securityError())
+                }
+            }
         }
         webView.webChromeClient = object : WebChromeClient() {
             override fun onShowFileChooser(view: WebView?, callback: ValueCallback<Array<Uri>>?, params: FileChooserParams?): Boolean {
@@ -112,6 +166,89 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    /** 输入: 无; 输出: 不依赖 H5 的原生连接错误界面. */
+    private fun createConnectionErrorView(): View {
+        val icon = TextView(this).apply {
+            text = "!"
+            textSize = 28f
+            gravity = Gravity.CENTER
+            setTextColor(Color.WHITE)
+            contentDescription = "连接错误"
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.OVAL
+                setColor(Color.parseColor("#C6423A"))
+            }
+        }
+        errorTitleView = TextView(this).apply {
+            textSize = 22f
+            setTextColor(Color.parseColor("#18332B"))
+            gravity = Gravity.CENTER
+        }
+        errorMessageView = TextView(this).apply {
+            textSize = 15f
+            setTextColor(Color.parseColor("#52635E"))
+            gravity = Gravity.CENTER
+            setLineSpacing(0f, 1.25f)
+        }
+        errorCodeView = TextView(this).apply {
+            textSize = 12f
+            setTextColor(Color.parseColor("#76837F"))
+            gravity = Gravity.CENTER
+        }
+        retryButton = Button(this).apply {
+            text = "重新连接"
+            isAllCaps = false
+            setTextColor(Color.WHITE)
+            backgroundTintList = ColorStateList.valueOf(Color.parseColor("#176448"))
+            setOnClickListener {
+                isEnabled = false
+                text = "正在连接..."
+                webView.loadUrl(BuildConfig.WEB_APP_URL)
+            }
+        }
+
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setPadding(dp(32), dp(40), dp(32), dp(40))
+            setBackgroundColor(Color.parseColor("#F4F7F5"))
+            visibility = View.GONE
+            addView(icon, LinearLayout.LayoutParams(dp(56), dp(56)).apply { bottomMargin = dp(24) })
+            addView(errorTitleView, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(errorMessageView, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                topMargin = dp(12)
+            })
+            addView(errorCodeView, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                topMargin = dp(10)
+            })
+            addView(retryButton, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(52)).apply {
+                topMargin = dp(28)
+            })
+        }
+    }
+
+    /** 输入: 已分类的加载错误; 输出: 隐藏浏览器默认错误页并显示可重试的中文提示. */
+    private fun showConnectionError(error: WebLoadError) {
+        webView.visibility = View.INVISIBLE
+        errorTitleView.text = error.title
+        errorMessageView.text = error.message
+        errorCodeView.text = "故障代码: ${error.code}"
+        retryButton.isEnabled = true
+        retryButton.text = "重新连接"
+        connectionErrorView.visibility = View.VISIBLE
+    }
+
+    /** 输入: 无; 输出: 页面成功加载后恢复 WebView 内容. */
+    private fun showWebContent() {
+        connectionErrorView.visibility = View.GONE
+        webView.visibility = View.VISIBLE
+        retryButton.isEnabled = true
+        retryButton.text = "重新连接"
+    }
+
+    /** 输入: dp 尺寸; 输出: 当前屏幕密度下的像素尺寸. */
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private fun configureBackNavigation() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
