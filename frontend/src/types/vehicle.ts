@@ -141,3 +141,44 @@ export interface CityDefinition {
   center: [number, number]
   bounds: [number, number, number, number]
 }
+
+export interface AdminCity extends CityDefinition {
+  status: 'ACTIVE' | 'DISABLED'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CityRequest {
+  cityCode: string
+  cityName: string
+  orgId: string
+  centerLongitude: number
+  centerLatitude: number
+  minLongitude: number
+  minLatitude: number
+  maxLongitude: number
+  maxLatitude: number
+  status: 'ACTIVE' | 'DISABLED'
+}
+
+export interface VehicleCreateRequest {
+  vehicleId: string
+  companyId: string
+  lockId: string
+  controllerId: string
+  plateNumber: string | null
+  filingCode: string | null
+  model: string
+  batchNo: string | null
+  operationCityCode: string
+  operationAreaCode: string
+  launchDate: string
+  lifecycleStatus: LifecycleStatus
+}
+
+export interface VehicleBatchResult {
+  requestedCount: number
+  createdCount: number
+  skippedCount: number
+  skipped: Array<{ rowNumber: number; vehicleId: string; reason: string }>
+}

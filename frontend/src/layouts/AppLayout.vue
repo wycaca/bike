@@ -4,6 +4,7 @@ import {
   DataAnalysis,
   DataLine,
   Document,
+  Management,
   List,
   Location,
   Operation,
@@ -72,6 +73,10 @@ async function handleAccountCommand(command: string) {
         <el-menu-item v-if="authStore.can('ADMIN_READ')" index="/admin">
           <el-icon><Document /></el-icon>
           <span>组织与审计</span>
+        </el-menu-item>
+        <el-menu-item v-if="authStore.can('FLEET_WRITE')" index="/fleet-admin">
+          <el-icon><Management /></el-icon>
+          <span>城市与车辆扩展</span>
         </el-menu-item>
       </el-menu>
 

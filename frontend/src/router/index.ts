@@ -65,6 +65,12 @@ const router = createRouter({
           component: () => import('@/views/AdminView.vue'),
           meta: { capability: 'ADMIN_READ' },
         },
+        {
+          path: 'fleet-admin',
+          name: 'fleet-admin',
+          component: () => import('@/views/FleetAdminView.vue'),
+          meta: { capability: 'FLEET_WRITE' },
+        },
       ],
     },
   ],

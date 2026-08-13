@@ -46,7 +46,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   /** 输入: 平台能力; 输出: 当前用户是否拥有该能力。 */
   function can(capability: Capability): boolean {
-    return hasCapability(user.value?.role, capability)
+    return hasCapability(user.value?.role, capability, user.value?.dataScope)
   }
 
   return { user, initialized, authenticated, restore, signIn, signOut, hasRole, can }
