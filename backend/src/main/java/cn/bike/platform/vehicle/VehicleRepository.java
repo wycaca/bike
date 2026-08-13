@@ -47,6 +47,11 @@ public class VehicleRepository {
         mapper.upsertVehicle(asset);
     }
 
+    /** 输入: 管理员已验证的车辆档案; 输出: 新增数，唯一键冲突时为 0。 */
+    public int insertVehicle(VehicleAsset asset) {
+        return mapper.insertVehicle(asset);
+    }
+
     /**
      * 输入: 遥测事件和原始 JSON; 输出: 最新状态是否被本次事件更新.
      *

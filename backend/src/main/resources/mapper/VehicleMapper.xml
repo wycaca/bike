@@ -65,6 +65,19 @@
             updated_at = now()
     </insert>
 
+    <!-- 管理端导入只允许新增，唯一键冲突返回 0，禁止覆盖已有车辆。 -->
+    <insert id="insertVehicle">
+        INSERT INTO vehicle (
+            vehicle_id, company_id, org_id, lock_id, controller_id, plate_number, filing_code,
+            model, batch_no, operation_city_code, operation_area_code, launch_date,
+            lifecycle_status
+        ) VALUES (
+            #{vehicleId}, #{companyId}, #{orgId}, #{lockId}, #{controllerId}, #{plateNumber}, #{filingCode},
+            #{model}, #{batchNo}, #{operationCityCode}, #{operationAreaCode}, #{launchDate}, #{lifecycleStatus}
+        )
+        ON CONFLICT DO NOTHING
+    </insert>
+
     <!-- 遥测消息可能重复投递, 唯一键配合 ON CONFLICT 保证历史轨迹点幂等. -->
     <insert id="insertVehiclePosition">
         INSERT INTO vehicle_position (

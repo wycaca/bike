@@ -23,6 +23,8 @@ public interface VehicleMapper {
 
     int upsertVehicle(VehicleAsset asset);
 
+    int insertVehicle(VehicleAsset asset);
+
     int insertVehiclePosition(TelemetryWrite row);
 
     int upsertVehicleLatest(TelemetryWrite row);
