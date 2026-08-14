@@ -77,7 +77,7 @@
 | `GET /api/v1/vehicles` | 已实现 | 分页检索车辆和最新状态. |
 | `GET /api/v1/vehicles/{vehicleId}` | 已实现 | 查询车辆档案和最新状态. |
 | `GET /api/v1/vehicles/{vehicleId}/trajectory` | 已实现 | 查询指定时间范围的历史轨迹. |
-| `POST /api/v1/mock/yadea/events` | 已实现, 仅 Mock | 模拟雅迪云事件进入 Kafka. |
+| `POST /api/v1/mock/yadea/events` | 已实现, 仅 Mock | 仅管理员可模拟雅迪云事件进入 Kafka. |
 | 登录、用户、组织和审计接口 | 已实现 | Redis 会话、角色权限和组织数据范围. |
 | 围栏、看板、收入和运维任务接口 | 已实现 | 管理、分析和现场运维闭环. |
 

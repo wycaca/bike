@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .csrfTokenRequestHandler(csrfHandler))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/actuator/health", "/api/v1/auth/csrf", "/api/v1/auth/login").permitAll()
+                        .requestMatchers("/api/v1/mock/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/admin/audit-logs/**").hasAnyRole("ADMIN", "AUDITOR")
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/geo/**").hasAnyRole("ADMIN", "OPERATOR")

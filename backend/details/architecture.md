@@ -52,7 +52,7 @@
 | `GET /api/v1/vehicles` | 分页检索车辆资产和最新状态. |
 | `GET /api/v1/vehicles/{vehicleId}` | 查询车辆档案和最新状态. |
 | `GET /api/v1/vehicles/{vehicleId}/trajectory` | 查询指定时间范围的历史轨迹. |
-| `POST /api/v1/mock/yadea/events` | 在 `mock` 环境模拟雅迪云事件. |
+| `POST /api/v1/mock/yadea/events` | 仅管理员可在 `mock` 环境模拟雅迪云事件. |
 | `GET /api/v1/auth/csrf` | 获取 SPA 写请求使用的 CSRF 令牌. |
 | `POST /api/v1/auth/login` | 登录并创建 Redis 会话. |
 | `GET /api/v1/auth/me` | 查询当前用户和角色. |
