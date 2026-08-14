@@ -55,7 +55,7 @@ frontend/
 
 地图和轨迹接口当前请求 GCJ-02, 后端统一从 WGS84 转换. 本地开发 Key 保存在 Git 忽略的环境文件中, 车辆分布和历史轨迹均使用高德 JS API 2.0; 未配置或加载失败时降级为坐标预览.
 
-登录使用 Spring Security Session 和 Redis. 前端只保存当前用户内存状态, 应用启动时通过 `/auth/me` 恢复会话; 登录成功和会话恢复后重新获取 CSRF 令牌, 不在 `localStorage` 保存长期凭证.
+登录使用 Spring Security Session 和 Redis. 前端只保存当前用户内存状态, 应用启动时通过 `/auth/me` 恢复会话; 登录成功和会话恢复后重新获取 CSRF 令牌, 不在 `localStorage` 保存长期凭证. `401/403` 表示登录失效并清理用户, 网络或 `5xx` 错误保留内存状态并进入可重试的服务不可用页面.
 
 根目录 Compose 已包含无状态前端容器. Nginx 在 `8081` 端口提供页面, 并同源代理后端接口.
 

@@ -19,8 +19,10 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       user.value = await authApi.getCurrentUser()
     } catch (cause) {
-      user.value = null
-      if (!axios.isAxiosError(cause) || cause.response?.status !== 401) {
+      const status = axios.isAxiosError(cause) ? cause.response?.status : undefined
+      if (status === 401 || status === 403) {
+        user.value = null
+      } else {
         restoreError.value = errorMessage(cause)
       }
     } finally {
