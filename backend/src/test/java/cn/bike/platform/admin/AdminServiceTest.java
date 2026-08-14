@@ -94,6 +94,38 @@ class AdminServiceTest {
         verify(sessions).deleteById("session-1");
     }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    void 修改用户名后应撤销新旧用户名的全部会话() {
+        var repository = mock(AdminRepository.class);
+        var sessions = (FindByIndexNameSessionRepository<Session>) mock(FindByIndexNameSessionRepository.class);
+        var existing = new PlatformUser("USR-OP", "old-name", "北京运维", "13800000000",
+                "ORG-BJ", "北京运营中心", UserRole.OPERATOR, DataScope.ORG_ONLY,
+                RecordStatus.ACTIVE, null, null);
+        var updated = new PlatformUser("USR-OP", "new-name", "北京运维", "13800000000",
+                "ORG-BJ", "北京运营中心", UserRole.OPERATOR, DataScope.ORG_ONLY,
+                RecordStatus.ACTIVE, null, null);
+        var request = new UserRequest(
+                "new-name", "北京运维", "13800000000", "ORG-BJ",
+                UserRole.OPERATOR, DataScope.ORG_ONLY, RecordStatus.ACTIVE, null);
+        when(repository.findOrganization("ORG-BJ")).thenReturn(Optional.of(new AdminModels.Organization(
+                "ORG-BJ", "ORG-HQ", "北京运营中心", AdminModels.OrganizationType.REGION,
+                "110000", RecordStatus.ACTIVE, null, null)));
+        when(repository.findUser("USR-OP")).thenReturn(Optional.of(existing), Optional.of(updated));
+        when(repository.updateUser("USR-OP", request)).thenReturn(1);
+        when(sessions.findByPrincipalName("old-name"))
+                .thenReturn(Map.of("old-session", mock(Session.class)));
+        when(sessions.findByPrincipalName("new-name"))
+                .thenReturn(Map.of("new-session", mock(Session.class)));
+        var service = new AdminService(repository, mock(PasswordEncoder.class),
+                TestDataPermissions.allService(), sessions);
+
+        service.updateUser("USR-OP", request, admin());
+
+        verify(sessions).deleteById("old-session");
+        verify(sessions).deleteById("new-session");
+    }
+
     private PlatformPrincipal admin() {
         return new PlatformPrincipal("USR-ADMIN", "admin", "encoded", "系统管理员",
                 "ORG-HQ", "运营总部", UserRole.ADMIN, DataScope.ALL, true);

@@ -64,7 +64,7 @@
 | `GET /api/v1/geo/overview` | 查询围栏, 停车点和实时空间违规. |
 | `POST/PUT/DELETE /api/v1/geo/...` | 新建, 编辑和停用空间设施. |
 | `GET/POST/PUT /api/v1/admin/organizations` | 维护组织架构. |
-| `GET/POST/PUT /api/v1/admin/users` | 维护平台用户和密码. |
+| `GET/POST/PUT /api/v1/admin/users` | 维护平台用户和密码. 权限、状态或密码变更后立即删除该账号的全部 Redis 会话. |
 | `GET /api/v1/admin/audit-logs` | 分页检索审计日志. |
 | `GET /api/v1/cities` | 查询当前用户可访问的启用运营城市. |
 | `GET/POST/PUT /api/v1/admin/cities` | 维护运营城市、负责组织和地图边界. |
