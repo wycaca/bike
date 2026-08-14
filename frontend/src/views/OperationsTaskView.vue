@@ -1,36 +1,32 @@
 <script setup lang="ts">
 import {
-  Files, Location, Plus, Refresh, Setting, UploadFilled,
+  Files, Plus, Refresh, Setting,
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { UploadRequestOptions } from 'element-plus'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 
 import {
   assignOperationsTask, cancelOperationsTask, changeOperationsTask,
-  completeOperationsTask, createOperationsBatch, createOperationsRule,
-  createOperationsTask, getOperationsAssignees, getOperationsRules,
+  createOperationsRule, getOperationsAssignees, getOperationsRules,
   getOperationsSummary, getOperationsTask, getOperationsTasks,
-  optimizeOperationsRoute, reportOperationsException, resolveOperationsException,
+  optimizeOperationsRoute, resolveOperationsException,
   reviewOperationsTask, scanOperationsRules, updateOperationsRule,
-  uploadOperationsAttachment,
 } from '@/api/operations'
 import { errorMessage } from '@/api/http'
-import { getVehicles } from '@/api/vehicle'
+import OperationsTaskCreateDialogs from '@/components/operations/OperationsTaskCreateDialogs.vue'
 import OperationsTaskDetailDrawer from '@/components/operations/OperationsTaskDetailDrawer.vue'
+import OperationsTaskEvidenceDialogs from '@/components/operations/OperationsTaskEvidenceDialogs.vue'
 import OperationsTaskQueue from '@/components/operations/OperationsTaskQueue.vue'
 import { useAppStore } from '@/stores/app'
 import { useAuthStore } from '@/stores/auth'
 import type {
-  OperationsAssignee, OperationsAttachment, OperationsBatchTaskRequest,
-  OperationsCompletionRequest, OperationsExceptionType, OperationsRoutePlan,
+  OperationsAssignee, OperationsRoutePlan,
   OperationsRule, OperationsRuleRequest, OperationsTask, OperationsTaskDetail,
-  OperationsTaskRequest, OperationsTaskScope,
+  OperationsTaskScope,
   OperationsTaskStatus, OperationsTaskSummary, OperationsTaskType,
 } from '@/types/operations'
-import type { VehicleListItem } from '@/types/vehicle'
 import {
-  exceptionTypeLabels, taskPriorityLabels, taskTypeLabels, triggerTypeLabels,
+  taskTypeLabels, triggerTypeLabels,
 } from '@/utils/operations'
 
 const appStore = useAppStore()
@@ -43,22 +39,19 @@ const emptySummary: OperationsTaskSummary = {
 const pageData = ref({ items: [] as OperationsTask[], total: 0, page: 1, pageSize: 20 })
 const summary = ref<OperationsTaskSummary>({ ...emptySummary })
 const assignees = ref<OperationsAssignee[]>([])
-const vehicles = ref<VehicleListItem[]>([])
 const detail = ref<OperationsTaskDetail | null>(null)
 const rules = ref<OperationsRule[]>([])
 const routePlan = ref<OperationsRoutePlan | null>(null)
 const selectedRows = ref<OperationsTask[]>([])
 const selectedTask = ref<OperationsTask | null>(null)
 const editingRule = ref<OperationsRule | null>(null)
+const createDialogs = ref<InstanceType<typeof OperationsTaskCreateDialogs>>()
+const evidenceDialogs = ref<InstanceType<typeof OperationsTaskEvidenceDialogs>>()
 
 const loading = ref(false)
 const actingTaskId = ref('')
 const detailVisible = ref(false)
-const createVisible = ref(false)
-const batchVisible = ref(false)
 const assignVisible = ref(false)
-const completionVisible = ref(false)
-const exceptionVisible = ref(false)
 const rulesVisible = ref(false)
 const ruleEditVisible = ref(false)
 const routeVisible = ref(false)
@@ -75,27 +68,6 @@ interface TaskFilters {
 
 const filters = reactive<TaskFilters>({ scope: 'ALL', status: '', type: '', keyword: '', page: 1, pageSize: 20 })
 
-const createForm = reactive<OperationsTaskRequest>({
-  taskType: 'BATTERY_SWAP', priority: 'NORMAL', title: '', description: null,
-  vehicleId: '', orgId: '', targetName: null, dueAt: null, assigneeId: null,
-})
-const batchForm = reactive<OperationsBatchTaskRequest>({
-  batchName: '', taskType: 'REBALANCE', priority: 'NORMAL', title: '', description: null,
-  vehicleIds: [], orgId: '', targetName: null, dueAt: null, assigneeId: null,
-})
-const completionForm = reactive<OperationsCompletionRequest>({
-  resultNote: '', arrivalLongitude: 0, arrivalLatitude: 0, coordinateSystem: 'WGS84', checklist: [],
-  removedBatteryId: null, installedBatteryId: null, partsUsed: [],
-  targetLongitude: null, targetLatitude: null, beforeAttachmentIds: [], afterAttachmentIds: [],
-})
-const completionFiles = reactive<{ before: OperationsAttachment[]; after: OperationsAttachment[] }>({
-  before: [], after: [],
-})
-const exceptionForm = reactive<{ exceptionType: OperationsExceptionType; note: string }>({
-  exceptionType: 'VEHICLE_NOT_FOUND', note: '',
-})
-const exceptionFiles = ref<OperationsAttachment[]>([])
-const partsText = ref('')
 const ruleForm = reactive<OperationsRuleRequest>({
   ruleName: '', cityCode: '', orgId: '', triggerType: 'LOW_BATTERY',
   thresholdValue: 15, taskType: 'BATTERY_SWAP', priority: 'URGENT',
@@ -110,14 +82,6 @@ const isAdmin = computed(() => currentRole.value === 'ADMIN')
 const defaultOrgId = computed(() => currentRole.value === 'OPERATOR'
   ? authStore.user?.orgId ?? ''
   : appStore.currentCity.orgId)
-const completionCheckOptions = computed(() => ({
-  BATTERY_SWAP: ['核对车辆编号', '检查电池仓与接头', '确认新电池锁定', '确认车辆恢复供电'],
-  REBALANCE: ['核对车辆编号', '确认停车区域合规', '车辆摆放整齐', '未阻塞道路或出入口'],
-  REPAIR: ['核对故障现象', '完成维修或部件更换', '完成安全检查', '车辆功能复测通过'],
-  INSPECTION: ['检查车身与车锁', '检查刹车与轮胎', '检查电池状态', '记录异常项'],
-  RETRIEVAL: ['核对车辆编号', '记录车辆现状', '确认装车固定', '现场无遗留物'],
-  CLEANING: ['完成车身清洁', '完成车篮清洁', '检查二维码可识别', '车辆摆放合规'],
-} as Record<OperationsTaskType, string[]>)[selectedTask.value?.taskType ?? 'INSPECTION'])
 
 // ==================== 数据加载 ====================
 
@@ -152,18 +116,6 @@ async function openDetail(taskId: string) {
   }
 }
 
-/** 输入: 车辆搜索关键字; 输出: 当前城市最多 20 辆候选车辆。 */
-async function searchVehicles(keyword = '') {
-  try {
-    const result = await getVehicles({
-      cityCode: appStore.cityCode, keyword: keyword.trim() || undefined, page: 1, pageSize: 20,
-    })
-    vehicles.value = result.items
-  } catch (cause) {
-    ElMessage.error(errorMessage(cause))
-  }
-}
-
 async function loadAssignees() {
   try {
     assignees.value = await getOperationsAssignees(appStore.cityCode)
@@ -172,71 +124,7 @@ async function loadAssignees() {
   }
 }
 
-// ==================== 创建、批量和规则 ====================
-
-/** 输入: 无; 输出: 重置并打开单任务创建表单。 */
-async function openCreate() {
-  Object.assign(createForm, {
-    taskType: 'BATTERY_SWAP', priority: 'NORMAL', title: '', description: null,
-    vehicleId: '', orgId: defaultOrgId.value, targetName: null, dueAt: null, assigneeId: null,
-  })
-  await Promise.all([searchVehicles(), loadAssignees()])
-  createVisible.value = true
-}
-
-/** 输入: 新任务表单; 输出: 创建任务并刷新队列。 */
-async function submitCreate() {
-  if (!createForm.title.trim() || !createForm.vehicleId || !createForm.orgId) {
-    ElMessage.warning('请填写任务标题并选择车辆')
-    return
-  }
-  actingTaskId.value = 'create'
-  try {
-    await createOperationsTask({ ...createForm, title: createForm.title.trim(),
-      description: createForm.description?.trim() || null,
-      targetName: createForm.targetName?.trim() || null,
-      assigneeId: isAdmin.value ? createForm.assigneeId : null })
-    ElMessage.success('运维任务已创建')
-    createVisible.value = false
-    await loadTasks()
-  } catch (cause) {
-    ElMessage.error(errorMessage(cause))
-  } finally {
-    actingTaskId.value = ''
-  }
-}
-
-/** 输入: 无; 输出: 打开支持多车选择的批量建单表单。 */
-async function openBatch() {
-  Object.assign(batchForm, {
-    batchName: '', taskType: 'REBALANCE', priority: 'NORMAL', title: '', description: null,
-    vehicleIds: [], orgId: defaultOrgId.value, targetName: null, dueAt: null, assigneeId: null,
-  })
-  await Promise.all([searchVehicles(), loadAssignees()])
-  batchVisible.value = true
-}
-
-/** 输入: 批量任务模板; 输出: 部分成功结果，冲突车辆逐项提示。 */
-async function submitBatch() {
-  if (!batchForm.batchName.trim() || !batchForm.title.trim() || batchForm.vehicleIds.length === 0) {
-    ElMessage.warning('请填写批次名称、任务标题并选择车辆')
-    return
-  }
-  actingTaskId.value = 'batch'
-  try {
-    const result = await createOperationsBatch({ ...batchForm,
-      batchName: batchForm.batchName.trim(), title: batchForm.title.trim(),
-      description: batchForm.description?.trim() || null,
-      assigneeId: isAdmin.value ? batchForm.assigneeId : null })
-    ElMessage.success(`批次 ${result.batchNo} 创建 ${result.createdTasks.length} 项，跳过 ${result.skipped.length} 项`)
-    batchVisible.value = false
-    await loadTasks()
-  } catch (cause) {
-    ElMessage.error(errorMessage(cause))
-  } finally {
-    actingTaskId.value = ''
-  }
-}
+// ==================== 自动规则 ====================
 
 /** 输入: 可选已有规则; 输出: 打开新建或编辑规则表单。 */
 function editRule(rule?: OperationsRule) {
@@ -326,95 +214,18 @@ async function simpleAction(task: OperationsTask, action: 'claim' | 'release' | 
   await runTaskAction(task, labels[action], async () => { await changeOperationsTask(task.taskId, action) })
 }
 
-/** 输入: 当前任务; 输出: 初始化结构化完工凭证。 */
-function openCompletion(task: OperationsTask) {
-  selectedTask.value = task
-  Object.assign(completionForm, {
-    resultNote: '', arrivalLongitude: task.sourceLongitude ?? 0, arrivalLatitude: task.sourceLatitude ?? 0,
-    coordinateSystem: 'WGS84', checklist: [], removedBatteryId: null, installedBatteryId: null, partsUsed: [],
-    targetLongitude: null, targetLatitude: null, beforeAttachmentIds: [], afterAttachmentIds: [],
-  })
-  completionFiles.before = []
-  completionFiles.after = []
-  partsText.value = ''
-  completionVisible.value = true
-}
+function openCreate() { createDialogs.value?.openCreate() }
 
-/** 输入: 浏览器定位权限; 输出: 将现场坐标写入凭证。 */
-function locateForEvidence() {
-  if (!navigator.geolocation) {
-    ElMessage.warning('当前浏览器不支持定位')
-    return
-  }
-  navigator.geolocation.getCurrentPosition((position) => {
-    completionForm.arrivalLongitude = Number(position.coords.longitude.toFixed(7))
-    completionForm.arrivalLatitude = Number(position.coords.latitude.toFixed(7))
-    ElMessage.success('已读取现场位置')
-  }, () => ElMessage.error('无法读取现场位置，请检查浏览器定位权限'))
-}
+function openBatch() { createDialogs.value?.openBatch() }
 
-/** 输入: 上传组件参数、附件用途和目标列表; 输出: 已上传凭证元数据。 */
-async function uploadEvidence(options: UploadRequestOptions, purpose: 'BEFORE' | 'AFTER' | 'EXCEPTION', target: OperationsAttachment[]) {
-  if (!selectedTask.value) return
-  try {
-    const attachment = await uploadOperationsAttachment(selectedTask.value.taskId, purpose, options.file)
-    target.push(attachment)
-    options.onSuccess(attachment)
-  } catch (cause) {
-    ElMessage.error(errorMessage(cause))
-    throw cause
-  }
-}
+function openCompletion(task: OperationsTask) { evidenceDialogs.value?.openCompletion(task) }
 
-function uploadBefore(options: UploadRequestOptions) { return uploadEvidence(options, 'BEFORE', completionFiles.before) }
-function uploadAfter(options: UploadRequestOptions) { return uploadEvidence(options, 'AFTER', completionFiles.after) }
-function uploadException(options: UploadRequestOptions) { return uploadEvidence(options, 'EXCEPTION', exceptionFiles.value) }
+function openException(task: OperationsTask) { evidenceDialogs.value?.openException(task) }
 
-/** 输入: 完工表单; 输出: 提交凭证并进入管理员验收。 */
-async function submitCompletion() {
-  const task = selectedTask.value
-  if (!task || !completionForm.resultNote.trim()) {
-    ElMessage.warning('请填写处理结果')
-    return
-  }
-  if (completionForm.checklist.length !== completionCheckOptions.value.length) {
-    ElMessage.warning('请完成全部作业检查项')
-    return
-  }
-  if (completionFiles.after.length === 0) {
-    ElMessage.warning('至少上传一张处理后照片')
-    return
-  }
-  completionForm.beforeAttachmentIds = completionFiles.before.map(item => item.attachmentId)
-  completionForm.afterAttachmentIds = completionFiles.after.map(item => item.attachmentId)
-  completionForm.partsUsed = partsText.value.split(/[，,\n]/).map(value => value.trim()).filter(Boolean)
-  const succeeded = await runTaskAction(task, '提交完工', async () => {
-    await completeOperationsTask(task.taskId, { ...completionForm })
-  })
-  if (succeeded) completionVisible.value = false
-}
-
-/** 输入: 可上报任务; 输出: 初始化现场异常表单。 */
-function openException(task: OperationsTask) {
-  selectedTask.value = task
-  exceptionForm.exceptionType = 'VEHICLE_NOT_FOUND'
-  exceptionForm.note = ''
-  exceptionFiles.value = []
-  exceptionVisible.value = true
-}
-
-/** 输入: 异常类型、说明和照片; 输出: 任务进入异常待处理状态。 */
-async function submitException() {
-  const task = selectedTask.value
-  if (!task || !exceptionForm.note.trim()) {
-    ElMessage.warning('请填写现场异常说明')
-    return
-  }
-  const succeeded = await runTaskAction(task, '上报异常', async () => {
-    await reportOperationsException(task.taskId, { ...exceptionForm,
-      note: exceptionForm.note.trim(), attachmentIds: exceptionFiles.value.map(item => item.attachmentId) })
-  })
-  if (succeeded) exceptionVisible.value = false
+/** 输入: 已变更的任务编号; 输出: 刷新队列, 并在详情已打开时同步详情. */
+async function handleEvidenceChanged(taskId: string) {
+  await loadTasks()
+  if (detailVisible.value && detail.value?.task.taskId === taskId) await openDetail(taskId)
 }
 
 /** 输入: 待验收任务和结论; 输出: 管理员通过或驳回凭证。 */
@@ -496,7 +307,6 @@ async function submitAssignment() {
 /** 输入: 队列组件产生的局部筛选条件; 输出: 合并到页面查询状态。 */
 function updateFilters(patch: Partial<TaskFilters>) { Object.assign(filters, patch) }
 
-function batteryText(value: number | null) { return value === null ? '--' : `${value}%` }
 function formatDistance(value: number) { return value >= 1000 ? `${(value / 1000).toFixed(1)} km` : `${value} m` }
 function formatDuration(value: number) { return value >= 3600 ? `${(value / 3600).toFixed(1)} 小时` : `${Math.ceil(value / 60)} 分钟` }
 
@@ -534,63 +344,12 @@ onMounted(loadTasks)
       @cancel="cancelTask" @detail="openDetail"
     />
 
-    <el-dialog v-model="createVisible" title="新建运维任务" width="680px" destroy-on-close>
-      <el-form label-position="top" class="task-form">
-        <el-form-item label="任务类型"><el-select v-model="createForm.taskType"><el-option v-for="(label, value) in taskTypeLabels" :key="value" :label="label" :value="value" /></el-select></el-form-item>
-        <el-form-item label="优先级"><el-select v-model="createForm.priority"><el-option v-for="(label, value) in taskPriorityLabels" :key="value" :label="label" :value="value" /></el-select></el-form-item>
-        <el-form-item label="任务标题" class="wide"><el-input v-model="createForm.title" maxlength="100" show-word-limit /></el-form-item>
-        <el-form-item label="车辆" class="wide"><el-select v-model="createForm.vehicleId" filterable remote reserve-keyword :remote-method="searchVehicles" placeholder="输入车辆编号搜索"><el-option v-for="vehicle in vehicles" :key="vehicle.vehicleId" :label="`${vehicle.vehicleId} · 电量 ${batteryText(vehicle.latestState?.batteryPercent ?? null)}`" :value="vehicle.vehicleId" /></el-select></el-form-item>
-        <el-form-item label="目标地点"><el-input v-model="createForm.targetName" maxlength="100" /></el-form-item>
-        <el-form-item label="要求完成时间"><el-date-picker v-model="createForm.dueAt" type="datetime" value-format="YYYY-MM-DDTHH:mm:ssZ" placeholder="可选" /></el-form-item>
-        <el-form-item v-if="isAdmin" label="直接指派" class="wide"><el-select v-model="createForm.assigneeId" clearable placeholder="留空则进入公共任务池"><el-option v-for="person in assignees" :key="person.userId" :label="`${person.displayName} · ${person.orgName}`" :value="person.userId" /></el-select></el-form-item>
-        <el-form-item label="任务说明" class="wide"><el-input v-model="createForm.description" type="textarea" :rows="3" maxlength="500" show-word-limit /></el-form-item>
-      </el-form>
-      <template #footer><el-button @click="createVisible = false">取消</el-button><el-button type="primary" :loading="actingTaskId === 'create'" @click="submitCreate">创建任务</el-button></template>
-    </el-dialog>
+    <OperationsTaskCreateDialogs
+      ref="createDialogs" :city-code="appStore.cityCode" :default-org-id="defaultOrgId"
+      :is-admin="isAdmin" @changed="loadTasks"
+    />
 
-    <el-dialog v-model="batchVisible" title="批量创建任务" width="700px" destroy-on-close>
-      <el-form label-position="top" class="task-form">
-        <el-form-item label="批次名称"><el-input v-model="batchForm.batchName" maxlength="100" /></el-form-item>
-        <el-form-item label="任务类型"><el-select v-model="batchForm.taskType"><el-option v-for="(label, value) in taskTypeLabels" :key="value" :label="label" :value="value" /></el-select></el-form-item>
-        <el-form-item label="任务标题" class="wide"><el-input v-model="batchForm.title" maxlength="100" /></el-form-item>
-        <el-form-item label="车辆（最多 200 辆）" class="wide"><el-select v-model="batchForm.vehicleIds" multiple filterable remote reserve-keyword :remote-method="searchVehicles" placeholder="搜索并选择车辆"><el-option v-for="vehicle in vehicles" :key="vehicle.vehicleId" :label="`${vehicle.vehicleId} · 电量 ${batteryText(vehicle.latestState?.batteryPercent ?? null)}`" :value="vehicle.vehicleId" /></el-select></el-form-item>
-        <el-form-item label="优先级"><el-select v-model="batchForm.priority"><el-option v-for="(label, value) in taskPriorityLabels" :key="value" :label="label" :value="value" /></el-select></el-form-item>
-        <el-form-item label="要求完成时间"><el-date-picker v-model="batchForm.dueAt" type="datetime" value-format="YYYY-MM-DDTHH:mm:ssZ" placeholder="可选" /></el-form-item>
-        <el-form-item v-if="isAdmin" label="直接指派" class="wide"><el-select v-model="batchForm.assigneeId" clearable><el-option v-for="person in assignees" :key="person.userId" :label="`${person.displayName} · ${person.orgName}`" :value="person.userId" /></el-select></el-form-item>
-        <el-form-item label="任务说明" class="wide"><el-input v-model="batchForm.description" type="textarea" :rows="3" maxlength="500" /></el-form-item>
-      </el-form>
-      <template #footer><el-button @click="batchVisible = false">取消</el-button><el-button type="primary" :loading="actingTaskId === 'batch'" @click="submitBatch">创建批次</el-button></template>
-    </el-dialog>
-
-    <el-dialog v-model="completionVisible" title="提交完工作业凭证" width="760px" destroy-on-close>
-      <el-form label-position="top" class="evidence-form">
-        <el-form-item label="处理结果" class="wide"><el-input v-model="completionForm.resultNote" type="textarea" :rows="3" maxlength="500" show-word-limit /></el-form-item>
-        <el-form-item label="现场经度"><el-input-number v-model="completionForm.arrivalLongitude" :precision="7" :controls="false" /></el-form-item>
-        <el-form-item label="现场纬度"><div class="location-field"><el-input-number v-model="completionForm.arrivalLatitude" :precision="7" :controls="false" /><el-tooltip content="读取当前位置"><el-button :icon="Location" circle @click="locateForEvidence" /></el-tooltip></div></el-form-item>
-        <el-form-item label="作业检查" class="wide"><el-checkbox-group v-model="completionForm.checklist" class="check-grid"><el-checkbox v-for="item in completionCheckOptions" :key="item" :value="item">{{ item }}</el-checkbox></el-checkbox-group></el-form-item>
-        <template v-if="selectedTask?.taskType === 'BATTERY_SWAP'">
-          <el-form-item label="换出电池编号"><el-input v-model="completionForm.removedBatteryId" /></el-form-item>
-          <el-form-item label="换入电池编号"><el-input v-model="completionForm.installedBatteryId" /></el-form-item>
-        </template>
-        <template v-if="selectedTask?.taskType === 'REBALANCE'">
-          <el-form-item label="实际停放经度"><el-input-number v-model="completionForm.targetLongitude" :precision="7" :controls="false" /></el-form-item>
-          <el-form-item label="实际停放纬度"><el-input-number v-model="completionForm.targetLatitude" :precision="7" :controls="false" /></el-form-item>
-        </template>
-        <el-form-item v-if="selectedTask?.taskType === 'REPAIR'" label="使用物料" class="wide"><el-input v-model="partsText" placeholder="多个物料使用逗号分隔" /></el-form-item>
-        <el-form-item label="处理前照片" class="wide"><div class="upload-row"><el-upload :http-request="uploadBefore" :show-file-list="false" accept="image/jpeg,image/png"><el-button :icon="UploadFilled">上传照片</el-button></el-upload><a v-for="file in completionFiles.before" :key="file.attachmentId" :href="file.downloadUrl" target="_blank">{{ file.originalName }}</a></div></el-form-item>
-        <el-form-item label="处理后照片（必填）" class="wide"><div class="upload-row"><el-upload :http-request="uploadAfter" :show-file-list="false" accept="image/jpeg,image/png"><el-button type="primary" plain :icon="UploadFilled">上传照片</el-button></el-upload><a v-for="file in completionFiles.after" :key="file.attachmentId" :href="file.downloadUrl" target="_blank">{{ file.originalName }}</a></div></el-form-item>
-      </el-form>
-      <template #footer><el-button @click="completionVisible = false">取消</el-button><el-button type="primary" :loading="actingTaskId === selectedTask?.taskId" @click="submitCompletion">提交验收</el-button></template>
-    </el-dialog>
-
-    <el-dialog v-model="exceptionVisible" title="上报现场异常" width="560px" destroy-on-close>
-      <el-form label-position="top">
-        <el-form-item label="异常类型"><el-select v-model="exceptionForm.exceptionType" class="full-width"><el-option v-for="(label, value) in exceptionTypeLabels" :key="value" :label="label" :value="value" /></el-select></el-form-item>
-        <el-form-item label="现场说明"><el-input v-model="exceptionForm.note" type="textarea" :rows="4" maxlength="500" show-word-limit /></el-form-item>
-        <el-form-item label="现场照片"><div class="upload-row"><el-upload :http-request="uploadException" :show-file-list="false" accept="image/jpeg,image/png"><el-button :icon="UploadFilled">上传照片</el-button></el-upload><a v-for="file in exceptionFiles" :key="file.attachmentId" :href="file.downloadUrl" target="_blank">{{ file.originalName }}</a></div></el-form-item>
-      </el-form>
-      <template #footer><el-button @click="exceptionVisible = false">取消</el-button><el-button type="danger" :loading="actingTaskId === selectedTask?.taskId" @click="submitException">确认上报</el-button></template>
-    </el-dialog>
+    <OperationsTaskEvidenceDialogs ref="evidenceDialogs" @changed="handleEvidenceChanged" />
 
     <el-dialog v-model="assignVisible" title="指派运维人员" width="430px"><el-select v-model="selectedAssigneeId" class="full-width"><el-option v-for="person in assignees" :key="person.userId" :label="`${person.displayName} · ${person.orgName}`" :value="person.userId" /></el-select><template #footer><el-button @click="assignVisible = false">取消</el-button><el-button type="primary" @click="submitAssignment">确认指派</el-button></template></el-dialog>
 
@@ -632,11 +391,10 @@ onMounted(loadTasks)
 <style scoped>
 .operations-page { display: grid; grid-template-rows: auto minmax(0, 1fr); background: #eef1ef; }
 .operations-heading { padding: 17px 20px 15px; background: #fff; border-bottom: 1px solid var(--line); }
-.heading-actions, .dialog-tools, .upload-row, .location-field { display: flex; align-items: center; gap: 8px; }
+.heading-actions, .dialog-tools { display: flex; align-items: center; gap: 8px; }
 .heading-actions { flex-wrap: wrap; justify-content: flex-end; }
-.task-form, .evidence-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; } .task-form .wide, .evidence-form .wide { grid-column: 1 / -1; }
-.task-form :deep(.el-select), .task-form :deep(.el-date-editor), .evidence-form :deep(.el-input-number) { width: 100%; }
+.task-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; } .task-form .wide { grid-column: 1 / -1; }
+.task-form :deep(.el-select), .task-form :deep(.el-date-editor) { width: 100%; }
 .full-width { width: 100%; } .dialog-tools { justify-content: flex-end; margin-bottom: 12px; }
-.check-grid { display: grid; grid-template-columns: 1fr 1fr; width: 100%; } .upload-row { flex-wrap: wrap; } .upload-row a { color: #1769a8; font-size: 12px; text-decoration: none; }
 .route-summary { display: flex; align-items: baseline; gap: 12px; padding: 16px 2px 12px; } .route-summary strong { font-size: 24px; } .route-summary span { color: var(--muted); font-size: 12px; }
 </style>
