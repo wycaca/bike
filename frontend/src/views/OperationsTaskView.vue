@@ -84,7 +84,7 @@ const batchForm = reactive<OperationsBatchTaskRequest>({
   vehicleIds: [], orgId: '', targetName: null, dueAt: null, assigneeId: null,
 })
 const completionForm = reactive<OperationsCompletionRequest>({
-  resultNote: '', arrivalLongitude: 0, arrivalLatitude: 0, checklist: [],
+  resultNote: '', arrivalLongitude: 0, arrivalLatitude: 0, coordinateSystem: 'WGS84', checklist: [],
   removedBatteryId: null, installedBatteryId: null, partsUsed: [],
   targetLongitude: null, targetLatitude: null, beforeAttachmentIds: [], afterAttachmentIds: [],
 })
@@ -331,7 +331,7 @@ function openCompletion(task: OperationsTask) {
   selectedTask.value = task
   Object.assign(completionForm, {
     resultNote: '', arrivalLongitude: task.sourceLongitude ?? 0, arrivalLatitude: task.sourceLatitude ?? 0,
-    checklist: [], removedBatteryId: null, installedBatteryId: null, partsUsed: [],
+    coordinateSystem: 'WGS84', checklist: [], removedBatteryId: null, installedBatteryId: null, partsUsed: [],
     targetLongitude: null, targetLatitude: null, beforeAttachmentIds: [], afterAttachmentIds: [],
   })
   completionFiles.before = []

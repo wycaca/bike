@@ -391,7 +391,7 @@ public class OperationsRepository {
     private TaskEvidence mapEvidence(EvidenceRow row) {
         return new TaskEvidence(
                 row.evidenceId(), row.submissionNo(), row.resultNote(), row.arrivalLongitude(),
-                row.arrivalLatitude(), readStringList(row.checklist()), row.removedBatteryId(),
+                row.arrivalLatitude(), "WGS84", readStringList(row.checklist()), row.removedBatteryId(),
                 row.installedBatteryId(), readStringList(row.partsUsed()), row.targetLongitude(),
                 row.targetLatitude(), row.reviewStatus(), row.submittedBy(), row.submittedByName(),
                 row.submittedAt(), row.reviewedByName(), row.reviewNote(), row.reviewedAt(),

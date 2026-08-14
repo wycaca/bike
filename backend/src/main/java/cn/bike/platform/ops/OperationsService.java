@@ -30,6 +30,8 @@ import cn.bike.platform.ops.OperationsModels.TaskType;
 import cn.bike.platform.ops.OperationsModels.VehicleSnapshot;
 import cn.bike.platform.security.DataPermissionService;
 import cn.bike.platform.security.PlatformPrincipal;
+import cn.bike.platform.vehicle.CoordinateConverter;
+import cn.bike.platform.vehicle.VehicleModels.CoordinateSystem;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -277,10 +279,15 @@ public class OperationsService {
         requireRole(principal, UserRole.OPERATOR, "只有运维人员可以提交完工凭证");
         var task = requireOwnedTask(taskId, principal);
         validateCompletionEvidence(task, request, principal);
-        var evidenceId = repository.insertEvidence(taskId, request.resultNote(), request.arrivalLongitude(),
-                request.arrivalLatitude(), request.checklist(), request.removedBatteryId(),
-                request.installedBatteryId(), request.partsUsed(), request.targetLongitude(),
-                request.targetLatitude(), principal.userId(), principal.displayName());
+        // 现场设备和地图可能使用不同坐标系, 入库前统一为 WGS84, 避免后续距离校验和地图回放混用坐标.
+        var arrival = CoordinateConverter.convert(request.arrivalLongitude(), request.arrivalLatitude(),
+                request.coordinateSystem(), CoordinateSystem.WGS84);
+        var target = request.targetLongitude() == null ? null : CoordinateConverter.convert(
+                request.targetLongitude(), request.targetLatitude(), request.coordinateSystem(), CoordinateSystem.WGS84);
+        var evidenceId = repository.insertEvidence(taskId, request.resultNote(), arrival.longitude(),
+                arrival.latitude(), request.checklist(), request.removedBatteryId(),
+                request.installedBatteryId(), request.partsUsed(), target == null ? null : target.longitude(),
+                target == null ? null : target.latitude(), principal.userId(), principal.displayName());
         repository.linkEvidenceAttachments(evidenceId, request.beforeAttachmentIds(), AttachmentPurpose.BEFORE);
         repository.linkEvidenceAttachments(evidenceId, request.afterAttachmentIds(), AttachmentPurpose.AFTER);
         if (repository.submitForReview(taskId, task.version(), principal.userId(), request.resultNote()) == 0) {

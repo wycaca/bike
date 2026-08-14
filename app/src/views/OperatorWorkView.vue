@@ -145,6 +145,7 @@ async function submitCompletion() {
       resultNote: resultNote.value,
       arrivalLongitude: location.value.longitude,
       arrivalLatitude: location.value.latitude,
+      coordinateSystem: 'WGS84',
       checklist: checklist.value,
       removedBatteryId: removedBatteryId.value || null,
       installedBatteryId: installedBatteryId.value || null,

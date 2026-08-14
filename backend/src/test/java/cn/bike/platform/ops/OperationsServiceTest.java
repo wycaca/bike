@@ -19,6 +19,8 @@ import cn.bike.platform.ops.OperationsModels.TaskStatus;
 import cn.bike.platform.ops.OperationsModels.TaskType;
 import cn.bike.platform.ops.OperationsModels.VehicleSnapshot;
 import cn.bike.platform.security.PlatformPrincipal;
+import cn.bike.platform.vehicle.CoordinateConverter;
+import cn.bike.platform.vehicle.VehicleModels.CoordinateSystem;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -153,6 +155,37 @@ class OperationsServiceTest {
         verify(repository).linkEvidenceAttachments(11L, List.of(7L), AttachmentPurpose.AFTER);
     }
 
+    @Test
+    void 高德坐标完工凭证应转换为WGS84后入库() {
+        var repository = mock(OperationsRepository.class);
+        var service = new OperationsService(repository, TestDataPermissions.allService());
+        var started = task(TaskStatus.IN_PROGRESS, "USR-OP-BJ", 2, TaskType.REPAIR);
+        var pending = task(TaskStatus.PENDING_REVIEW, "USR-OP-BJ", 3, TaskType.REPAIR);
+        var attachment = new StoredAttachment(7, "TASK-1", AttachmentPurpose.AFTER,
+                "after.png", "stored.png", "image/png", 128, "a".repeat(64),
+                "stored.png", "USR-OP-BJ", Instant.now());
+        var gcjLongitude = new BigDecimal("116.4102445");
+        var gcjLatitude = new BigDecimal("39.9164043");
+        var expected = CoordinateConverter.convert(
+                gcjLongitude, gcjLatitude, CoordinateSystem.GCJ02, CoordinateSystem.WGS84);
+        var request = new CompletionRequest("维修完成并复测通过", gcjLongitude, gcjLatitude,
+                CoordinateSystem.GCJ02, List.of("车辆功能复测通过"), null, null,
+                List.of("车锁组件"), null, null, List.of(), List.of(7L));
+        when(repository.findTask("TASK-1")).thenReturn(Optional.of(started), Optional.of(pending));
+        when(repository.findAttachments(List.of())).thenReturn(List.of());
+        when(repository.findAttachments(List.of(7L))).thenReturn(List.of(attachment));
+        when(repository.insertEvidence(anyString(), anyString(), any(), any(), any(), any(), any(),
+                any(), any(), any(), anyString(), anyString())).thenReturn(11L);
+        when(repository.submitForReview("TASK-1", 2, "USR-OP-BJ", "维修完成并复测通过")).thenReturn(1);
+        stubDetail(repository);
+
+        service.complete("TASK-1", request, operator());
+
+        verify(repository).insertEvidence("TASK-1", "维修完成并复测通过",
+                expected.longitude(), expected.latitude(), List.of("车辆功能复测通过"),
+                null, null, List.of("车锁组件"), null, null, "USR-OP-BJ", "北京运维一组");
+    }
+
     /** 输入: 仓储 Mock; 输出: 验证状态更新方法没有被调用。 */
     private void verifyNoInteractionsAfterLookup(OperationsRepository repository) {
         verify(repository).findTask("TASK-1");
@@ -185,7 +218,7 @@ class OperationsServiceTest {
 
     private CompletionRequest completion(List<Long> afterAttachmentIds) {
         return new CompletionRequest("维修完成并复测通过", new BigDecimal("116.4"),
-                new BigDecimal("39.9"), List.of("车辆功能复测通过"), null, null,
+                new BigDecimal("39.9"), CoordinateSystem.WGS84, List.of("车辆功能复测通过"), null, null,
                 List.of("车锁组件"), null, null, List.of(), afterAttachmentIds);
     }
 

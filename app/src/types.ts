@@ -103,6 +103,7 @@ export interface CompletionRequest {
   resultNote: string
   arrivalLongitude: number
   arrivalLatitude: number
+  coordinateSystem: 'WGS84' | 'GCJ02'
   checklist: string[]
   removedBatteryId: string | null
   installedBatteryId: string | null

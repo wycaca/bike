@@ -1,5 +1,6 @@
 package cn.bike.platform.ops;
 
+import cn.bike.platform.vehicle.VehicleModels.CoordinateSystem;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -99,6 +100,7 @@ public final class OperationsModels {
             @NotBlank @Size(max = 500) String resultNote,
             @NotNull @DecimalMin("-180") @DecimalMax("180") BigDecimal arrivalLongitude,
             @NotNull @DecimalMin("-90") @DecimalMax("90") BigDecimal arrivalLatitude,
+            @NotNull CoordinateSystem coordinateSystem,
             @NotEmpty @Size(max = 30) List<@NotBlank @Size(max = 100) String> checklist,
             @Size(max = 64) String removedBatteryId,
             @Size(max = 64) String installedBatteryId,
@@ -229,6 +231,7 @@ public final class OperationsModels {
             String resultNote,
             BigDecimal arrivalLongitude,
             BigDecimal arrivalLatitude,
+            String coordinateSystem,
             List<String> checklist,
             String removedBatteryId,
             String installedBatteryId,

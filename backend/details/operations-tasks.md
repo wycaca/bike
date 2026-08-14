@@ -55,6 +55,8 @@ OPEN -> CLAIMED -> IN_PROGRESS -> PENDING_REVIEW -> COMPLETED
 
 ## 作业凭证
 
+完工请求必须声明现场坐标来源为 `WGS84` 或 `GCJ02`. 服务端在写入凭证前统一转换为 WGS84, 凭证响应固定返回 `coordinateSystem=WGS84`. Android 系统定位和浏览器定位当前均按 WGS84 提交.
+
 完工凭证包含处理结果、现场经纬度、检查项、处理前后照片，以及按任务类型要求的字段：
 
 - 换电：换出电池编号、换入电池编号，两者不能相同。
