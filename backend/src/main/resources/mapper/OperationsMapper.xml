@@ -303,6 +303,37 @@
         <foreach collection="attachmentIds" item="id" open="(" separator="," close=")">#{id}</foreach>
     </select>
 
+    <select id="findUnboundAttachments" resultType="cn.bike.platform.ops.OperationsModels$StoredAttachment">
+        SELECT attachment_id, task_id, purpose, original_name, stored_name, content_type,
+               size_bytes, sha256, storage_path, uploaded_by, uploaded_at
+        FROM operations_task_attachment attachment
+        WHERE attachment.uploaded_at &lt; #{uploadedBefore}
+          AND NOT EXISTS (
+              SELECT 1 FROM operations_task_evidence_attachment evidence_link
+              WHERE evidence_link.attachment_id = attachment.attachment_id
+          )
+          AND NOT EXISTS (
+              SELECT 1 FROM operations_task_exception_attachment exception_link
+              WHERE exception_link.attachment_id = attachment.attachment_id
+          )
+        ORDER BY attachment.uploaded_at
+        LIMIT #{limit}
+        FOR UPDATE SKIP LOCKED
+    </select>
+
+    <delete id="deleteUnboundAttachment">
+        DELETE FROM operations_task_attachment attachment
+        WHERE attachment.attachment_id = #{attachmentId}
+          AND NOT EXISTS (
+              SELECT 1 FROM operations_task_evidence_attachment evidence_link
+              WHERE evidence_link.attachment_id = attachment.attachment_id
+          )
+          AND NOT EXISTS (
+              SELECT 1 FROM operations_task_exception_attachment exception_link
+              WHERE exception_link.attachment_id = attachment.attachment_id
+          )
+    </delete>
+
     <insert id="linkEvidenceAttachments">
         INSERT INTO operations_task_evidence_attachment (evidence_id, attachment_id, purpose)
         SELECT #{evidenceId}, attachment_id, #{purpose} FROM operations_task_attachment

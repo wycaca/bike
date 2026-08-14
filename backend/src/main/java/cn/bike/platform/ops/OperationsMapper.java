@@ -134,6 +134,13 @@ public interface OperationsMapper {
 
     List<StoredAttachment> findAttachments(@Param("attachmentIds") List<Long> attachmentIds);
 
+    List<StoredAttachment> findUnboundAttachments(
+            @Param("uploadedBefore") Instant uploadedBefore,
+            @Param("limit") int limit
+    );
+
+    int deleteUnboundAttachment(@Param("attachmentId") long attachmentId);
+
     int linkEvidenceAttachments(@Param("evidenceId") long evidenceId,
                                 @Param("attachmentIds") List<Long> attachmentIds,
                                 @Param("purpose") String purpose);

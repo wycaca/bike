@@ -293,6 +293,15 @@ public class OperationsRepository {
                 : mapper.findAttachments(attachmentIds);
     }
 
+    /** 输入: 最晚上传时间和批次上限; 输出: 当前事务已锁定且未绑定的附件元数据. */
+    public List<StoredAttachment> findUnboundAttachments(Instant uploadedBefore, int limit) {
+        return mapper.findUnboundAttachments(uploadedBefore, limit);
+    }
+
+    public int deleteUnboundAttachment(long attachmentId) {
+        return mapper.deleteUnboundAttachment(attachmentId);
+    }
+
     public void linkEvidenceAttachments(long evidenceId, List<Long> attachmentIds, AttachmentPurpose purpose) {
         if (attachmentIds != null && !attachmentIds.isEmpty()) {
             mapper.linkEvidenceAttachments(evidenceId, attachmentIds, purpose.name());

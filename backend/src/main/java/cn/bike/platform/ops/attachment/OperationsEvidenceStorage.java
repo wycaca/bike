@@ -72,9 +72,18 @@ public class OperationsEvidenceStorage {
 
     public void deleteQuietly(String storedName) {
         try {
+            delete(storedName);
+        } catch (RuntimeException ignored) {
+            // 数据库写入失败时尽力清理孤立文件, 清理失败不覆盖原始异常.
+        }
+    }
+
+    /** 输入: 数据库保存的相对文件名; 输出: 文件不存在或删除成功, 失败时抛出异常以便上层重试. */
+    public void delete(String storedName) {
+        try {
             Files.deleteIfExists(resolve(storedName));
-        } catch (IOException | RuntimeException ignored) {
-            // 数据库写入失败时尽力清理孤立文件，清理失败不覆盖原始异常。
+        } catch (IOException exception) {
+            throw new IllegalStateException("运维凭证文件删除失败", exception);
         }
     }
 
