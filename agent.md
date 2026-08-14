@@ -315,6 +315,14 @@ curl.exe -fsS "http://localhost:8080/api/v1/vehicles/YD-BJ-000001/trajectory?sta
 - 后端统一补齐 MVC 参数、权限、上传、方法、媒体类型、接口不存在和未知异常响应; 创建资源返回 `201 + Location`, 队列接收返回 `202`.
 - 作业凭证的 Spring multipart 与业务上限统一为单文件 8 MB, 请求 10 MB; Docker 镜像内 45 个测试全部通过.
 
+## todo:
+
+- [中] 文档结构合理，但实现状态存在明显滞后。
+桌面端文档仍把批量创建、照片验收和工单列为后续功能，但代码已经实现；移动端架构文档又把轨迹、围栏、告警、审计、Bridge 版本和 Cookie 清理写成现有能力，但当前路由和 Android 壳尚未完整支持。见 [desktop-interaction.md (line 49)](/D:/workspace/bike/frontend/details/desktop-interaction.md:49)、[architecture.md (line 78)](/D:/workspace/bike/frontend/details/architecture.md:78)、[architecture.md (line 23)](/D:/workspace/bike/app/details/architecture.md:23)、[router.ts (line 17)](/D:/workspace/bike/app/src/router.ts:17)。
+
+- [低] 注释质量不一致，尚未完全满足项目规范。
+运维服务、路线算法和 Mapper XML 中的复杂逻辑注释较好，但部分 Controller、Repository 和前端复杂流程缺少职责、约束及设计原因说明，例如 [VehicleController.java (line 24)](/D:/workspace/bike/backend/src/main/java/cn/bike/platform/vehicle/VehicleController.java:24) 和 [VehicleRepository.java (line 32)](/D:/workspace/bike/backend/src/main/java/cn/bike/platform/vehicle/VehicleRepository.java:32)。不建议给简单 getter 或直接转发方法增加低价值注释，重点补充业务入口和复杂流程即可。
+
 ## 未来计划
 
 按当前优先级推进, 不提前拆分微服务:
